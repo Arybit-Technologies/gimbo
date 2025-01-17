@@ -1,0 +1,1376 @@
+
+  /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+ * {
+  -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+}
+body {
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+width: 100%;
+background-color: #f0f0f0;  /* Light grey background */
+margin: 0;
+font-family: Arial, sans-serif;
+transition: background-color 0.5s, color 0.5s;
+
+}
+.report-page {
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+width: 100%;
+background-color: #f0f0f0;  /* Light grey background */
+margin: 0;
+}
+.landing-page {
+  background-size: cover;
+  height: 100vh;
+  color: white;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  z-index: 9995;
+}
+.navbar {
+  z-index: 8888;
+}
+/* Override Fancybox container z-index */
+.fancybox__container {
+    z-index: 8890 !important;
+}
+
+.landing-page h1 {
+  font-size: 4rem;
+  font-weight: 700;
+}
+.landing-page p {
+  font-size: 1.5rem;
+  margin: 0 20px;
+}
+.btn-get-started {
+  font-size: 1.25rem;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #2E3162;
+  border: none;
+  transition: background-color 0.3s;
+}
+.form-check-input{
+  border-color: #2E3162;
+}
+.form-check-input:checked {
+  background-color: #2E3162;
+  border-color: #2E3162;
+}
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: inherit;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+
+.suggestion-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+  color: #000;
+}
+
+label {
+  color: inherit !important;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.remember-me {
+  accent-color: #2E3162; /* For modern browsers */
+  margin-right: 5px;
+}
+.remember-me:checked::before {
+  background-color: #2E3162;
+  color: #f1e4e4;
+}
+.remember-me:checked {
+  background-color: #2E3162;
+  border-color: #2E3162;
+  color: #f1e4e4;
+}
+.spinner-grow{
+  background-color: #2E3162;
+  border-color: #2E3162;
+  color: #f1e4e4;
+}
+.btn-get-started:hover {
+  background-color: #2E3162;
+}
+a {
+  color: #2E3162;
+ }
+.hero {
+  background-image: url("../img/logo.png"); /* Replace with your image URL */
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+  
+}
+.hero-content {
+  text-align: center;
+  color: black;
+}
+
+.bg_color {
+background-color: #2E3162;
+color: black;
+}
+.theme-btn {
+  background-color: #2E3162;
+  color: #fff;
+  border-color: #2E3162;
+}
+
+.theme-btn:hover, .theme-btn:focus {
+  background-color: #2E3162; /* Slightly lighter color for hover */
+  color: #fff;
+  border-color: #2E3162;
+}
+
+.dropdown-item {
+  background-color: #2E3162;
+  color: #fff !important;
+}
+.dropdown-menu {
+  background-color: #2E3162;
+  color: #fff;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  background-color: #fff;
+  color: #2E3162 !important;
+}
+
+.logo img {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+}
+.vehicleImageLogo img {
+  width: 60px;
+  height: 60px;
+  border-radius: 16%;
+  }
+.qr_code{
+  right: 3px;
+  width: 100px;
+  height: 100px;
+  bottom: 3px;
+}
+/* Button styles */
+.btn-with-spinner {
+display: inline-flex;
+align-items: center;
+padding: 10px 20px;
+font-size: 16px;
+color: #fff;
+background-color: #2E3162;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+position: relative;
+overflow: hidden;
+}
+
+.btn-with-spinner:focus {
+outline: none;
+}
+
+/* Spinner styles */
+.spinner-grow {
+display: inline-block;
+width: 20px;
+height: 20px;
+margin-right: 10px;
+border-radius: 50%;
+background-color: rgba(255, 255, 255, 0.6);
+animation: grow 0.75s infinite linear;
+}
+
+/* Spinner animation */
+@keyframes grow {
+0% {
+    transform: scale(0);
+}
+50% {
+    opacity: 1;
+    transform: scale(1);
+}
+100% {
+    opacity: 0;
+    transform: scale(0);
+}
+}
+
+.game-list-container {
+width: 100%;
+background-color: #fff;
+padding: 0px;
+margin-bottom: 20px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+border-radius: 8px;
+overflow-y: auto;
+max-height: 100vh;
+}
+.game-list {
+margin-bottom: 20px;
+height: 100vh;
+width: 100vw;
+overflow-y: scroll; /* Make it scrollable */
+}
+.list-group {
+list-style: none;
+padding: 0;
+margin: 0;
+}
+.list-group-item {
+margin-bottom: 10px;
+padding: 10px;
+background-color: #3e3e3e;
+color: aliceblue;
+}
+
+h1 {
+text-align: center;
+margin-bottom: 20px;
+font-size: 20px;
+}
+
+ul {
+list-style: none;
+padding: 0;
+}
+
+li {
+border-bottom: 1px solid #ddd;
+padding: 10px 0;
+}
+
+li:last-child {
+border-bottom: none;
+}
+
+.game-details {
+display: flex;
+justify-content: space-between;
+}
+
+.game-details span {
+font-weight: bold;
+}
+
+
+.form-control {
+border: 1px solid rgb(252, 233, 226);
+margin-bottom: 5px;
+}
+.btn-outline-secondary  {
+border: none;
+background-color: #2E3162;
+color: black;
+cursor: pointer;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-outline-primary {
+border: 1px solid #2E3162;
+color: #9b59b6;
+}
+
+.btn-outline-primary:hover{
+border: 1px solid rgb(255, 255, 255);
+background-color: #2E3162;
+color: black;
+cursor: pointer;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn-outline-primary:active{
+  border: 1px solid rgb(255, 0, 166);
+  background-color: #2E3162;
+color: black;
+cursor: pointer;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn-outline-primary::after{
+border: 1px solid rgb(255, 0, 166);
+background-color: #2E3162;
+color: black;
+cursor: pointer;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn-bd-primary{
+  border: 1px solid #2E3162;
+  color: rgb(228, 236, 244);
+  background-color: #2E3162;
+  font-size: 1em;
+
+}
+.btn-bd-primary:hover{
+  border: 1px solid rgb(255, 255, 255);
+  background-color: #2E3162;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .btn-bd-primary:active{
+    border: 1px solid rgb(255, 0, 166);
+    background-color: #2E3162;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .btn-bd-primary::after{
+  border: 1px solid rgb(255, 0, 166);
+  background-color: #2E3162;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+.accordion {
+margin: 5px;
+}
+
+.text_bisque {
+color: bisque;
+}
+.bt_bg_color {
+  border: none;
+  background-color: #2E3162;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.gm_btn {
+  margin-top: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #0a0a0a;  /* White text */
+  background-color: #2E3162;  /* Coral background color */
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.bt_bg_color:hover {
+  background-color: rgb(210, 205, 205);
+  color: #2E3162;
+}
+
+.bt_bg_color:active {
+  transform: scale(0.98);  /* Slightly shrink on click */
+}
+.btn-get-started{
+  font-size: 20px;
+  padding: 15px 30px;
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+textarea {
+  height: 100px;
+}
+
+button {
+  display: block;
+  padding: 15px;
+  background-color: #2E3162;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2E3162;
+}
+
+.report {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 8px;
+}
+.add-img-bt-center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 0% !important;
+  margin: 10px;
+
+}
+.add-attach-bt-center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 0% !important;
+  margin: 10px;
+
+}
+.delimg{
+  margin-left: -1rem !important;
+  z-index: 1;
+}
+.expre_barge{
+  margin-left: -1rem !important;
+  margin-bottom: -1.75rem  !important;
+  padding-top: 5px; /* Add padding to create space around the SVG */
+}
+.add-photo-card{
+  margin-left: 0%;
+  margin-right: 0%;
+}
+
+.imgUp {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: cover; /* Cover the entire element */
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 150px;
+  width: 130px;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+
+}
+
+
+.imgUpinput {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: cover; /* Cover the entire element */
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 150px;
+  width: 130px;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+
+}
+
+div.gallery {
+  border: 1px solid #ccc;
+}
+
+div.gallery:hover {
+  border: 1px solid #777;
+}
+
+div.gallery img {
+  width: 100%;
+  height: auto;
+}
+
+div.desc {
+  padding: 15px;
+  text-align: center;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.responsive {
+  padding: 0 6px;
+  float: left;
+  width: 24.99999%;
+}
+
+@media only screen and (max-width: 700px) {
+  .responsive {
+    width: 49.99999%;
+    margin: 6px 0;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .responsive {
+    width: 100%;
+  }
+}
+
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.header h1 {
+  margin-bottom: 5px;
+}
+.section {
+  margin-bottom: 20px;
+}
+.section-title {
+  font-weight: bold;
+  margin-top: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h4 {
+  margin-bottom: 15px;
+}
+.form-group {
+  margin-bottom: 10px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.form-group textarea {
+  resize: vertical;
+}
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+  width: auto;
+}
+.form-group label.inline {
+  display: inline;
+  margin-right: 10px;
+}
+
+.header, .section {
+  margin-bottom: 20px;
+}
+.header {
+  text-align: center;
+}
+.header h1 {
+  margin-bottom: 5px;
+}
+.details, .notes, .condition, .extras, .valuation {
+  margin-bottom: 10px;
+}
+.details th, .details td, .condition th, .condition td, .valuation th, .valuation td {
+  padding: 5px;
+  text-align: left;
+}
+.details th, .condition th, .valuation th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+.details table, .condition table, .valuation table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+.details table td, .condition table td, .valuation table td {
+  border: 1px solid #ddd;
+}
+.section-title {
+  font-weight: bold;
+  margin-top: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+
+.text-size-h6{
+  font-size: 1em;
+  color: #2E3162;
+}
+.text-size-strong{
+  font-size: 0.7em;
+  color: #262ec4;
+}
+.text-theme{
+  font-size: 0.7em;
+  color: #8DB600;
+
+}
+.text-size-small{
+  font-size: 0.5em;
+  padding-top: 0%;
+  padding-bottom: 0%;
+}
+.text-size-header-small{
+  font-size: 0.6em;
+  padding: 0%;
+  padding: 0%;
+}
+.report-text-size-small span{
+  padding-top: 0% !important;
+  padding-bottom: 0% !important;
+}
+.card-body h6{
+  font-size: 0.7em;
+  padding-top: 0% !important;
+  padding-bottom: 0% !important;
+}
+.report-table td{
+  font-size: 0.6em;
+  padding-top: 0%;
+  padding-bottom: 0%;
+  background-color: transparent !important;
+}
+.report-table-td{
+  float: left;
+  color: #2E3162 !important;
+
+}
+.report-p-text{
+  font-size: 0.6em;
+  float: left;
+  color: #2E3162 !important;
+}
+.text-size-Value{
+  font-size: 1em;
+}
+.text-Value{
+  font-size: 1.1em;
+  color: #f93a3a !important;
+}
+.a4-card {
+  width: 210mm;
+  height: 297mm;
+  margin: auto;
+}
+
+.custom-overlay {
+  top: 0;
+  left: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.7); /* Optional: Adjust the background as needed */
+}
+
+.custom-overlay h5,
+.custom-overlay p {
+  margin: 0;
+  padding: 2px 4px; /* Optional: Adjust the padding for the text */
+}
+.loogbookFormCard {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: cover; /* Cover the entire element */
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+  padding: 2px !important;
+  margin: 2px !important;
+}
+.valuationFormCard {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: contain;
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 150px;
+  width: 130px;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+  padding: 2px !important;
+  margin: 2px !important;
+}
+.timestamp-wrapper {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
+.container-fluid.bg-dark.text-light.approver-dashboard.d-none {
+  position: relative;
+  height: 100vh; /* Full height */
+  width: 100%;   /* Full width */
+}
+.con-tainer {
+  height: 100%; /* Adjust this if necessary */
+}
+
+.camera-toggle {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+}
+
+.camera-form-check-label {
+  margin-left: 0.5rem; /* Space between switch and label */
+}
+
+
+.main-spinner-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+}
+
+.signaturePng {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: cover;
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 90px;
+  width: 120px;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+  padding: 0%;
+  margin: 0%;
+  background-color: #0a0a0a;
+}
+.bg-valuationPro{
+  background-color: #2E3162;
+}
+.imagesRow {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   align-items: center;
+}
+.a4-card .card-footer {
+  padding: 0;
+  background: linear-gradient(to right, #e5e6ee, #c5c7f1);
+  color: white; /* Adjust the text color if needed based on the gradient */
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+.a4-card .card-body {
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  background: linear-gradient(to right, #e5e6ee, #e5e6ee);
+  font-family: Arial, sans-serif;
+  position: relative;
+  height: inherit; /* Adjust the height as needed */
+}
+
+.a4-card .card-body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../img/gimbo.jpg'); /* Path to your watermark image */
+  background-image: var(--background-image, url('../img/gimbo.jpg')); /* Fallback image */
+
+  background-size: contain; /* Adjust the size of the background image */
+  background-size: var(--background-size);
+
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  opacity: 0.05; /* Adjust this value to make the image nearly invisible */
+  z-index: 1; /* Ensure this is behind the content */
+}
+
+.a4-card .card-body > * {
+  position: relative;
+  z-index: 2; /* Ensure content is above the background image */
+}
+
+.a4-card .card-header {
+  padding: 0;
+  background: linear-gradient(to right, #2E3162, #c5c7f1);
+  color: white !important; /* Adjust the text color if needed based on the gradient */
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+#valuationApproverForms {
+  height: 100vh; /* Set height to 100% of the viewport height */
+  overflow-y: scroll; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal scroll bar */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+#valuationApproverForms::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
+.three-dots {
+  position: absolute;
+  right: 50%;
+  bottom: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.three-dots .dot {
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+}
+.valuationFormAvatarCard {
+  background-repeat: no-repeat; /* By default, the image won't repeat */
+  background-size: cover; /* Cover the entire element */
+  background-position: center center; /* Center the image horizontally and vertically */
+  height: 150px;
+  width: 130px;
+  justify-content: center;
+  align-items: center;
+  display: flex; /* Use flexbox to center the label */
+  padding: 2px !important;
+  margin-left: 2px !important;
+}
+
+
+
+
+
+.footer a {
+  color: #555;
+}
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h4 {
+  margin-bottom: 15px;
+}
+
+.report-section {
+  margin-bottom: 20px;
+}
+.header, .section {
+  margin-bottom: 20px;
+}
+.header {
+  text-align: center;
+}
+.header h1 {
+  margin-bottom: 5px;
+}
+.details, .notes, .condition, .extras, .valuation {
+  margin-bottom: 10px;
+}
+.details th, .details td, .condition th, .condition td, .valuation th, .valuation td {
+  padding: 5px;
+  text-align: left;
+}
+.details th, .condition th, .valuation th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+.details table, .condition table, .valuation table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+.details table td, .condition table td, .valuation table td {
+  border: 1px solid #ddd;
+}
+.section-title {
+  font-weight: bold;
+  margin-top: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #555;
+}
+.footer a {
+  color: #555;
+}
+
+/* Hide scrollbars for Webkit browsers (Chrome, Safari) */
+.game-list-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbars for Firefox */
+.game-list-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+
+/* Hide scrollbars for Firefox */
+.recent-approvals, 
+.valuation-requests,
+.assignments-management,
+.valuer-assignments-management,
+.recent-activity {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* General rule for all browsers */
+.recent-approvals, 
+.valuation-requests,
+.assignments-management,
+.valuer-assignments-management,
+.recent-activity {
+  overflow: hidden; /* Hides scrollbars */
+  overflow-y: auto; /* Allows vertical scrolling without scrollbar */
+}
+
+/* Hide scrollbars for WebKit-based browsers (Chrome, Safari) */
+.recent-approvals::-webkit-scrollbar, 
+.valuation-requests::-webkit-scrollbar, 
+.assignments-management::-webkit-scrollbar,
+.valuer-assignments-management::-webkit-scrollbar,
+.recent-activity::-webkit-scrollbar {
+  width: 0px;  /* Prevents scrollbar from showing */
+  height: 0px; /* Prevents scrollbar from showing */
+}  
+.recent-activity {
+  overflow: hidden; /* Hides scrollbars */
+  overflow-y: auto; /* Allows vertical scrolling without scrollbar */
+}
+.vehicles-valuation-requests {
+  overflow: hidden; /* Hides scrollbars */
+  overflow-y: auto; /* Allows vertical scrolling without scrollbar */
+}
+.individual-valuation-requests {
+  overflow: hidden; /* Hides scrollbars */
+  overflow-y: auto; /* Allows vertical scrolling without scrollbar */
+}
+.row.mt-4 > .col-md-6 {
+  display: flex;
+  flex-direction: column;
+}
+.card-body {
+  height: 400px; /* Adjust the height as needed */
+}
+
+
+.table-scrollable {
+  overflow-y: auto; /* Enable vertical scrolling */
+  height: 100%;
+  display: block;
+}
+
+.table-scrollable thead, .table-scrollable tbody {
+  display: block;
+}
+
+.table-scrollable tbody {
+  height: calc(80vh - 180px); /* Adjust based on card header/footer heights */
+  overflow-y: auto; /* Enable scrolling within the card body */
+}
+
+.table-scrollable thead tr, .table-scrollable tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* Ensure proper column alignment */
+}
+
+.table-scrollable td, .table-scrollable th {
+  width: 20%; /* Adjust as needed for your table */
+}
+
+.valuerUsers {
+overflow-y: auto; /* Enable vertical scrolling */
+height: 100%;
+display: block;
+}
+
+.custom-popover .popover-header {
+background-color: #343a40; /* Equivalent to bg-dark */
+color: #ffffff;            /* Equivalent to text-light */
+}
+.custom-popover .popover-body {
+max-height: 200px; /* Set the maximum height for the popover content */
+width: max-content !important;
+overflow-y: auto;  /* Enable vertical scrolling when content overflows */
+scrollbar-width: none;     /* For Firefox */
+}
+
+/* Hide scrollbar for WebKit-based browsers (Chrome, Safari, etc.) */
+.custom-popover .popover-body::-webkit-scrollbar {
+  display: none;
+}
+
+
+.equal-height-cards {
+display: flex;
+flex-wrap: wrap;
+}
+
+.equal-height-cards .card {
+flex: 1;
+display: flex;
+flex-direction: column;
+}
+
+.equal-height-cards .card-body {
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: center;
+}
+
+.form-check-label.text-light {
+  color: white;
+}
+
+.form-check-label.text-dark {
+  color: black;
+}
+@media print {
+  @page {
+      size: landscape;
+  }
+}
+.report-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 10px;
+}
+.report-section {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+.report-section h5 {
+  padding: 10px;
+  border-radius: 5px;
+}
+.report-table th,
+.report-table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Extra styles for the cancel button */
+.cancelbtn {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+/* Center the image and position the close button */
+.imgcontainer {
+  text-align: center;
+  margin: 24px 0 12px 0;
+  position: relative;
+}
+
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+}
+
+span.psw {
+  float: right;
+  padding-top: 16px;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+}
+.service_company_info{
+  display: none; /* Hidden by default */
+
+}
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% 0 15% 0; /* 5% from the top, 15% from the bottom and centered */
+  border: 1px solid #888;
+  width: 100%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button (x) */
+.close {
+  position: absolute;
+  right: 5px;
+  top: 0;
+  color: #000;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: red;
+  cursor: pointer;
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+  from {-webkit-transform: scale(0)} 
+  to {-webkit-transform: scale(1)}
+}
+  
+@keyframes animatezoom {
+  from {transform: scale(0)} 
+  to {transform: scale(1)}
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+  span.psw {
+     display: block;
+     float: none;
+  }
+  .cancelbtn {
+     width: 100%;
+  }
+}
+
+.snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 16px;
+  padding: 16px;
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  top: 90%;
+  transform: translate(-50%, -90%);
+  font-size: 17px;
+}
+.snackbar.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; } 
+    to { bottom: 30px; opacity: 1; }
+}
+
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
+
+.progress {
+  color: #262ec4;
+}
+.dashboard-error{
+  z-index: 9999;
+}
+.toast-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+.toast-body {
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}
+
+.reports-list-group{
+  max-height: 90vh; 
+  overflow-y: auto;
+}
+.reports-list-group::-webkit-scrollbar {
+  display: none;
+}
+/* For Firefox */
+.reports-list-group {
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}
+
+
+/* background-color: #2E3162;*/
+.progress-bar{
+  background-color: #2E3162;
+}
+.signature-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.signature-canvas {
+  width: 100%;
+  height: 175px;
+  border: 2px solid #000;
+  background-color: white;
+  cursor: crosshair;
+  border-radius: 5px;
+}
+
+.signature-button-group {
+  margin-top: 10px;
+}
+
+#signatureImage {
+  margin-top: 15px;
+  border: 1px solid #000;
+}
+
+.custom-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: auto;
+}
+
+.notifications-list {
+  max-height: 80vh; /* 80% of the viewport height */
+  width: 100%; /* 90% of the viewport width */
+  overflow-y: auto; /* Enable vertical scrolling */
+  top: 10%; /* Center vertically */
+  border-radius: 5px; /* Rounded corners for better appearance */
+  background-color: #2E3162; /* Background color for dropdown */
+  padding: 1px; /* Add padding for content */
+}
+
+.points-spinner-grow {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #007bff; /* Primary color */
+  animation: spinner-grow 1.5s infinite ease-in-out;
+  position: relative;
+  display: inline-block;
+}
+
+@keyframes spinner-grow {
+  0% {
+      transform: scale(0);
+      opacity: 0.6;
+  }
+  50% {
+      transform: scale(1.2);
+      opacity: 1;
+  }
+  100% {
+      transform: scale(0);
+      opacity: 0;
+  }
+}
+.storage-card {
+  max-width: 500px;
+  margin: auto;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.text-danger {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.small-card {
+  max-height: 350px;
+}
+
+.tab-content {
+  overflow-x: hidden;
+}
+
+.tab-pane {
+  transition: transform 0.3s ease-in-out;
+}
+
+.nav-tabs .nav-link {
+  color: #ffffff; /* Light text for dark background */
+  margin: 0 5px;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #32062e; /* Matches your theme color */
+  border-color: #32062e;
+}
+.slider-container {
+  margin: 20px;
+  text-align: center;
+}
+.slider-label {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.slider {
+  width: 80%;
+}

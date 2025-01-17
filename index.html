@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html lang="en">
+<head> 
+    <meta charset="utf-8">
+    <!-- Customize this policy to fit your own app's needs. For more guidance, please refer to the docs:
+        https://cordova.apache.org/docs/en/latest/
+    Some notes:
+        * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+        * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+            * Enable inline JS: add 'unsafe-inline' to default-src
+    --> 
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: 'unsafe-eval' ws: https://localhost:* http://localhost:* https://maps.googleapis.com https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://carmidpoint.com https://arybit.co.ke https://www.gimbo.co.ke https://treadstone-es.co.ke https://detect.roboflow.com https://www.paypal.com'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src * data: https://www.gimbo.co.ke https://treadstone-es.co.ke https://arybit.co.ke 'self'; media-src *; worker-src 'self' blob:">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Gimbo aims to streamline the process of generating comprehensive car valuation reports, improving accuracy and efficiency, and ultimately enhancing user satisfaction.">
+    <meta name="keywords" content="car valuation, vehicle appraisal, Gimbo, car dealers, appraisers, car pricing, comprehensive valuation reports, efficiency, accuracy, user satisfaction">
+     
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://treadstone-es.co.ke/gimbo/">
+
+    <!-- Favicon -->
+    <link rel="icon" href="https://treadstone-es.co.ke/gimbo/img/logo.png" type="image/png">
+
+    <meta name="color-scheme" content="light dark">
+    <link href="js/cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="js/cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
+    
+    <link rel="stylesheet" href="css/index.css">
+    <title>Gimbo - Comprehensive Car Valuation Reports</title>
+
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="Gimbo - Comprehensive Car Valuation Solution">
+    <meta property="og:description" content="Gimbo aims to streamline the process of generating comprehensive car valuation reports, improving accuracy and efficiency, and ultimately enhancing user satisfaction.">
+    <meta property="og:image" content="https://treadstone-es.co.ke/gimbo/img/logo.png">
+    <meta property="og:url" content="https://treadstone-es.co.ke/gimbo">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Gimbo - Comprehensive Car Valuation Solution">
+    <meta name="twitter:description" content="Gimbo aims to streamline the process of generating comprehensive car valuation reports, improving accuracy and efficiency, and ultimately enhancing user satisfaction.">
+    <meta name="twitter:image" content="https://treadstone-es.co.ke/gimbo/img/logo.png">
+    <meta name="twitter:site" content="@Gimbo">
+    
+    <!-- Robots Meta Tag: Control search engine crawling and indexing -->
+    <meta name="robots" content="index, follow">
+    
+    <!-- Structured Data (Schema.org): Enhance search results with structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "WebSite",
+        "name": "gimbo",
+        "url": "https://treadstone-es.co.ke/gimbo",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://treadstone-es.co.ke/gimbo/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        },
+        "image": "https://treadstone-es.co.ke/gimbo/img/logo.png",
+        "description": "Gimbo aims to streamline the process of generating comprehensive car valuation reports, improving accuracy and efficiency, and ultimately enhancing user satisfaction."
+    }
+    </script>
+</head>
+<body class="bg-dark text-light text-center">
+    <nav class="navbar mt-0 fixed-top">
+        <div class="container-fluid">
+          <span class="navbar-brand logo profile_CompanyLogo">
+              <img src="img/logo.png" alt="Logo">
+          </span>
+          <span class="navbar-brand profile_user d-none"><b class="text-light profile_username"></b></span>
+          
+          <div class="navbar-brand nav-settings collapse collapse-horizontal" id="collapseWidthExample">
+
+            <div class="btn-group btn-group-sm text-light valuer-dashboard d-none" role="group" aria-label="Small button group">
+                <div class="" id="valuerTab" role="tablist"> 
+                    <button class="btn btn-bd-primary active home-button" id="valuerdashboard-tab" data-bs-toggle="tab" data-bs-target="#valuerdashboard" type="button" role="tab" aria-controls="valuerdashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button class="btn btn-bd-primary valuation-reports-button" id="valuer-valuation-reports-tab" data-bs-toggle="tab" data-bs-target="#valuer-valuation-reports" type="button" role="tab" aria-controls="valuer-valuation-reports" aria-selected="false"><i class="fa-regular fa-file"></i> <span class="d-none d-sm-none d-md-inline ">Valuation Reports</span></button>
+                    <button class="btn btn-bd-primary inspection-history-button d-none d-sm-none d-md-inline" id="valuer-inspection-history-tab" data-bs-toggle="tab" data-bs-target="#valuer-inspection-history" type="button" role="tab" aria-controls="valuer-inspection-history" aria-selected="false"><i class="fa-solid fa-clock-rotate-left"></i> <span class="d-none d-sm-none d-md-inline ">Recent Activity</span></button>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm text-light individual-dashboard d-none" role="group" aria-label="Small button group">
+                <div class="" id="individualTab" role="tablist">
+                    <button type="button" class="btn btn-bd-primary active" id="individualDashboard-tab" data-bs-toggle="tab" href="#individualdashboard" role="tab" aria-controls="individualdashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button type="button" class="btn btn-bd-primary d-none" id="request-valuation-tab" data-bs-toggle="tab" href="#request-valuation" role="tab" aria-controls="request-valuation" aria-selected="false"><i class="fa-solid fa-file-import"></i> <span class="d-none d-sm-none d-md-inline ">Request Valuation</span></button>
+                    <button type="button" class="btn btn-bd-primary" id="my-vehicles-tab" data-bs-toggle="tab" href="#my-vehicles" role="tab" aria-controls="my-vehicles" aria-selected="false"><i class="fa-solid fa-car"></i> <span class="d-none d-sm-none d-md-inline ">My Vehicles</span></button>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm text-light approver-dashboard d-none" role="group" aria-label="Small button group">
+                <div class="" id="approverTab" role="tablist">
+                    <button class="btn btn-bd-primary active" id="approval-dashboard-tab" data-bs-toggle="tab" data-bs-target="#approvaldashboard" type="button" role="tab" aria-controls="approvaldashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button class="btn btn-bd-primary" id="pending-approvals-tab" data-bs-toggle="tab" data-bs-target="#pending-approvals" type="button" role="tab" aria-controls="pending-approvals" aria-selected="false"><i class="fa-solid fa-spinner"></i> <span class="d-none d-sm-none d-md-inline ">Pending Approvals</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="approved-valuations-tab" data-bs-toggle="tab" data-bs-target="#approved-valuations" type="button" role="tab" aria-controls="approved-valuations" aria-selected="false"><i class="fa-solid fa-thumbs-up"></i> <span class="d-none d-sm-none d-md-inline ">Approved Valuations</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="rejected-valuations-tab" data-bs-toggle="tab" data-bs-target="#rejected-valuations" type="button" role="tab" aria-controls="rejected-valuations" aria-selected="false"><i class="fa-solid fa-ban"></i> <span class="d-none d-sm-none d-md-inline ">Rejected Valuations</span></button>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm text-light directorPrincipal-dashboard d-none" role="group" aria-label="Small button group">
+                <div class="" id="directorPrincipalTab" role="tablist">
+                    <button class="btn btn-bd-primary active" id="directoral-dashboard-tab" data-bs-toggle="tab" data-bs-target="#directoraldashboard" type="button" role="tab" aria-controls="directoraldashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button class="btn btn-bd-primary" id="valuation-metrics-tab" data-bs-toggle="tab" data-bs-target="#valuation-metrics" role="tab" type="button" aria-controls="valuation-metrics" aria-selected="false"><i class="fa-solid fa-chart-simple"></i> <span class="d-none d-sm-none d-md-inline ">Valuation Metrics</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="team-performance-tab" data-bs-toggle="tab" data-bs-target="#team-performance" role="tab" type="button" aria-controls="team-performance" aria-selected="false"><i class="fa-solid fa-chart-pie"></i> <span class="d-none d-sm-none d-md-inline ">Team Performance</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="company-reports-tab" data-bs-toggle="tab" data-bs-target="#company-reports" role="tab" type="button" aria-controls="company-reports" aria-selected="false"><i class="fa-solid fa-file-lines"></i> <span class="d-none d-sm-none d-md-inline ">Company Reports</span></button>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm text-light carDealer-dashboard d-none" role="group" aria-label="Small button group">
+                <div class="" id="carDealerTab" role="tablist">
+                    <button class="btn btn-bd-primary active" id="carDealerdashboard-tab" data-bs-toggle="tab" data-bs-target="#carDealerdashboard" role="tab" type="button" aria-controls="carDealerdashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button class="btn btn-bd-primary" id="fleet-overview-tab" data-bs-toggle="tab" data-bs-target="#fleet-overview" role="tab" type="button" aria-controls="fleet-overview" aria-selected="false"><i class="fa-solid fa-car"></i> <span class="d-none d-sm-none d-md-inline ">Fleet Overview</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="bulk-valuations-tab" data-bs-toggle="tab" data-bs-target="#bulk-valuations" role="tab" type="button" aria-controls="bulk-valuations" aria-selected="false"><i class="fa-solid fa-envelopes-bulk"></i> <span class="d-none d-sm-none d-md-inline ">Bulk Valuations</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="reports-archive-tab" data-bs-toggle="tab" data-bs-target="#reports-archive" role="tab" type="button" aria-controls="reports-archive" aria-selected="false"><i class="fa-solid fa-box-archive"></i> <span class="d-none d-sm-none d-md-inline ">Reports Archive</span></button>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm text-light appraiser-dashboard d-none" role="group" aria-label="Small button group">                
+                <div class="" id="appraiserTab" role="tablist">
+                    <button class="btn btn-bd-primary active" id="appraisal-dashboard-tab" data-bs-toggle="tab" data-bs-target="#appraisaldashboard" type="button" role="tab" aria-controls="appraisaldashboard" aria-selected="true"><i class="fa-solid fa-house"></i> <span class="d-none d-sm-none d-md-inline ">Home</span></button>
+                    <button class="btn btn-bd-primary" id="assigned-tasks-tab" data-bs-toggle="tab" data-bs-target="#assigned-tasks" type="button" role="tab" aria-controls="assigned-tasks" aria-selected="false"><i class="fa-solid fa-list-check"></i> <span class="d-none d-sm-none d-md-inline ">Assigned Tasks</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="submit-appraisal-tab" data-bs-toggle="tab" data-bs-target="#submit-appraisal" type="button" role="tab" aria-controls="submit-appraisal" aria-selected="false"><i class="fa-solid fa-paper-plane"></i> <span class="d-none d-sm-none d-md-inline ">Submit Appraisal</span></button>
+                    <button class="btn btn-bd-primary d-none d-sm-none d-md-inline" id="completed-appraisals-tab" data-bs-toggle="tab" data-bs-target="#completed-appraisals" type="button" role="tab" aria-controls="completed-appraisals" aria-selected="false"><i class="fa-solid fa-list"></i> <span class="d-none d-sm-none d-md-inline ">Completed Appraisals</span></button>
+                </div>            
+            </div>
+            <button class="btn btn-bd-primary notifications-btn position-relative" id="notifications-btn-tab" data-bs-toggle="modal" data-bs-target="#notificationsModal" type="button">
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary notification-count" style="display: none;">0</span>
+                <i class="fas fa-bell"></i> <span class="d-none d-sm-none d-md-inline">Notifications</span>
+            </button>
+            <button class="btn btn-bd-primary settings-button" id="valuer-settings-tab" data-bs-toggle="modal" data-bs-target="#accountSettingsModal" type="button"><i class="fa-solid fa-gear"></i> <span class="d-none d-sm-none d-md-inline ">Settings</span></button>
+
+          </div> 
+          <span class="navbar-brand login_buttons">
+            <div class="btn-group btn-group-sm text-light" role="group" aria-label="Small button group">
+                <button type="button" class="btn btn-bd-primary login-button">Login</button>
+                <button type="button" class="btn btn-bd-primary register-button">Register</button>
+            </div>
+          </span>
+          <span class="navbar-brand nav-settings text-light d-none">
+            <button class="btn btn-bd-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+                <i class="fa-regular fa-square-minus"></i> <span class="d-none">Menu</span>
+            </button>                                               
+          </span>
+          
+        </div>        
+    </nav>     
+    <div class="main-spinner-container d-none">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Flexbox container for aligning the toasts -->
+    <div class="toast-container position-fixed top-50 start-50 translate-middle p-1 bg-dark text-light d-none">
+
+        <div id="liveToast" class="toast bg-dark text-light" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="toast-header">
+              <span class="logo"><img src="img/logo.png" class="rounded me-2 toast-logo" alt="logo"></span>          
+              <strong class="me-auto toast-name">AutoValuation Pro</strong>
+              <small class="toast-time"></small>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body overflow-auto" style="max-height: 600px;">
+    
+            </div>
+        </div>
+
+    </div>    
+      
+    <div class="container-fluid bg-dark text-light individual-dashboard d-none">
+
+        <div class="tab-content" id="individualTabContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active mt-5 pt-5" id="individualdashboard" role="tabpanel" aria-labelledby="individualDashboard-tab">
+                <div class="bg-dark text-light game-list-container text-center mt-4 pt-4 mb-4 pb-4">
+                    <h3 class="mb-4">Dashboard Overview</h3>
+                    <span type="button" class="btn btn-bd-primary request-valuation-modal-btn mb-2" data-bs-toggle="modal" data-bs-target="#request-valuation-modal">Request Valuation</span>                    
+
+                    <div class="row mb-3 equal-height-cards">
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Pending Requests</h5>
+                                    <p class="card-text">You have <span class="pending_requests_count">0</span> pending valuation requests.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Accepted Requests</h5>
+                                    <p class="card-text">You have <span class="accepted_requests_count">0</span> Accepted valuation requests.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Rejected Requests</h5>
+                                    <p class="card-text">You have <span class="rejected_requests_count">0</span> Rejected valuation requests.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container-fluid" style="height: 100vh;">
+                        <div class="card bg-dark text-light">
+                            <div class="card-header">Valuation Requests</div>
+                            <div class="card-body p-0">
+                                <ul class="list-group mx-auto individual-valuation-requests reports-list-group"></ul>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+    
+            <!-- Request Valuation Tab -->
+            <div class="tab-pane fade mt-5 pt-5 d-none" id="request-valuation" role="tabpanel" aria-labelledby="request-valuation-tab">
+                <span type="button" class="btn btn-bd-primary request-valuation-modal-btn mb-2" data-bs-toggle="modal" data-bs-target="#request-valuation-modal">Request Valuation</span>                    
+
+                <div class="bg-dark text-light game-list-container text-center mt-4 pt-4 mb-4 pb-4">
+
+                </div>
+            </div>           
+    
+            <!-- My Vehicles Tab -->
+            <div class="tab-pane fade mt-5 pt-5" id="my-vehicles" role="tabpanel" aria-labelledby="my-vehicles-tab">
+                <div class="bg-dark text-light game-list-container text-center mt-4 pt-4 mb-4 pb-4">
+                    <span type="button" class="btn btn-bd-primary request-valuation-modal-btn mb-2" data-bs-toggle="modal" data-bs-target="#request-valuation-modal">Request Valuation</span>                    
+
+                    <!-- Include a table or cards to display user's vehicles here -->
+
+                    <div class="container-fluid" style="height: 100vh;">
+                        <div class="card bg-dark text-light">
+                            <div class="card-header">Vehicles Valuation Requests</div>
+                            <div class="card-body p-0">
+                                <ul class="list-group mx-auto vehicles-valuation-requests reports-list-group"></ul>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container-fluid bg-dark text-light carDealer-dashboard d-none">
+        
+        <div class="tab-content" id="carDealerTabContent">
+            <!-- Dashboard Section -->
+            <div class="tab-pane fade show active" id="carDealerdashboard" role="tabpanel" aria-labelledby="carDealerdashboard-tab">
+                <h3>Dashboard</h3>
+                <p>Overview of your activities, statistics, and recent updates.</p>
+            </div>
+    
+            <!-- Fleet Overview Section -->
+            <div class="tab-pane fade" id="fleet-overview" role="tabpanel" aria-labelledby="fleet-overview-tab">
+                <h3>Fleet Overview</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Vehicle ID</th>
+                                <th scope="col">Make</th>
+                                <th scope="col">Model</th>
+                                <th scope="col">Year</th>
+                                <th scope="col">Mileage</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Toyota</td>
+                                <td>Camry</td>
+                                <td>2021</td>
+                                <td>12,000 km</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                                <td><a href="#" class="btn btn-primary btn-sm">View Report</a></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Honda</td>
+                                <td>Civic</td>
+                                <td>2020</td>
+                                <td>18,500 km</td>
+                                <td><span class="badge bg-warning">In Progress</span></td>
+                                <td><a href="#" class="btn btn-primary btn-sm">View Report</a></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>BMW</td>
+                                <td>X5</td>
+                                <td>2019</td>
+                                <td>25,000 km</td>
+                                <td><span class="badge bg-danger">Pending</span></td>
+                                <td><a href="#" class="btn btn-primary btn-sm">View Report</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+            <!-- Bulk Valuations Section -->
+            <div class="tab-pane fade" id="bulk-valuations" role="tabpanel" aria-labelledby="bulk-valuations-tab">
+                <h3>Bulk Valuations</h3>
+                <p>Upload and manage bulk vehicle valuation reports.</p>
+            </div>
+    
+            <!-- Reports Archive Section -->
+            <div class="tab-pane fade" id="reports-archive" role="tabpanel" aria-labelledby="reports-archive-tab">
+                <h3>Reports Archive</h3>
+                <p>Access your historical valuation reports here.</p>
+            </div>
+        </div>
+
+    </div>
+    <div class="container-fluid bg-dark text-light appraiser-dashboard d-none">
+
+        <div class="tab-content" id="appraiserTabContent">
+            <div class="tab-pane fade show active" id="appraisaldashboard" role="tabpanel" aria-labelledby="appraisal-dashboard-tab">
+                <!-- Dashboard Section -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3 class="mb-4">Dashboard</h3>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-primary mb-3">
+                                        <div class="card-header">Total Appraisals</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">120</h5>
+                                            <p class="card-text">Appraisals completed this month.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-success mb-3">
+                                        <div class="card-header">Pending Appraisals</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">15</h5>
+                                            <p class="card-text">Appraisals pending submission.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-danger mb-3">
+                                        <div class="card-header">Overdue Appraisals</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">5</h5>
+                                            <p class="card-text">Appraisals that are overdue.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="assigned-tasks" role="tabpanel" aria-labelledby="assigned-tasks-tab">
+                <!-- Assigned Tasks Section -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3 class="mb-4">Assigned Tasks</h3>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Toyota Camry - 2021
+                                    <span class="badge bg-primary rounded-pill">2 days left</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Honda Civic - 2020
+                                    <span class="badge bg-warning rounded-pill">1 day left</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    BMW X5 - 2019
+                                    <span class="badge bg-danger rounded-pill">Overdue</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="submit-appraisal" role="tabpanel" aria-labelledby="submit-appraisal-tab">
+                <!-- Submit Appraisal Section -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3 class="mb-4">Submit Appraisal</h3>
+                            <form>
+                                <div class="mb-3">
+                                    <label for="appraisalvehicleId" class="form-label">Vehicle ID</label>
+                                    <input type="text" class="form-control" id="appraisalvehicleId" placeholder="Enter vehicle ID">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="appraisalNotes" class="form-label">Appraisal Notes</label>
+                                    <textarea class="form-control" id="appraisalNotes" rows="4" placeholder="Enter your appraisal notes"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="completed-appraisals" role="tabpanel" aria-labelledby="completed-appraisals-tab">
+                <!-- Completed Appraisals Section -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3 class="mb-4">Completed Appraisals</h3>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vehicle</th>
+                                        <th>Date Completed</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Toyota Camry - 2021</td>
+                                        <td>2024-08-10</td>
+                                        <td><span class="badge bg-success">Approved</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Honda Civic - 2020</td>
+                                        <td>2024-08-08</td>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>BMW X5 - 2019</td>
+                                        <td>2024-08-05</td>
+                                        <td><span class="badge bg-danger">Rejected</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="container-fluid bg-dark text-light approver-dashboard d-none">
+        
+        <div class="tab-content" id="approverTabContent">
+            <!-- Dashboard Section -->
+            <div class="tab-pane fade show active mt-5 pt-5" id="approvaldashboard" role="tabpanel" aria-labelledby="approval-dashboard-tab">
+                <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <h3 class="mb-3">Dashboard</h3>
+                    <h1 class="text-center mt-4"><b class="company_name"></b> Vehicle Technical Valuation</h1>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                    <p class="loogg">Welcome to the dashboard. This is the main overview of your activities and statistics.</p>
+
+                    <div class="alert alert-warning alert-dismissible fade show storage-alert d-none" role="alert">
+                        You are using <strong class="using-storage">446 MB</strong> of the <strong class="available-storage">446 MB</strong> of storage available to you. If you want more, <span class="storage-message">contact your service provider</span>.                        .
+                        <span type="button" class="btn-close btn btn-bd-primary bg-dark text-light" data-bs-dismiss="alert" aria-label="Close"></span>
+                    </div>
+
+                    <div id="companyInfo" class="row mt-4 d-none">
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-light mb-3 h-100">
+                                <div class="card-header" id="companyNameInfo"></div>
+                                <div class="progress m-3" role="progressbar" aria-label="Storage Usage" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    <div id="dynamicProgressBar" class="progress-bar text-bg-primary" style="width: 0%">0%</div>
+                                </div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                    <!-- Placeholder for Chart (e.g., liner Chart for Total Storage Used, Maximum Storage and Total Valuations) -->
+                                    <canvas id="storageStatusChart"></canvas>
+                                </div>
+                                <div class="slider-container">
+                                    <div class="slider-label">
+                                        <span>Storage Used: <span id="storageLabel" class="text-primary">300 MB</span> (<span id="storageVal2Label" class="text-primary">300 valuations</span>) Maximum storage: <span id="storageAllocLabel" class="text-primary">300 MB</span> (<span id="storageValLabel" class="text-primary">300 valuations</span>).</span>
+                                    </div>
+                                    <input type="range" class="slider" min="0" max="100" value="0" step="1" id="storageSlider" name="storageSlider" placeholder="Maximum Storage" required>
+                                    <div id="planLabel">Plan: Bronze</div>
+                                    <div id="priceLabel">Price: Ksh.1,500</div>
+                                    <span type="button" id="updatePlanButton" class="btn btn-bd-primary mt-2 updatePlan d-none" price="" plan="" storageValue="">Update Plan</span>
+                                </div>                               
+                            
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-light mb-3 h-100">
+                                <div class="card-header">Team Performance</div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                    <!-- Placeholder for Chart (e.g., Bar Chart for Team Performance) -->
+                                    <canvas id="teamChart"></canvas>
+                                </div>
+                                <p id="on-time-rate" class="card-text">95% on-time completion rate</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example of Dashboard Cards -->
+                    <div class="row equal-height-cards mt-3">
+                        <!-- Pending Approvals -->
+                        <div class="col-md-3 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-primary mb-3">
+                                <div class="card-header">Pending Approvals</div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><span class="pending_approvals_count">0</span></h5>
+                                    <p class="card-text">You have <span class="pending_approvals_count">0</span> approvals awaiting your action.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Approved Reports -->
+                        <div class="col-md-3 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-header">Approved Reports</div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><span class="approved_approvals_count">0</span></h5>
+                                    <p class="card-text">You have successfully approved <span class="approved_approvals_count">0</span> reports this month.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Rejected Reports -->
+                        <div class="col-md-3 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-danger mb-3">
+                                <div class="card-header">Rejected Reports</div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><span class="rejected_approvals_count">0</span></h5>
+                                    <p class="card-text">You have rejected <span class="rejected_approvals_count">0</span> reports due to discrepancies.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Assignments Created -->
+                        <div class="col-md-3 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-header">Assignments Created</div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><span class="created_assignments_count">0</span></h5>
+                                    <p class="card-text">You have created <span class="created_assignments_count">0</span> new assignments this month.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    
+                    <!-- Example of a Chart Section -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-light mb-3 h-100">
+                                <div class="card-header">Approval Status Overview</div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                    <!-- Placeholder for Chart (e.g., Pie Chart for Approval Status) -->
+                                    <canvas id="approvalStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-light mb-3 h-100">
+                                <div class="card-header">Assignments Status Overview</div>
+                                <div class="card-body d-flex justify-content-center align-items-center">
+                                    <!-- Placeholder for Chart (e.g., Bar Chart for Assignment Status) -->
+                                    <canvas id="assignmentStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row p-0">
+                        <!-- Navigation Tabs -->
+                        <nav class="nav nav-tabs bg-dark text-light justify-content-center mt-2 mb-3 p-1 position-relative" id="valuationTabs" role="tablist">
+                            <div class="position-relative me-2">
+                                <span class="btn btn-bd-primary active" id="reports-tab" data-bs-toggle="tab" href="#reports" role="tab" aria-controls="reports" aria-selected="true">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary valuation-reports-count" style="display: none;">0</span>
+                                    Reports
+                                </span>
+                            </div>
+                            <div class="position-relative me-2">
+                                <span class="btn btn-bd-primary" id="requests-tab" data-bs-toggle="tab" href="#requests" role="tab" aria-controls="requests" aria-selected="false">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary valuation-requests-count" style="display: none;">0</span>
+                                    Requests
+                                </span>
+                            </div>
+                            <div class="position-relative">
+                                <span class="btn btn-bd-primary" id="assignments-tab" data-bs-toggle="tab" href="#assignments" role="tab" aria-controls="assignments" aria-selected="false">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary valuation-assignments-count" style="display: none;">0</span>
+                                    Assignments
+                                </span>
+                            </div>
+                        </nav>                        
+                    
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="valuationTabsContent">
+                            <!-- Valuation Reports -->
+                            <div class="tab-pane fade show active" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                                <div class="card bg-dark text-light" style="height: 100vh;">
+                                    <h4 class="card-header">Valuation Reports</h4>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group mx-auto recent-approvals reports-list-group"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Valuation Requests -->
+                            <div class="tab-pane fade" id="requests" role="tabpanel" aria-labelledby="requests-tab">
+                                <div class="card bg-dark text-light" style="height: 100vh;">
+                                    <h4 class="card-header">Valuation Requests</h4>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group mx-auto valuation-requests reports-list-group"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Assignments Management -->
+                            <div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
+                                <div class="card bg-dark text-light" style="height: 100vh;">
+                                    <h4 class="card-header">Assignments Management</h4>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group mx-auto assignments-management reports-list-group mb-3"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    
+                </div>
+            </div>
+        
+            <!-- Pending Approvals Section -->
+            <div class="tab-pane fade" id="pending-approvals" role="tabpanel" aria-labelledby="pending-approvals-tab">
+                <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <h3 class="mt-3">Pending Approvals</h3>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                    <ul class="list-group approver-pending-approvals d-none">
+                        
+                    </ul>
+
+                    <ul class="list-group mx-auto approver-pending-valuation-reports-list reports-list-group">
+                        <!-- Add more items as needed -->
+                    </ul> 
+                </div>
+            </div>
+        
+            <!-- Approved Valuations Section -->
+            <div class="tab-pane fade" id="approved-valuations" role="tabpanel" aria-labelledby="approved-valuations-tab">
+                <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <h3 class="mt-3">Approved Valuations</h3>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                    <ul class="list-group approver-approved-valuations d-none">
+
+                    </ul>
+
+                    <ul class="list-group mx-auto approver-approved-valuation-reports-list reports-list-group">
+                        <!-- Add more items as needed -->
+                    </ul> 
+                </div>
+            </div>
+        
+            <!-- Rejected Valuations Section -->
+            <div class="tab-pane fade" id="rejected-valuations" role="tabpanel" aria-labelledby="rejected-valuations-tab">
+                <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <h3 class="mt-3">Rejected Valuations</h3>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                    <ul class="list-group approver-rejected-valuations d-none">
+
+                    </ul>
+
+                    <ul class="list-group mx-auto approver-rejected-valuation-reports-list reports-list-group">
+                        <!-- Add more items as needed -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="container-fluid bg-dark text-light directorPrincipal-dashboard d-none">
+
+        <div class="tab-content" id="directorPrincipalTabContent">
+            <!-- Dashboard Section -->
+            <div class="tab-pane fade show active" id="directoraldashboard" role="tabpanel" aria-labelledby="directoral-dashboard-tab">
+               
+                <h1 class="text-center mt-4"><b class="company_name"></b> Vehicle Technical Valuation</h1>
+                <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                <p>Overview of your activities, statistics, and recent updates.</p>
+        
+                <div class="row equal-height-cards">
+                    <!-- Total Valuations Card -->
+                    <div class="col-md-3">
+                        <div class="card text-center bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Valuations</h5>
+                                <p class="card-text display-4">3,500</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-white">This year</small>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Pending Valuations Card -->
+                    <div class="col-md-3">
+                        <div class="card text-center bg-warning text-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">Pending Valuations</h5>
+                                <p class="card-text display-4">120</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-dark">Awaiting approval</small>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Approved Valuations Card -->
+                    <div class="col-md-3">
+                        <div class="card text-center bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Approved Valuations</h5>
+                                <p class="card-text display-4">3,300</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-white">This year</small>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Rejected Valuations Card -->
+                    <div class="col-md-3">
+                        <div class="card text-center bg-danger text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Rejected Valuations</h5>
+                                <p class="card-text display-4">80</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-white">This year</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="row mt-4">
+                    <!-- Recent Activities Card -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                Recent Activities
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item">Valuation request for vehicle ABC123 approved.</li>
+                                    <li class="list-group-item">New valuation report generated for XYZ789.</li>
+                                    <li class="list-group-item">Team member John Doe completed 200 valuations.</li>
+                                    <li class="list-group-item">Pending valuation for vehicle LMN456.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Statistics Chart Placeholder -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                Performance Overview
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Valuation Metrics Section -->
+            <div class="tab-pane fade" id="valuation-metrics" role="tabpanel" aria-labelledby="valuation-metrics-tab">
+                <h3>Valuation Metrics</h3>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Valuations</h5>
+                                <p class="card-text">3500 completed valuations</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Pending Valuations</h5>
+                                <p class="card-text">120 pending valuations</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Team Performance</h5>
+                                <p class="card-text">95% on-time completion rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Team Performance Section -->
+            <div class="tab-pane fade" id="team-performance" role="tabpanel" aria-labelledby="team-performance-tab">
+                <h3>Team Performance</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team Member</th>
+                            <th scope="col">Completed Valuations</th>
+                            <th scope="col">On-Time Rate</th>
+                            <th scope="col">Pending Tasks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>200</td>
+                            <td>98%</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>180</td>
+                            <td>95%</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>James Brown</td>
+                            <td>220</td>
+                            <td>92%</td>
+                            <td>3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+    
+            <!-- Company Reports Section -->
+            <div class="tab-pane fade" id="company-reports" role="tabpanel" aria-labelledby="company-reports-tab">
+                <h3>Company Reports</h3>
+                <p>Access and generate company-wide reports here.</p>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container-fluid bg-dark text-light valuer-dashboard d-none">          
+        <div class="tab-content" id="valuerTabContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active mt-5 pt-5" id="valuerdashboard" role="tabpanel" aria-labelledby="valuerdashboard-tab">
+                <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <h3 class="mb-4">Dashboard Overview</h3>
+                    <h1 class="text-center mt-4"><b class="company_name"></b> Vehicle Technical Valuation</h1>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+
+                    <!-- Add Dashboard Content Here -->    
+                    <div class="row mb-4 equal-height-cards">
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-primary mb-3">
+                                <div class="card-header">Total Valuations</div>
+                                <div class="card-body">
+                                    <h5 class="card-title accepted_valuations_count">0</h5>
+                                    <p class="card-text">Total number of valuations completed.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-header">Pending Valuations</div>
+                                <div class="card-body">
+                                    <h5 class="card-title pending_valuations_count">0</h5>
+                                    <p class="card-text">Valuations that are yet to be completed.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-none d-sm-none d-md-inline">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-header">Rejected Valuations</div>
+                                <div class="card-body">
+                                    <h5 class="card-title rejected_valuations_count">0</h5>
+                                    <p class="card-text">Number of valuations rejected due to discrepancies.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row p-0">
+                        <!-- Navigation Tabs -->
+                        <nav class="nav nav-tabs bg-dark text-light justify-content-center mt-2 mb-3 p-1 position-relative" id="valuer-valuationTabs" role="tablist">
+                            <div class="position-relative me-2">
+                                <span class="btn btn-bd-primary active" id="inspections-tab" data-bs-toggle="tab" href="#inspections" role="tab" aria-controls="inspections" aria-selected="true">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary valuation-assignments-count" style="display: none;">0</span>
+                                    Vehicle Inspections
+                                </span>
+                            </div>
+                            <div class="position-relative me-2">
+                                <span class="btn btn-bd-primary" id="valuer-reports-tab" data-bs-toggle="tab" href="#valuer-reports" role="tab" aria-controls="valuer-reports" aria-selected="false">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary valuation-reports-count" style="display: none;">0</span>
+                                    Reports
+                                </span>
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="valuationTabsContent">
+                            <!-- Vehicle Inspections -->
+                            <div class="tab-pane fade show active" id="inspections" role="tabpanel" aria-labelledby="inspections-tab">
+                                <div class="container-fluid" style="height: 100vh;">
+                                    <div class="card bg-dark text-light">
+                                        <h4 class="card-header">Vehicle Inspections</h4>
+                                        <div class="card-body p-0">
+                                            <ul class="list-group mx-auto valuer-assignments-management reports-list-group"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Valuation Reports -->
+                            <div class="tab-pane fade" id="valuer-reports" role="tabpanel" aria-labelledby="valuer-reports-tab">
+                                <div class="container-fluid" style="height: 100vh;">
+                                    <div class="card bg-dark text-light">
+                                        <h4 class="card-header">Valuation Reports</h4>
+                                        <div class="card-body p-0">
+                                            <ul class="list-group mx-auto recent-approvals reports-list-group"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+
+            </div>
+
+            <!-- Valuation Reports Tab -->
+            <div class="tab-pane fade" id="valuer-valuation-reports" role="tabpanel" aria-labelledby="valuer-valuation-reports-tab">
+                <div class="bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">            
+                    <h1 class="text-center mt-4">Vehicle Technical Valuation</h1>
+                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>    
+                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+                    <!-- Add Inspection History Content Here -->
+                    <ul class="list-group mx-auto valuer-valuation-reports-list reports-list-group">
+                        <!-- Add more items as needed -->
+                    </ul>                    
+                    <div class="d-none"><div id="valuationApproverForms" class="card bg-dark text-light ApproverForms d-none"><span class="report-information "></span></div></div>
+                </div>                
+            </div>
+    
+            <!-- Inspection History Tab -->
+            <div class="tab-pane fade" id="valuer-inspection-history" role="tabpanel" aria-labelledby="valuer-inspection-history-tab">
+                <h3 class="mb-4 text-center">Recent Activity</h3>
+                <!-- Add Inspection History Content Here -->
+                <div class="bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
+                    <ul class="list-group mx-auto recent-activity">
+                        
+                        <!-- Add more items as needed -->
+                    </ul>
+                </div>
+                <h3 class="mb-4 d-none">Inspection History</h3>
+                <!-- Add Inspection History Content Here -->
+                <div class="bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5 d-none">
+                    <div class="card bg-dark text-light valuer-content-inspection-history">
+
+                    </div>
+                </div>
+
+            </div>
+        </div>     
+    </div>
+
+    <div class="container-fluid bg-dark text-light d-flex justify-content-center align-items-center vh-100 landing-page fixed-top">
+        <div class="container text-center">
+            <!-- Add your landing page content here -->
+            <div class="text-center">
+                <h1>Gimbo</h1>
+                <p>Streamlining the process of generating comprehensive valuation reports, saving time and effort for users such as valuers, car dealers, appraisers, and individuals.</p>
+                <div class="add-geofence-error mb-2 d-block"></div>                    
+                <span id="getStartedBtn" class="btn btn-bd-primary">
+                    Get Started
+                </span>
+                
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid bg-dark text-light d-flex justify-content-center align-items-center vh-100 login-page d-none">
+        <div class="container">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <h2 class="text-center">Login</h2>
+                <form  class="clientLoginForm" enctype="multipart/form-data">
+                    <div class="form-group d-none">
+                        <label for="login_provider_id">Provider_ID</label>
+                        <input type="text" class="form-control" id="login_provider_id" name="login_provider_id" placeholder="Enter First Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login_email_phonenumber">Email</label>
+                        <input type="text" class="form-control" id="login_email_phonenumber" name="login_email_phonenumber" placeholder="Email/Phone Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login_Password">Password</label>
+                        <input type="password" class="form-control" id="login_Password" name="login_Password" placeholder="Password" required>
+                    </div>
+                    <label>
+                        <input class="remember-me" type="checkbox" checked="checked" name="remember"> Remember me
+                    </label>
+                    <div class="text-center mt-2 mb-2 login_error"> </div>
+                    <div class="form-group text-center text-light mt-2 mb-2">
+                        <button id="loginUser" type="button" class="btn btn-bd-primary btn-loading loginUser mb-2">Login</button>
+                        <br>
+                        <span class="mt-2 pt-3"><a href="#" class="register-button">Register? </a> Forgot <a href="#" class="forgot-password-button">password?</a></span>
+                    </div>                 
+                </form>
+              </div>
+            </div>
+        </div> 
+    </div>
+    <div class="container-fluid bg-dark text-light d-flex justify-content-center align-items-center vh-100 register-page d-none">
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+              <div class="col-md-6">                
+                <h2 class="text-center">Sign Up</h2>
+                <form class="clientRegistrationForm text-center" enctype="multipart/form-data">
+                    <div id="id03" class="client_info">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="provider_firstname">First Name</label>
+                                    <input type="text" class="form-control" id="provider_firstname" name="provider_firstname" placeholder="First Name" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="provider_lastname">Last Name</label>
+                                    <input type="text" class="form-control" id="provider_lastname" name="provider_lastname" placeholder="Last Name" required>
+                                </div>
+                            </div>
+                        </div>                                    
+                        <div class="form-group">
+                            <label for="provider_email_phonenumber">Email</label>
+                            <input type="text" class="form-control" id="provider_email_phonenumber" name="provider_email_phonenumber" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Password">Password</label>
+                            <input type="password" class="form-control" id="Password" name="Password" placeholder="Password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                        </div>
+                    </div>
+                    <div id="id02" class="password_info d-none">
+                        <div class="company-details d-none">
+
+                            <div class="form-group">
+                                <div class="row">
+                                    <div id="companyLogoId" class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
+                                        <div class="card imgUp_logo imgUp position-relative">
+                                            <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_logo del_company_logo"><i class="fa-solid fa-xmark"></i></i>
+                                            <label class="choose_logo">Company Logo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" id="uploadCompanyLogo" name="companyLogoFileToUpload[]" class="form-control-file companyLogoFile img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+                                        </div>
+                                    </div>
+                                </div>                                        
+                                <span id="upload_uploadCompanyLogo_help"></span>
+                            </div>                                    
+                            <div class="form-group">
+                                <label for="provider_companyname">Company Name</label>
+                                <input type="text" class="form-control" id="provider_companyname" name="provider_companyname" placeholder="Company Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="companyRegistrationNumber">Company Registration Number</label>
+                                <input type="text" class="form-control" id="companyRegistrationNumber" name="companyRegistrationNumber" placeholder="Company Registration Number">
+                            </div>                                      
+                            <div class="form-group">
+                                <label for="contactEmail">Company Contact Email</label>
+                                <input type="text" class="form-control" id="contactEmail" name="contactEmail" placeholder="Contact Email">
+                            </div>                                      
+                            <div class="form-group">
+                                <label for="contactPhone">Company Contact Phone</label>
+                                <input type="text" class="form-control" id="contactPhone" name="contactPhone" placeholder="Contact Phone">
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="provider_address">Company Address</label>
+                                        <input type="text" class="form-control" id="provider_address" name="provider_address" placeholder="Address">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="provider_city">City</label>
+                                        <input type="text" class="form-control" id="provider_city" name="provider_city" placeholder="City">
+                                    </div>
+                                </div>                                        
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="provider_postalcode">Postal Code</label>
+                                        <input type="text" class="form-control" id="provider_postalcode" name="provider_postalcode" placeholder="Postal Code">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="provider_country">Country</label>
+                                        <input type="text" class="form-control" id="provider_country" name="provider_country" placeholder="Country">
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="select-company">
+                            <div class="form-group">
+                                <label for="valuer-companyname">Company Name</label>
+                                <input type="text" class="form-control" id="valuer-companyname" name="valuer-companyname" placeholder="Company Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="valuer-companyRegistrationNumber">Company Registration Number</label>
+                                <input type="text" class="form-control" id="valuer-companyRegistrationNumber" name="valuer-companyRegistrationNumber" placeholder="Company Registration Number" readonly>
+                            </div> 
+                            <div class="form-group employee-number d-none">
+                                <label for="companyEmployeeNumber">Company Employee Number</label>
+                                <input type="text" class="form-control" id="companyEmployeeNumber" name="companyEmployeeNumber" placeholder="Company Employee Number">
+                            </div>
+                            <ul class="select-company-list-group list-group list-group-flush">
+                                
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-2 mb-2 register_error"></div>
+                    <div class="form-group text-center text-light mt-2 mb-2">                
+                        <div class="btn-group me-3 mb-2 user-role-btn-group">
+                            <button type="button" class="btn dropdown-toggle theme-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                              <span class="user-role">Individual</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Individual</a></li>
+                                <li><a class="dropdown-item" href="#">Car Dealer</a></li>
+                                <li><a class="dropdown-item" href="#">Appraiser</a></li>
+                                <li><a class="dropdown-item" href="#">Car Valuer</a></li>
+                            </ul>                            
+                        </div>
+                        <div class="btn-group me-3 mb-2 valuer-user-role-btn-group d-none">
+                            <button type="button" class="btn dropdown-toggle theme-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                              <span class="valuer-user-role">Elite Technician</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item valuer-dropdown-item" href="#">Elite Technician</a></li>
+                                <li><a class="dropdown-item valuer-dropdown-item" href="#">Senior Valuer</a></li>
+                                <li><a class="dropdown-item valuer-dropdown-item" href="#">Principal Valuer</a></li>
+                                <li><a class="dropdown-item valuer-dropdown-item" href="#">Director</a></li>
+                            </ul>                            
+                        </div>
+                        <div class="btn-group me-3 mb-2 car-dealer-user-role-btn-group d-none">
+                            <button type="button" class="btn dropdown-toggle theme-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                              <span class="car-dealer-user-role">Micro Finance</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item car-dealer-dropdown-item" href="#">Micro Finance</a></li>
+                                <li><a class="dropdown-item car-dealer-dropdown-item" href="#">Bank</a></li>
+                                <li><a class="dropdown-item car-dealer-dropdown-item" href="#">Insurance</a></li>
+                            </ul>                            
+                        </div>
+
+                        <button id="next-register-button" type="button" class="btn btn-bd-primary btn-loading next-register-button mb-2">Next</button>
+
+                        <button type="button" class="btn btn-bd-primary mb-2 me-3 d-none" id="registerValuer">Submit</button>
+
+                        <button type="button" class="btn btn-bd-primary mb-2 d-none" id="select-company-list">Select Company</button>
+
+                        <br>
+                        <span class="mt-2 pt-3"><a href="#" class="login-button me-3">Login?</a> OR <a href="#" class="forgot-password-button ms-3">Forgot password?</a></span>
+
+                    </div>
+                </form>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid bg-dark text-light d-flex justify-content-center align-items-center vh-100 forgot-password-page d-none">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                  <h2 class="text-center">Gimbo Password Recovery</h2>
+                  <form  class="client_psd_recovery_Form" enctype="multipart/form-data">
+                    <div class="form-group d-none">
+                        <label for="psd_recovery_provider_id">Provider_ID</label>
+                        <input type="text" class="form-control" id="psd_recovery_provider_id" name="psd_recovery_provider_id" placeholder="Enter First Name" required>
+                    </div>
+                    <div class="form-group recovery_email">
+                        <label for="psd_recovery_email_phonenumber">Email/Phone Number</label>
+                        <input type="text" class="form-control" id="psd_recovery_email_phonenumber" name="psd_recovery_email_phonenumber" placeholder="Email/Phone Number" required>
+                    </div>
+                    <div class="form-group recovery_code d-none">
+                        <label for="psd_recovery_code">Verification Code</label>
+                        <input type="number" class="form-control" id="psd_recovery_code" name="psd_recovery_code" placeholder="Enter 6 digit code" required>
+                    </div>
+                    <div class=" recovery_new_password d-none">
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" placeholder="New password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_new_password">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" placeholder="Confirm new password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-2 mb-2 psd_recovery_error"></div>
+
+                    <div class="form-group text-center text-light mt-2 mb-2">
+                        <button id="submitPassword" type="button" class="btn btn-bd-primary btn-loading submit_new_password mb-2 d-none">Submit</button>
+                        <button id="verifyCode" type="button" class="btn btn-bd-primary btn-loading verify_Code mb-2 d-none">Verify code</button>
+                        <button id="sendVerificationCode" type="button" class="btn btn-bd-primary btn-loading sendVerification_Code mb-2">Send verification code</button>
+                        <br>
+                        <span class="mt-2 pt-3"><a href="#" class="login-button">Login? </a> OR <a href="#" class="register-button">Register?</a></span>
+                    </div>                                 
+                  </form>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="modal fade" id="updatePlanModal" tabindex="-1" aria-labelledby="updatePlanModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updatePlanModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body updatePlanModalBody justify-content-center align-items-center overflow-auto">
+
+                </div>
+                <p id="updatePlanModalError"></p>
+
+                <div class="modal-footer updatePlanModalFooter d-flex justify-content-center align-items-center">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i> Cancel</button>
+                  <button type="button" class="btn btn-primary d-none">Send <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <!-- Request Valuation Modal -->
+    <div class="bg-dark text-light modal fade" id="request-valuation-modal" tabindex="-1" aria-labelledby="request-valuation-modalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <h3 class="mb-2">Request Valuation</h3>
+                    <button id="request-valuation-modalbtn_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Submit your vehicle details here to request a valuation.</p>
+                    
+                    <form id="submit-valuation-request" method="post"> 
+                        <input type="text" class="form-control d-none" id="client-request-id" name="client-request-id">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col position-relative">
+                                    <label for="client-name-request">Client Name</label>
+                                    <input type="text" class="form-control" id="client-name-request" name="client-name-request" placeholder="Client Name" required>
+                                </div>
+                                <div class="col position-relative">
+                                    <label for="client-contact-request">Client Contact</label>
+                                    <input type="text" class="form-control" id="client-contact-request" name="client-contact-request" placeholder="Client Contact" required>
+                                </div>
+                            </div>                                                       
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col position-relative">
+                                    <label for="client-email-request">Client Email</label>
+                                    <input type="text" class="form-control" id="client-email-request" name="client-email-request" placeholder="Client Email" required>
+                                </div>
+                                <div class="col position-relative">
+                                    <label for="client-kra-request">Client KRA</label>
+                                    <input type="text" class="form-control" id="client-kra-request" name="client-kra-request" placeholder="Client KRA" required>
+                                </div>
+                            </div>                                                       
+                        </div>
+                        <div class="form-group d-none">
+                            <div class="row">
+                                <div class="col position-relative">
+                                    <label for="individual-vehicle-make">Make</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-make" name="individual-vehicle-make" placeholder="Make" required>
+                                    <div id="makeSuggestions" class="suggestions-list bg-dark text-light"></div>
+                                </div>
+                                <div class="col position-relative">
+                                    <label for="individual-vehicle-model">Model</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-model" name="individual-vehicle-model" placeholder="Model" required>
+                                    <div id="modelSuggestions" class="suggestions-list bg-dark text-light"></div>
+                                </div>
+                            </div>                                                       
+                        </div>
+                        <div class="form-group d-none">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="individual-vehicle-year">Year</label>
+                                    <input type="number" class="form-control" id="individual-vehicle-year" name="individual-vehicle-year" placeholder="Year" required>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="individual-vehicle-mileage">Mileage</label>
+                                        <input type="number" class="form-control" id="individual-vehicle-mileage" name="individual-vehicle-mileage" placeholder="Mileage" required>
+                                    </div>                                                
+                                </div>    
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="individual-unitSelection" class="d-block">Units</label>
+                                        <select class="form-control" id="individual-unitSelection" name="individual-unitSelection">
+                                            <option value="km">KM</option>
+                                            <option value="miles">Miles</option>
+                                            <option value="hours">Hours</option>
+                                            <option value="meters">Meters</option>
+                                            <option value="feet">Feet</option>
+                                            <option value="minutes">Minutes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                        <div class="form-group d-none">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="individual-vehicle-color">Color</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-color" name="individual-vehicle-color" placeholder="Color">
+                                </div>
+                                <div class="col">
+                                    <label for="individual-vehicle-transmission">Transmission</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-transmission" name="individual-vehicle-transmission" placeholder="Transmission">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group d-none">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="individual-vehicle-fuelType">Fuel Type</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-fuelType" name="individual-vehicle-fuelType" placeholder="Fuel Type">
+                                </div>
+                                <div class="col">
+                                    <label for="bodyType">Body Type</label>
+                                    <input type="text" class="form-control" id="individual-vehicle-bodyType" name="individual-vehicle-bodyType" placeholder="Body Type">
+                                </div>
+                            </div>
+                        </div>                                           
+                        <div class="form-group">
+                            <div class="row">
+                                <div id="logbookPhotoId" class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
+                                    <div class="card imgUp_logbookPhoto imgUp position-relative">
+                                        <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_logbookPhoto del_logbookPhoto"><i class="fa-solid fa-xmark"></i></i>
+                                        <label class="choose_logbookPhoto">Logbook Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="logbookPhotoToUpload[]" class="form-control-file uploadlogbookPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+                                    </div>
+                                </div>
+                            </div>                                        
+                        </div>
+                        <div class="mb-3 d-none">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="valuationType" class="form-label">Valuation Type</label>
+                                    <select class="form-select" id="valuationType" name="valuationType" required>
+                                        <option value="">Select Valuation Type</option>
+                                        
+                                        <!-- Add more options as needed -->
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label for="industryType" class="form-label">Industry Type</label>
+                                    <select class="form-select" id="industryType" name="industryType" required>
+                                        <option value="">Select Industry Type</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="select-valuation-company">
+                            <div class="form-group">
+                                <label for="valuation-companyname">Select Valuation Company</label>
+                                <input type="text" class="form-control" id="valuation-companyname" name="valuation-companyname" placeholder="Company Name" autocomplete="off" aria-autocomplete="list" aria-controls="valuation-company-list">
+                            </div>
+                            <ul id="valuation-company-list" class="select-valuation-company-list-group list-group list-group-flush" aria-labelledby="valuation-companyname">
+                                <!-- Dynamically generated list items will go here -->
+                            </ul>
+                        </div>                        
+                        <div class="mb-3 d-none">
+                            <label for="additionalInfo" class="form-label">Additional Information</label>
+                            <textarea class="form-control" id="additionalInfo" name="additionalInfo" rows="3"></textarea>
+                        </div>
+                        <span id="upload_uploadlogbookPhoto_help" class="mb-2"></span><br>
+                        <span class="request_valuation_help"></span><br>
+                        <button type="submit" class="btn btn-bd-primary request-valuation-btn">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- View Report Modal -->
+    <div class="bg-dark text-light modal fade" id="example_Modal" tabindex="-1" aria-labelledby="view_inspection_reportModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <button id="example_Modalbtn_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="pdf-container" class="w-100 mt-2"></div>
+                    <span class="view_inspection_report_err"></span>
+                </div>
+                <div class="bg-dark text-light modal-footer justify-content-center view-button-modal-footer"></div>
+            </div>
+        </div>
+    </div>
+    <!-- New Report Modal -->
+    <div class="bg-dark text-light modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <button id="newReportModal_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="card bg-dark text-light report-information">            
+                        <form id="valuationForm"  class="valuation_Form text-center pb-5 mb-5 bg-dark text-light d-none">
+            
+                            <!-- Report Info -->
+                            <div class="container text-center pt-3 d-none">                      
+                                <!-- Columns start at 50% wide on mobile and bump up to 33.3% wide on desktop -->
+                                <h4>Report Information</h4>                        
+                                <div class="row">
+                                  <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="corporateRefNo">Corporate Ref. No.</label>
+                                        <input type="text" class="form-control" id="corporateRefNo" name="corporateRefNo" placeholder="Corporate Ref. No." readonly>
+                                    </div>
+                                  </div>
+                                  <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="serialNo">Serial No.</label>
+                                        <input type="text" class="form-control" id="serialNo" name="serialNo" placeholder="Serial No." readonly>
+                                    </div>
+                                  </div>                          
+                                </div>
+                            </div> 
+                            <div class="container text-center d-none">
+                                <div class="row">                            
+                                    <div class="col">
+                                      <div class="form-group">
+                                          <label for="valuer">Valuer</label>
+                                          <input type="text" class="form-control" id="valuer" name="valuer" placeholder="Valuer">
+                                      </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="valuation_Date">Valuation Date</label>
+                                            <input type="date" class="form-control" id="valuation_Date" name="valuation_Date">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="inspectionTime">Inspection Time</label>
+                                            <input type="time" class="form-control" id="inspectionTime" name="inspectionTime">
+                                        </div>
+                                    </div>                        
+                                </div>
+                            </div>                     
+                            <!-- Client Info -->
+                            <div class="container form-section">
+                                <h4>Client Information</h4>
+                                <div class="text-center">
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <label for="clientName">Client Name</label>
+                                            <input type="text" class="form-control" id="clientName" name="clientName" placeholder="Client Name">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="contactNumber">Contact Number</label>
+                                            <input type="number" class="form-control" id="contactNumber" name="contactNumber" placeholder="Contact Number">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" id="emaill" name="emaill" placeholder="Email">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="contactKRA">KRA PIN</label>
+                                            <input type="TEXT" class="form-control" id="contactKRA" name="contactKRA" placeholder="KRA PIN">
+                                        </div>
+                                    </div>                                                         
+                                </div>
+                            </div>        
+                            <!-- Insurer Info -->
+                            <div class="container text-center">
+                                <h4>Insurer Information</h4>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="insurer">Insurer</label>
+                                            <input type="text" class="form-control" id="insurer" name="insurer" placeholder="Insurer">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="policyNo">Policy No.</label>
+                                            <input type="text" class="form-control" id="policyNo" name="policyNo" placeholder="Policy No.">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="expiryDate">Expiry Date</label>
+                                            <input type="date" class="form-control" id="expiryDate" name="expiryDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                    
+                            <!-- Vehicle Info -->
+                            <div class="container text-center">
+                                <h4>Vehicle Information</h4>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="registrationNo">Registration No</label>
+                                            <input type="text" class="form-control" id="registrationNo" name="registrationNo" placeholder="Registration No">
+
+                                            <input type="text" class="form-control d-none" id="vehicle-assignment-id" name="vehicle-assignment-id" placeholder="vehicle-assignment-id">
+                                            <input type="text" class="form-control d-none" id="vehicle-id" name="vehicle-id" placeholder="vehicle-id">
+
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="chassisNo">Chassis No</label>
+                                            <input type="text" class="form-control" id="chassisNo" name="chassisNo" placeholder="Chassis No">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col position-relative">
+                                        <div class="form-group">
+                                            <label for="make">Make</label>
+                                            <input type="text" class="form-control" id="make" name="make" placeholder="Make">
+                                        </div>
+                                        <div id="vehicleMakeSuggestions" class="suggestions-list bg-dark text-light"></div>
+                                    </div>
+                                    <div class="col position-relative">
+                                        <div class="form-group">
+                                            <label for="model">Model</label>
+                                            <input type="text" class="form-control" id="model" name="model" placeholder="Model">
+                                        </div>
+                                        <div id="vehicleModelSuggestions" class="suggestions-list bg-dark text-light"></div>
+                                    </div>
+                                    <div class="col position-relative">
+                                        <div class="form-group">
+                                            <label for="modelType">Model Type</label>
+                                            <input type="text" class="form-control" id="modelType" name="modelType" placeholder="Model Type">
+                                        </div>
+                                        <div id="vehicleModelTypeSuggestions" class="suggestions-list bg-dark text-light"></div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="engineNo">Engine No</label>
+                                            <input type="text" class="form-control" id="engineNo" name="engineNo" placeholder="Engine No">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="engineRating">Engine Rating</label>
+                                            <input type="text" class="form-control" id="engineRating" name="engineRating" placeholder="Engine Rating">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="colour">Colour</label>
+                                            <input type="text" class="form-control" id="colour" name="colour" placeholder="Colour">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="bodyType">Body Type</label>
+                                            <input type="text" class="form-control" id="bodyType" name="bodyType" placeholder="Body Type">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="dateOfReg"><span class="d-none d-sm-none d-md-inline">Date of</span> Registration</label>
+                                            <input type="date" class="form-control" id="dateOfReg" name="dateOfReg">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="yearOfManf"><span class="d-none d-sm-none d-md-inline">Year of</span> Manufacture</label>
+                                            <input type="text" class="form-control" id="yearOfManf" name="yearOfManf" placeholder="Year of Manufacture">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label for="odometerReading">Odometer <span class="d-none d-sm-none d-md-inline">Reading</span></label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="odometerReading" name="odometerReading" placeholder="Odometer Reading">
+                                                    </div>
+                                                </div>                                                
+                                            </div>    
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label for="unitSelection" class="d-block">Units</label>
+                                                    <select class="form-control" id="unitSelection" name="unitSelection">
+                                                        <option value="km">KM</option>
+                                                        <option value="miles">Miles</option>
+                                                        <option value="hours">Hours</option>
+                                                        <option value="meters">Meters</option>
+                                                        <option value="feet">Feet</option>
+                                                        <option value="minutes">Minutes</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>                                                                         
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="fuelType">Fuel Type</label>
+                                            <input type="text" class="form-control" id="fuelType" name="fuelType" placeholder="Fuel Type">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="countryOfOrigin">Country <span class="d-none d-sm-none d-md-inline">Of Origin</span></label>
+                                            <input type="text" class="form-control" id="countryOfOrigin" name="countryOfOrigin" placeholder="Country Of Origin">
+                                        </div>
+                                    </div>                            
+                                </div>
+                                <div class="row"> 
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="noOfAirbags">Gear Box</label>
+                                            <input type="text" class="form-control" id="gearBox" name="gearBox" placeholder="Gear Box">
+                                        </div>
+                                    </div>                           
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="noOfAirbags"><span class="d-none d-sm-none d-md-inline">No of</span> Airbags</label>
+                                            <input type="text" class="form-control" id="noOfAirbags" name="noOfAirbags" placeholder="No of Airbags">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="typesOfLights"><span class="d-none d-sm-none d-md-inline">Types Of</span> Lights</label>
+                                            <input type="text" class="form-control" id="typesOfLights" name="typesOfLights" placeholder="Types Of Lights">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="antiTheft">Anti Theft</label>
+                                            <input type="text" class="form-control" id="antiTheft" name="antiTheft" placeholder="Anti Theft">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="tyres">Tyres</label>
+                                            <input type="text" class="form-control" id="tyres" name="tyres" placeholder="Tyres">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>   
+                            <!-- Vehicle Photos -->
+                            <div class="container text-center">
+                                <h2>Vehicle Photos</h2>  
+                                <!-- Camera Toggle -->
+                                <div class="con-tainer d-flex justify-content-center">
+                                    <div class="form-check form-switch camera-toggle d-none d-flex align-items-center">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="cameraFlexSwitchCheckChecked" checked>
+                                        <label class="camera-form-check-label ms-2" for="cameraFlexSwitchCheckChecked">Camera Mode</label>
+                                    </div>
+                                </div>
+                                                         
+
+                                <div id="vehiclePhotos" class="row mt-2 vehicle_Captured_Photos">
+                                    <div class="col mt-2 add-img-imgAdd add-img-bt-center-container">
+                                        <span type="button" class="btn btn-bd-primary mt-2 mb-2">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <span id="upload_from_file_container_help" class="mb-3"></span>
+                            </div> 
+                            
+                            <div class="container text-center">
+                                <!-- Coachwork Notes -->
+                                <label for="coachworkNotes">Coachwork Notes</label>
+                                <input type="text" class="form-control" id="coachworkNotes" name="coachworkNotes" placeholder="Coachwork Notes">                    
+                                <!-- Electrical Notes -->
+                                <label for="electricalNotes">Electrical Notes</label>
+                                <input type="text" class="form-control" id="electricalNotes" name="electricalNotes" placeholder="Electrical Notes">                    
+                                <!-- Mechanical Notes -->
+                                <label for="mechanicalNotes">Mechanical Notes</label>
+                                <input type="text" class="form-control" id="mechanicalNotes" name="mechanicalNotes" placeholder="Mechanical Notes">
+                                <!-- Extras -->
+                                <label for="extras">Extras</label>
+                                <input type="text" class="form-control" id="extras" name="extras" placeholder="Extras">
+                                
+                            </div>
+                            <!-- Additional Info -->
+                            <div class="container text-center">
+                                <h4>Valuation</h4>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="windscreenEstimate"><span class="d-none d-sm-none d-md-inline">Windscreen</span> Estimate</label>
+                                            <input type="number" class="form-control" id="windscreenEstimate" name="windscreenEstimate" placeholder="Windscreen Estimate">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="radioEstimate">Radio Estimate</label>
+                                            <input type="number" class="form-control" id="radioEstimate" name="radioEstimate" placeholder="Radio Estimate">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="marketValue">Market Value</label>
+                                            <input type="number" class="form-control" id="marketValue" name="marketValue" placeholder="Market Value">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="forcedValue">Forced Value</label>
+                                            <input type="number" class="form-control" id="forcedValue" name="forcedValue" placeholder="Forced Value">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="generalCondition">General Condition</label>
+                                            <input type="text" class="form-control" id="generalCondition" name="generalCondition" placeholder="General Condition">
+                                        </div>
+                                    </div>                        
+                                </div>
+                            </div>
+                            <div class="container form-section">                        
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        <label for="remarks">Remarks</label>
+                                        <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        <label for="remedy">Remedy</label>
+                                        <textarea class="form-control" id="remedy" name="remedy" rows="3"></textarea>
+                                    </div>
+                                </div>                        
+                            </div>
+                            <div class="container text-center">
+                                <div class="row">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="locationOfInspection"><span class="d-none d-sm-none d-md-inline">Inspection</span> Location</label>
+                                            <input type="text" class="form-control" id="locationOfInspection" name="locationOfInspection" placeholder="Location Of Inspection">
+                                        </div>                                
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="destination">Destination</label>
+                                            <input type="text" class="form-control" id="destination" name="destination" placeholder="Destination">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row d-none">                            
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="examiner">Examiner</label>
+                                            <input type="text" class="form-control" id="examiner" name="examiner" placeholder="Examiner">
+                                        </div>
+                                    </div>
+                                    <div class="col">                            
+                                        <div class="form-group">
+                                            <label for="dateOfInspection">Date Of Inspection</label>
+                                            <input type="date" class="form-control" id="dateOfInspection" name="dateOfInspection" placeholder="Date Of Inspection">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                    
+                            <button type="button" id="generateReport" class="btn btn-bd-primary">Generate Report</button>
+                            <span id="ugenerateReport_help" class="mb-3"></span>
+                        </form>                        
+                    </div>
+                    <div id="report" class="bg-dark text-light report mb-5" style="display: none;">
+                        <div id="report_Content" class="bg-dark text-light"> </div>
+                        <div id="view_Report_Content" class="bg-dark text-light"> </div>
+
+                        <div class="bg-dark text-light">
+                            <span id="upload_valuationReport_help"></span><br>
+                            <div class="btn-group mb-5" role="group" aria-label="Basic outlined example">
+                                <button id="newReport" type="button" class="btn btn-bd-primary d-none">New Report</button>
+                                <button id="pdfRetryUpload" type="button" class="btn btn-bd-primary d-none">Retry Upload</button>
+                                <button id="chuckRetryUpload" type="button" class="btn btn-bd-primary d-none">Retry Upload</button>
+                                <button id="printButton" type="button" class="btn btn-bd-primary d-none">Print Report</button>
+                                <button id="submitReport" type="button" class="btn btn-bd-primary">Submit Report</button>
+                                <button id="downloadReport" type="button" class="btn btn-bd-primary d-none">Download Report</button>
+                                <a id="viewReport" type="button" class="btn btn-bd-primary d-none" href="" target="_blank">View Report</a>
+                            </div>
+                        </div>                    
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Settings Modal -->
+    <div class="bg-dark text-light modal fade" id="accountSettingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button id="settingsModalLabel_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="container-fluid">
+                        <div class="row">
+    
+                            <!-- Account Details -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card bg-dark text-light text-center">
+                                    <div class="custom-card-body">
+                                        <h4>Account Details</h4>
+                                        <span class="card-text d-block">Username: <span class="profileUsername"></span></span>
+                                        <span class="card-text d-block">Email: <span class="profileEmail"></span></span>
+                                        <span class="card-text d-block profilePhoneNumber"></span>
+                                        <span class="card-text d-block profileCompanyName"></span>
+                                        <span class="card-text d-block profileCompanyEmployeeNumber"></span>
+                                        <span class="card-text d-block profileApiKey"></span>
+                                        <span class="card-text d-block">Role: <span class="profileRole"></span></span>
+                                        <span class="card-link">Change <a href="#" class="forgot-password-button">password?</a></span>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- App Settings -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card bg-dark text-light text-center">
+                                    <div class="custom-card-body">
+                                        <h4>App Settings</h4>
+                                        <div class="form-check form-switch mt-2">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked">
+                                            <label class="form-check-label text-light" for="flexSwitchCheckChecked">Light Mode</label>
+                                        </div>
+
+                                        <div class="form-check form-switch mt-2">
+                                            <input class="form-check-input" type="checkbox" id="notificationsSwitch">
+                                            <label class="item-label notifications-check-label form-check-label text-light" for="notificationsSwitch">Notifications</label>
+                                        </div>
+    
+                                        <div class="color-selector d-none">
+                                            <label for="colorPicker">Choose a color:</label>
+                                            <input type="color" id="colorPicker" value="#9b59b6">
+                                        </div>
+    
+                                        <div class="text-center">
+                                            <label for="percentageSlider" class="form-label">Image Quality: <span id="sliderValue">95</span>%</label>
+                                            <input type="range" class="form-range" id="percentageSlider" min="0" max="100" step="1" value="95">
+                                        </div>
+    
+                                        <label for="notifications">Notifications</label>
+                                        <select class="form-control" id="notifications">
+                                            <option>Email</option>
+                                            <option>SMS</option>
+                                            <option>Push Notifications</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- Privacy Settings -->
+                            <div class="col-md-4 mb-4">
+                                <div class="card bg-dark text-light text-center">
+                                    <div class="custom-card-body">
+                                        <h4>Privacy Settings</h4>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="dataSharing">
+                                            <label class="form-check-label text-light" for="dataSharing">Allow data sharing with third parties</label>
+                                        </div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" id="locationHistory">
+                                            <label class="form-check-label text-light" for="locationHistory">Enable location history</label>
+                                        </div>
+                                        <label for="app-settings">Other Settings</label>
+                                        <select class="form-control" id="app-settings">
+                                            <option>Language</option>
+                                            <option>Time Zone</option>
+                                        </select>
+                                        <div class="form-group mt-4 text-center">
+                                            <button type="button" class="btn btn-bd-primary logout-button">
+                                                <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Company Settings -->
+                            <div class="mb-3 company-settings d-none">
+                                <div class="row">
+                                    <div class="col">
+                                        <label for="companyEmployee" class="form-label">Company Employees</label>
+                                        <select class="form-select" id="companyEmployee" name="companyEmployee" required>
+                                            <option value="">Select Company Employee</option>
+                                            
+                                            <!-- Add more options as needed -->
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <label for="companyEmployeeRole" class="form-label">Company Roles</label>
+                                        <select class="form-select" id="companyEmployeeRole" name="companyEmployeeRole" required>
+                                            <option value="">Select Company Role</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- PDF Settings (Hidden) -->
+                            <div class="pdf-settings d-none col-md-12 mb-4">
+                                <div class="card bg-dark text-light text-center">
+                                    <div class="custom-card-body">
+                                        <h5 class="card-title">PDF Settings</h5>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3 mt-2">
+                                                <div class="progress" role="progressbar" aria-label="File Size Progress" aria-valuemin="0" aria-valuemax="100">
+                                                    <div id="fileSizeProgressBar" class="progress-bar text-bg-success" style="width: 0%;">0%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-4">
+                                                <div class="mb-3">
+                                                    <label for="additionalHeaderInfo" class="form-label">Letter Head Information</label>
+                                                    <textarea class="form-control" id="additionalHeaderInfo" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-4">
+                                                <div class="mb-3">
+                                                    <label for="additionalBodyInfo" class="form-label">Cover Page Information</label>
+                                                    <textarea class="form-control" id="additionalBodyInfo" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-4">
+                                                <div class="mb-3">
+                                                    <label for="additionalFooterInfo" class="form-label">Footer Notes Information</label>
+                                                    <textarea class="form-control" id="additionalFooterInfo" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row principal-valuer-signature d-none"> 
+                                            <h5 class="card-title"><span class="profileRole"></span> Signature</h5>
+                                        
+                                            <div class="col-md-6 mb-4">
+                                                <label for="signatureCanvas" class="form-label">New Signature</label>
+                                                <div class="signature-container">
+                                                    <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-4">
+                                                <div class="form-group">
+                                                  <div class="row">
+                                                    <label for="headLogoPhotoId" class="form-label">New Head Logo Photo</label>
+                                                    <div id="headLogoPhotoId" class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
+                                                        <div class="card imgUp_headLogo imgUp position-relative">
+                                                            <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_headLogo del_headLogo"><i class="fa-solid fa-xmark"></i></i>
+                                                            <label class="choose_headLogo">Head Logo Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="headLogoPhotoToUpload[]" class="form-control-file uploadHeadLogoPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+                                                        </div>
+                                                    </div>
+                                                  </div>                                        
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="additionalNotationInfo" class="form-label">Enclosure Notation Information</label>
+                                                    <textarea class="form-control" id="additionalNotationInfo" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>                                                                         
+                                        <span id="uploadSignaturePhotoHelp"></span>
+                                    </div>
+                                </div>
+                            </div>
+    
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">    
+                    <div class="signature-button-group d-none">
+                        <button type="button" id="clearBtn" class="btn btn-bd-primary btn-sm">Clear</button>
+                        <button type="button" id="saveBtn" class="btn btn-bd-primary btn-sm">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Settings Modal -->
+    <div class="bg-dark text-light modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationsModalLabel">Notifications</h5>
+                    <button id="notificationsModalLabel_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="shadow notifications-list">
+                        <li class="text-muted text-center">No new notifications</li>
+                    </ul> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-dark text-light modal fade" id="sampleModalLabel" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <button id="sampleModalLabel_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="snackbar"></div>
+
+    <script src="js/code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="js/cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="js/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+    <script src="js/cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="js/cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="js/cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
+    <script src="cordova.js"></script>
+    <script src="js/index.js"></script>
+
+</body>
+</html>
