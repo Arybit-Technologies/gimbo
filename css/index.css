@@ -658,9 +658,9 @@ div.desc {
   font-size: 0.7em;
   color: #262ec4;
 }
-.text-theme{
+.text-theme{ 
   font-size: 0.7em;
-  color: #8DB600;
+  color: #171716;
 
 }
 .text-size-small{
@@ -1339,7 +1339,7 @@ span.psw {
 }
 .text-danger {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 500; 
 }
 
 .small-card {

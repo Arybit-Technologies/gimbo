@@ -151,12 +151,12 @@ function onDeviceReady() {
     //cordova.plugins.backgroundMode.setEnabled(true);
     //localStorage.setItem('themeColor','#32062e');
 
-    var app_version = '1.0.16';
+    var app_version = '1.0.17';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
       localStorage.setItem('themeColor','#32062e');
-    }
+    } 
     
     if (localStorage.getItem('deviceID') ==null || localStorage.getItem('userUsername') ==null) {
       localStorage.setItem('deviceID',generateDeviceId());
@@ -1066,7 +1066,9 @@ function onDeviceReady() {
           <a href="${ReportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary" FormID=""><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download Pdf</span></a>
           <button type="button" class="btn btn-bd-primary copy-button" FormID="" ReportFileURL="${ReportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy Link</span></button>
       `;
-      $('.view-button-modal-footer').html(button_group);
+      if (role != "Elite Technician") {
+        $('.view-button-modal-footer').html(button_group);
+      }
 
 
       //alert(ReportFileURL);
@@ -1278,7 +1280,8 @@ function onDeviceReady() {
         formData.append('deviceID', localStorage.getItem('deviceID'));
         formData.append('userEmail', localStorage.getItem('userEmail'));
         formData.append('userPasswordHash', localStorage.getItem('userPasswordHash'));
-        formData.append('CompanyID', localStorage.getItem('userCompanyID'));
+        formData.append('CompanyID', localStorage.getItem('userCompanyInputID'));
+        //alert(localStorage.getItem('userCompanyInputID'));
         //formData.append('CompanyID', 4);
 
         formData.append('action', action);
@@ -2019,7 +2022,7 @@ function onDeviceReady() {
                   companyListGroup.find('.selected-company').on('click', function() {
                       // Add custom logic when a company is selected
                       var selectedCompanyID = $(this).attr('CompanyID');                
-                      localStorage.setItem('userCompanyID', selectedCompanyID);
+                      localStorage.setItem('userCompanyInputID', selectedCompanyID);
                   
                       // Find the selected company in the companies array
                       var selectedCompany = companies.find(function(company) {
@@ -2048,7 +2051,7 @@ function onDeviceReady() {
     
     // Call the function for both inputs
     handleCompanyInput('#valuer-companyname', '.select-company-list-group');
-    handleCompanyInput('#valuation-companyname', '.select-valuation-company-list-group'); 
+    handleCompanyInput('#valuation-companyname', '.select-valuation-company-list-group');
 
     var corporateRefNo = generateCorporateRefNo();
     var serialNo = generateSerialNo();
@@ -2058,7 +2061,7 @@ function onDeviceReady() {
     localStorage.setItem('inspectVehicleID',0);
     localStorage.setItem('serialNo',serialNo);
     document.getElementById('corporateRefNo').value = corporateRefNo;
-    document.getElementById('serialNo').value = serialNo;  
+    document.getElementById('serialNo').value = serialNo;
 
     const switchCheckbox = document.getElementById("flexSwitchCheckChecked");
     const cameraFlexSwitchCheckChecked = document.getElementById("cameraFlexSwitchCheckChecked");
@@ -2068,7 +2071,7 @@ function onDeviceReady() {
       switchToCameraMode();
     } else {
       switchToFileMode();
-    }   
+    }
 
     // Event listener for the switch
     cameraFlexSwitchCheckChecked.addEventListener("change", function() {
@@ -2366,7 +2369,7 @@ function onDeviceReady() {
 
       }); */
 
-    }   
+    }
     
     const notificationsSwitchCheckbox = document.getElementById("notificationsSwitch");
     const notificationsLabel = document.querySelector(".notifications-check-label");
@@ -2434,7 +2437,7 @@ function onDeviceReady() {
           return xhr;
         },
         success: function (response) {
-          //alert(JSON.stringify(response));
+          $(".login_error").html(JSON.stringify(response));
           $("#upload_uploadCompanyLogo_help").html("");
           addNetworkEventListener_count = 0;
           try {
@@ -2566,7 +2569,7 @@ function onDeviceReady() {
                   document.getElementById('additionalFooterInfo').value = selectedDetails.FootNotes;
                   document.getElementById('additionalNotationInfo').value = selectedDetails.NBNotes;
                 }            
-              }                    
+              } 
               
               const logoElement = document.querySelector(".toast-logo");
     
@@ -2579,6 +2582,8 @@ function onDeviceReady() {
               if (response.message.PhoneNumber != '') {
                 document.querySelector(".profilePhoneNumber").innerHTML = `Phone Number: <span>${response.message.PhoneNumber}</span>`;//response.message.PhoneNumber;
               }
+                                 
+              
               if (response.message.CompanyName != '') {
                 $(".toast-name").html(response.CompanyName);
                 document.querySelector(".profileCompanyName").innerHTML = `Company Name: <span>${response.CompanyName}</span>`;
@@ -2588,96 +2593,7 @@ function onDeviceReady() {
                 document.getElementById('companyNameInfo').textContent = companyName; 
 
                 // Team Performance Donut Chart
-                const ctx = document.getElementById('teamChart').getContext('2d');
-                teamChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['John Doe', 'Jane Smith', 'James Brown'],
-                        datasets: [{
-                            label: 'Completed Valuations',
-                            data: [0, 0, 0],
-                            backgroundColor: ['#36a2eb', '#ff6384', '#ffcd56'],
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                            }
-                        }
-                    }
-                });  
-
-                var storageCtx = document.getElementById('storageStatusChart').getContext('2d');
-
-                // Example data (You can dynamically update this data based on your server or application state)
-                var totalStorageUsed = [0, 0, 0, 0, 0, 0];
-                var maximumStorage = [1500, 1500, 1500, 1500, 1500, 1500];
-                var totalValuations = [0, 0, 0, 0, 0, 0];
-                
-                // Create the line chart
-                storageStatusChart = new Chart(storageCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                        datasets: [{
-                            label: 'Total Storage Used (MBs)',
-                            data: totalStorageUsed,
-                            borderColor: '#FF5733',  // Line color for Total Storage Used
-                            backgroundColor: 'rgba(255, 87, 51, 0.2)',  // Fill color for Total Storage Used
-                            fill: true,  // Enable fill under the line
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Maximum Storage (MBs)',
-                            data: maximumStorage,
-                            borderColor: '#33FF57',  // Line color for Maximum Storage
-                            backgroundColor: 'rgba(51, 255, 87, 0.2)',  // Fill color for Maximum Storage
-                            fill: true,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Total Valuations',
-                            data: totalValuations,
-                            borderColor: '#3357FF',  // Line color for Total Valuations
-                            backgroundColor: 'rgba(51, 87, 255, 0.2)',  // Fill color for Total Valuations
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Value'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Month'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        return tooltipItem.dataset.label + ': ' + tooltipItem.raw;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });                          
+                //teamPerformanceDonutChart('params');
 
               }
               if (response.message.CompanyEmployeeNumber != '') {
@@ -2704,12 +2620,14 @@ function onDeviceReady() {
           
           } catch(e) {
             if (response.action == "loginUser") {
-              $(".login_error").html(`<span class="text-danger text-center">JSON parsing error</span>`);
+              //$(".login_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
+              alert(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
+
               document.getElementById("loginUser").innerHTML=`Login`;
               document.querySelector(".landing-page").classList.add("d-none");
               document.querySelector(".login-page").classList.remove("d-none");          
             } else {
-              $(".register_error").html(`<span class="text-danger text-center">JSON parsing error</span>`);
+              $(".register_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
               document.getElementById("registerValuer").innerHTML="Submit";          
             }
           }     
@@ -2930,6 +2848,139 @@ function onDeviceReady() {
             switchTab(currentIndex + 1); // Swipe left
         }
     });
+
+    document.getElementById("newReportModal_close").addEventListener("click", function () {
+      let modalElement = document.getElementById("newReportModal");
+      let modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) {
+          //modalInstance.hide();
+      }
+    }); 
+  
+    const savedColor = localStorage.getItem('themePdfColor') || '#171716'; 
+    if (savedColor) {
+        document.querySelectorAll('.text-theme').forEach(el => {
+            el.style.color = savedColor;
+        });
+        document.getElementById('colorPdfPicker').value = savedColor; // Update the color picker UI
+    }
+
+    // Listen for color changes and update elements & localStorage
+    document.getElementById('colorPdfPicker').addEventListener('input', function() {
+        const newColor = this.value;
+        document.querySelectorAll('.text-theme').forEach(el => {
+            el.style.color = newColor;
+        });
+        localStorage.setItem('themePdfColor', newColor); // Save to localStorage
+    });
+    const fontSizeSlider = document.getElementById('fontSizeSlider');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+
+    // Handle font size change
+    fontSizeSlider.addEventListener('input', function() {
+        const newSize = this.value;
+        document.querySelectorAll('.text-theme').forEach(el => {
+            el.style.fontSize = newSize + 'em';
+        });
+        fontSizeValue.textContent = newSize;
+        localStorage.setItem('themePdfFontSize', newSize);
+    });
+
+    teamPerformanceDonutChart('params');
+}
+
+// Function to display a Team Performance Donut Chart
+function teamPerformanceDonutChart(params) {const ctx = document.getElementById('teamChart').getContext('2d');
+  teamChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+          labels: ['John Doe', 'Jane Smith', 'James Brown'],
+          datasets: [{
+              label: 'Completed Valuations',
+              data: [0, 0, 0],
+              backgroundColor: ['#36a2eb', '#ff6384', '#ffcd56'],
+              hoverOffset: 4
+          }]
+      },
+      options: {
+          plugins: {
+              legend: {
+                  position: 'bottom',
+              }
+          }
+      }
+  });  
+
+  var storageCtx = document.getElementById('storageStatusChart').getContext('2d');
+
+  // Example data (You can dynamically update this data based on your server or application state)
+  var totalStorageUsed = [0, 0, 0, 0, 0, 0];
+  var maximumStorage = [1500, 1500, 1500, 1500, 1500, 1500];
+  var totalValuations = [0, 0, 0, 0, 0, 0];
+  
+  // Create the line chart
+  storageStatusChart = new Chart(storageCtx, {
+      type: 'line',
+      data: {
+          labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+          datasets: [{
+              label: 'Total Storage Used (MBs)',
+              data: totalStorageUsed,
+              borderColor: '#FF5733',  // Line color for Total Storage Used
+              backgroundColor: 'rgba(255, 87, 51, 0.2)',  // Fill color for Total Storage Used
+              fill: true,  // Enable fill under the line
+              tension: 0.4
+          },
+          {
+              label: 'Maximum Storage (MBs)',
+              data: maximumStorage,
+              borderColor: '#33FF57',  // Line color for Maximum Storage
+              backgroundColor: 'rgba(51, 255, 87, 0.2)',  // Fill color for Maximum Storage
+              fill: true,
+              tension: 0.4
+          },
+          {
+              label: 'Total Valuations',
+              data: totalValuations,
+              borderColor: '#3357FF',  // Line color for Total Valuations
+              backgroundColor: 'rgba(51, 87, 255, 0.2)',  // Fill color for Total Valuations
+              fill: true,
+              tension: 0.4
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  title: {
+                      display: true,
+                      text: 'Value'
+                  }
+              },
+              x: {
+                  title: {
+                      display: true,
+                      text: 'Month'
+                  }
+              }
+          },
+          plugins: {
+              legend: {
+                  position: 'top',
+              },
+              tooltip: {
+                  callbacks: {
+                      label: function(tooltipItem) {
+                          return tooltipItem.dataset.label + ': ' + tooltipItem.raw;
+                      }
+                  }
+              }
+          }
+      }
+  });
+  
 }
 
 // Function to dynamically update chart
@@ -3860,7 +3911,7 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
           Receipt No. GB${date.getFullYear()}/${date.getMonth()}/${date.getDay()}
         </span>
       </div>
-      <div class="float-start text-start">
+      <div class="float-start text-start d-none">
         <span class="d-block text-start text-danger text-size-small mb-0">
           NB: ${nBNotes}
         </span>
@@ -3896,7 +3947,7 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
           Receipt No. GB${date.getFullYear()}/${date.getMonth()}/${date.getDay()}
         </span>
       </div>
-      <div class="float-start text-start">
+      <div class="float-start text-start d-none">
         <span class="d-block text-start text-danger text-size-small mb-0">
           NB: ${nBNotes}
         </span>
@@ -3933,7 +3984,7 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
           Receipt No. GB${date.getFullYear()}/${date.getMonth()}/${date.getDay()}
         </span>
       </div>
-      <div class="float-start text-start">
+      <div class="float-start text-start d-none">
         <span class="d-block text-start text-danger text-size-small mb-0">
           NB: ${nBNotes}
         </span>
@@ -4026,9 +4077,43 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
     if (camera_toggle === 0) {
         this.style.backgroundSize = 'cover';
     } else {
-        this.style.backgroundSize = 'contain';
+        //this.style.backgroundSize = 'contain';
+        this.style.backgroundSize = 'cover';
+
     }
   });  
+
+  $(".newReportModalHeader").html(`<div class="row gy-2 gx-3 align-items-center">
+    <div class="col-6">
+        <label for="colorPdfPicker" class="form-label">Select Text Theme Color:</label>
+        <input type="color" id="colorPdfPicker" class="form-control form-control-color" value="#8DB600">
+    </div>
+    <div class="col-6">                        
+        <label for="fontSizeSlider" class="form-label mt-3">Adjust Text Font Size:</label>
+        <input type="range" id="fontSizeSlider" class="form-range" min="0.7" max="0.9" step="0.05">
+        <span id="fontSizeValue"></span>em  
+    </div>
+  </div>`);
+
+  const savedColor = localStorage.getItem('themePdfColor') || '#171716'; 
+  const fontSizeSlider = document.getElementById('fontSizeSlider');
+  const fontSizeValue = document.getElementById('fontSizeValue');
+  const savedFontSize = localStorage.getItem('themePdfFontSize') || '0.7';
+
+  if (savedColor) {
+      document.querySelectorAll('.text-theme').forEach(el => {
+          el.style.color = savedColor;
+          //alert(savedFontSize);
+          el.style.fontSize = savedFontSize + 'em';
+
+      });
+      document.getElementById('colorPdfPicker').value = savedColor; // Update the color picker UI
+
+      fontSizeSlider.value = savedFontSize;
+      fontSizeValue.textContent = savedFontSize;
+  }
+
+
   const loogbookFormCardBody = document.querySelector('.loogbookFormCardBody');
   $('.loogbookFormCard').each(function() {
     this.style.width = `${loogbookFormCardBody.clientWidth-valuationFormCardStyles_paddingRight}px`;
@@ -4047,8 +4132,18 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
   document.getElementById('valuationForm').style.display = "none";
   document.getElementById('report').style.display = "block";
   // Add event listeners for buttons
-  $('#generateReport').html('Generate Report');
-  $("#upload_valuationReport_help").html('');
+
+  /**if ($(".newReportModalFooter").length) {
+    $(".newReportModalFooter").html(`<button type="button" class="btn btn-bd-primary submit-report-btn">Submit Report</button>`);
+  }
+
+  // Use event delegation (better for dynamically added elements)
+  $(document).on("click", ".submit-report-btn", function() {
+    $('#generateReport').html('Generate Report');
+    $("#upload_valuationReport_help").html('');
+      submitReport();
+  }); */
+
   submitReport();
 
 }
@@ -4809,18 +4904,21 @@ function getDashboard(userUsername,_email,password,action,id) {
 
         document.querySelector(".ApproverForms").classList.add("d-none");
         document.querySelector(".valuation_Form").classList.remove("d-none");
+
         if (response.message.role == "Senior valuer") {
           document.querySelector(".ApproverForms").classList.remove("d-none"); 
           document.querySelector("#report").style.display = "none";
           document.querySelector(".report-information").classList.remove("d-none");
           document.querySelector("#valuationForm").style.display = "block";
         }
+
         document.querySelector(".main-spinner-container").classList.add("d-none");
         document.querySelector(".camera-toggle").classList.remove("d-none");
         document.querySelector(".pdf-settings").classList.add("d-none");      
         document.querySelector(".principal-valuer-signature").classList.add("d-none");      
         document.querySelector(".company-settings").classList.add("d-none");
         document.querySelector("#companyInfo").classList.add("d-none");
+
         //document.querySelector(".storage-alert").classList.add("d-none");
         //alert(response.companyUsers);
         //document.querySelector(".loogg").innerHTML = `${JSON.stringify(response.companyUsers)}`;
@@ -4846,7 +4944,7 @@ function getDashboard(userUsername,_email,password,action,id) {
             if (![...roleSelect.options].some(opt => opt.value === roleOption.value)) {
                 roleSelect.appendChild(roleOption);
             }
-        });        
+        });
 
         employeeSelect.addEventListener('change', function() {
             const selectedEmployee = companyUsers.find(emp => emp.UserID === this.value);
@@ -5059,7 +5157,9 @@ function getDashboard(userUsername,_email,password,action,id) {
                 };
             }
           }
-          
+
+          //alert(JSON.stringify(storageData));
+
           var percentageRemainingStorage = storageData.map(function(record) {
             var totalUsed = parseInt(record.total_storage_used, 10); // Convert to integer
             var maxStorage = parseInt(record.maximum_storage, 10); // Convert to integer
@@ -5070,7 +5170,9 @@ function getDashboard(userUsername,_email,password,action,id) {
 
             storageVal2Label.textContent = totalValuations + ' valuations';
 
-            if (totalMaxValuations == totalValuations) {
+            //alert(totalMaxValuations + '==' + totalValuations);
+
+            if (totalMaxValuations <= totalValuations) {
 
               reportButtons.forEach(button => {
                 button.addEventListener("click", function () {
@@ -5082,7 +5184,7 @@ function getDashboard(userUsername,_email,password,action,id) {
                     // Hide the message after 3 seconds
                     setTimeout(() => {
                         storageAlert.classList.add("d-none");
-                    }, 3000);
+                    }, 5000);
                 });
               });
             
@@ -5120,9 +5222,15 @@ function getDashboard(userUsername,_email,password,action,id) {
             // Calculate percentage remaining
             var remainingPercentage = (((maxStorage - totalUsed) / maxStorage) * 100).toFixed(2); // Format to 2 decimal places
             //var remainingPercentage = ((totalUsed / maxStorage) * 100).toFixed(2); // Format to 2 decimal places
+            //alert(maxStorage + "-" +  totalUsed + "/" +  maxStorage);
+            updateProgressBar(remainingPercentage);
+
             return remainingPercentage; // Return the calculated percentage
           });
-          updateProgressBar(percentageRemainingStorage);
+
+          //alert(percentageRemainingStorage);
+
+          //updateProgressBar(percentageRemainingStorage);
 
           updateStorageChartData(updatedStorageUsed, updatedMaxStorage, updatedValuations, newLabels);
           
@@ -5699,22 +5807,22 @@ function displayValuationForms(valuation_Forms, _reports, role) {
       if (role == "Elite Technician") {
           button_group = `
               <button type="button" class="btn btn-bd-primary view-button" FormID="${valuation.FormID}" ReportFileURL="${reportFileURL}" data-bs-toggle="modal" data-bs-target="#example_Modal"><i class="fa-solid fa-eye"></i> <span class="d-none d-sm-none d-md-inline">View</span></button>
-              <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
-              <button type="button" class="btn btn-bd-primary copy-button" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
+              <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary d-none" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
+              <button type="button" class="btn btn-bd-primary copy-button d-none" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
           `;        
       }
     } else if (role == "Elite Technician") {
       button_group = `
           <button type="button" class="btn btn-bd-primary view-button" FormID="${valuation.FormID}" ReportFileURL="${reportFileURL}" data-bs-toggle="modal" data-bs-target="#example_Modal"><i class="fa-solid fa-eye"></i> <span class="d-none d-sm-none d-md-inline">View</span></button>
-          <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
-          <button type="button" class="btn btn-bd-primary copy-button" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
+          <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary d-none" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
+          <button type="button" class="btn btn-bd-primary copy-button d-none" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
       `;
       if (approvalStatus == "Rejected" || approvalStatus == "Pending") {
           button_group = `
               <button type="button" class="btn btn-bd-primary view-button" FormID="${valuation.FormID}" ReportFileURL="${reportFileURL}" data-bs-toggle="modal" data-bs-target="#example_Modal"><i class="fa-solid fa-eye"></i> <span class="d-none d-sm-none d-md-inline">View</span></button>
               <button type="button" class="btn btn-bd-primary edit-button" FormID="${valuation.FormID}" data-bs-toggle="modal" data-bs-target="#newReportModal"><i class="fa-solid fa-pen-to-square"></i> <span class="d-none d-sm-none d-md-inline">Edit</span></button>
-              <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button d-none d-sm-none d-md-inline" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
-              <button type="button" class="btn btn-bd-primary copy-button d-none d-sm-none d-md-inline" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
+              <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button d-none" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
+              <button type="button" class="btn btn-bd-primary copy-button d-none" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
           `;
       }
     } else if (approvalStatus == "Rejected") {

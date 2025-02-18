@@ -1430,14 +1430,18 @@
             </div>
         </div>
     </div>
+
+
     <!-- New Report Modal -->
     <div class="bg-dark text-light modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true" style="z-index: 9999;">
         <div class="modal-dialog modal-xl">
             <div class="bg-dark text-light modal-content">
-                <div class="modal-header">
-                    <button id="newReportModal_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header newReportModalHeader align-items-center">
+                    <h5 class="modal-title" id="newReportModalLabel">New Report</h5>
+                    <button id="newReportModal_close" type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
+                    
                     <div class="card bg-dark text-light report-information">            
                         <form id="valuationForm"  class="valuation_Form text-center pb-5 mb-5 bg-dark text-light d-none">
             
@@ -1812,12 +1816,13 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>                    
+                            </div>
                             <button type="button" id="generateReport" class="btn btn-bd-primary">Generate Report</button>
                             <span id="ugenerateReport_help" class="mb-3"></span>
                         </form>                        
                     </div>
                     <div id="report" class="bg-dark text-light report mb-5" style="display: none;">
+                        
                         <div id="report_Content" class="bg-dark text-light"> </div>
                         <div id="view_Report_Content" class="bg-dark text-light"> </div>
 
@@ -1835,9 +1840,11 @@
                         </div>                    
                     </div>                    
                 </div>
+                <div class="modal-footer newReportModalFooter"></div>
             </div>
         </div>
     </div>
+
     <!-- Settings Modal -->
     <div class="bg-dark text-light modal fade" id="accountSettingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true" style="z-index: 9999;">
         <div class="modal-dialog modal-xl">
@@ -1883,14 +1890,23 @@
                                         </div>
     
                                         <div class="color-selector d-none">
-                                            <label for="colorPicker">Choose a color:</label>
+                                            <label for="colorPicker">Choose System Theme Color:</label>
                                             <input type="color" id="colorPicker" value="#9b59b6">
                                         </div>
-    
+
+                                        <!-- PDF Settings (Hidden) -->
+                                        <h4> PDF Settings</h4>
                                         <div class="text-center">
                                             <label for="percentageSlider" class="form-label">Image Quality: <span id="sliderValue">95</span>%</label>
                                             <input type="range" class="form-range" id="percentageSlider" min="0" max="100" step="1" value="95">
                                         </div>
+
+                                        <label for="colorPdfPicker" class="form-label">Select Text Theme Color:</label>
+                                        <input type="color" id="colorPdfPicker" class="form-control form-control-color" value="#8DB600">
+                                        
+                                        <label for="fontSizeSlider" class="form-label mt-3">Adjust Text Font Size:</label>
+                                        <input type="range" id="fontSizeSlider" class="form-range" min="0.7" max="0.9" step="0.05">
+                                        <span id="fontSizeValue"></span>em                                        
     
                                         <label for="notifications">Notifications</label>
                                         <select class="form-control" id="notifications">
@@ -2001,8 +2017,10 @@
                                                             <label class="choose_headLogo">Head Logo Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="headLogoPhotoToUpload[]" class="form-control-file uploadHeadLogoPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
                                                         </div>
                                                     </div>
-                                                  </div>                                        
+                                                  </div>
+                                                  
                                                 </div>
+                                                
                                                 <div class="mb-3">
                                                     <label for="additionalNotationInfo" class="form-label">Enclosure Notation Information</label>
                                                     <textarea class="form-control" id="additionalNotationInfo" rows="2"></textarea>
