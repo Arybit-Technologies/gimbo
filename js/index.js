@@ -59,6 +59,8 @@ let response_images;
 let response_vehicles; 
 let companies; 
 let companyDetails; 
+let inspections_valuations; 
+
 let teamChart;
 let storageStatusChart;
 
@@ -73,6 +75,8 @@ let approvalStatusChart = null;
 let assignmentStatusChart = null;
 let uploadedFiles = [];
 let uploadedTimeFiles = [];
+let uploadedVideoFiles = [];
+let uploadedTimeVideoFiles = [];
 
 let uploadedImageFile = [];
 
@@ -151,7 +155,7 @@ function onDeviceReady() {
     //cordova.plugins.backgroundMode.setEnabled(true);
     //localStorage.setItem('themeColor','#32062e');
 
-    var app_version = '1.0.17';
+    var app_version = '1.0.18';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
@@ -1326,177 +1330,8 @@ function onDeviceReady() {
     $(document).on("click", ".Captured_Photos", function() {
 
       const imgAdd = $(this);
-
-      //liveFeed();
-      captureImage();
-
-      function liveFeed() {
-    
-        // Check for permissions (if required by your platform, e.g., Cordova)
-        var permissions = cordova.plugins.permissions;
-        var permissionsToRequest = [
-            permissions.CAMERA
-        ];
-        permissions.requestPermissions(permissionsToRequest, function (status) {
-            if (status[permissions.CAMERA] === permissions.GRANTED) {
-                // Open the live QR scanner modal
-                openCapturePointsScanner();
-            } else {
-                showSnackbar('Permissions denied');
-            }
-        }, function (err) {
-          showSnackbar('Permission request failed: ' + JSON.stringify(err));
-        });
-        
-      }
-    
-      function openCapturePointsScanner() {
-          // Create a modal or container for the video
-          const modalContent = `
-          <div id="capturePointsModal" class="modal fade" tabindex="-1" style="z-index: 99999;">
-            <div class="modal-dialog modal-fullscreen modal-dialog-centered mt-2">
-              <div class="modal-content bg-dark text-light rounded-4 shadow">
-                <div class="modal-header border-bottom border-secondary">
-                  <h5 class="modal-title fw-bold">Scanning ${imgAdd.attr('maessa_up')}</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body d-flex flex-column justify-content-center align-items-center">
-                  <video id="videoCapturePoints" class="w-100 rounded" style="max-height: 80vh; object-fit: cover;" autoplay playsinline></video>
-                  <p id="capturePointsModalError" class="text-danger mt-3 text-center fw-semibold"></p>
-                </div>
-                <div class="modal-footer d-flex justify-content-between align-items-center border-top border-secondary">
-                  <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-success btn-lg px-4" id="captureButton">Capture</button>
-                </div>
-              </div>
-            </div>
-          </div>`;
-          $("body").append(modalContent);
-
-          const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
-          modalInstance.show();
-  
-          // Start video stream
-          const video = document.getElementById("videoCapturePoints");
-
-          navigator.mediaDevices.getUserMedia({
-              video: {
-                  facingMode: "environment"
-              }
-          }).then((stream) => {
-              video.srcObject = stream;
-          
-              // Access video track to adjust resolution dynamically
-              const track = stream.getVideoTracks()[0];
-              const capabilities = track.getCapabilities();
-              
-              // Get maximum supported resolution
-              const maxWidth = capabilities.width?.max || 1920;
-              const maxHeight = capabilities.height?.max || 1080;
-          
-              track.applyConstraints({
-                  width: maxWidth,
-                  height: maxHeight
-              }).then(() => {
-                  video.play();
-                  loadModel();
-              }).catch((err) => {
-                $("#capturePointsModalError").html("Failed to apply resolution constraints:", err);
-              });
-          }).catch((err) => {
-              $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-          });          
-          
-          let model;
-          // Load COCO-SSD Model
-          const loadModel = async () => {
-              $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-              model = await cocoSsd.load();
-              $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-              detectFrame();
-          };
-          
-          // Detect Objects in Each Frame
-          const detectFrame = async () => {
-              if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                  const canvas = document.createElement("canvas");
-                  const ctx = canvas.getContext("2d");
-                  canvas.width = video.videoWidth;
-                  canvas.height = video.videoHeight;
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                  // Convert canvas to base64 image
-                  const base64Image = canvas.toDataURL("image/jpeg");
-                  
-                  // Perform Detection
-                  $('#capturePointsModalError').html('<span class="text-success">Performing Detection...</span>');
-                  
-                  const predictions = await model.detect(canvas);
-
-                  // Visualize Results
-                  visualizePredictions(predictions, ctx);
-          
-                  canvas.remove();  // Cleanup
-              } else {
-                $("#capturePointsModalError").html("Video not ready for scanning. Ready state: " + video.readyState);
-              }
-              requestAnimationFrame(detectFrame);  // Continue scanning
-          };
-          
-          // Display Detected Objects
-          const visualizePredictions = (predictions, ctx) => {
-              const output = document.getElementById("capturePointsModalError");
-              output.innerHTML = "";  // Clear previous results
-          
-              predictions.forEach((prediction) => {
-                  const box = prediction.bbox;
-                  const [x, y, width, height] = box;
-          
-                  // Draw bounding box
-                  ctx.strokeStyle = "red";
-                  ctx.lineWidth = 4;
-                  ctx.strokeRect(x, y, width, height);
-          
-                  // Show label
-                  ctx.fillStyle = "red";
-                  ctx.fillText(
-                      `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
-                      x,
-                      y > 10 ? y - 5 : 10
-                  );
-          
-                  // Display in HTML
-                  const partDetected = document.createElement("div");
-                  partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                  output.appendChild(partDetected);
-                  
-              });
-          };  
-
-          // Stop video stream
-          const stopVideoStream = (stream) => {
-              const tracks = stream.getTracks();
-              tracks.forEach((track) => track.stop());
-          };
-  
-          // Handle modal close
-          document.getElementById("capturePointsModal").addEventListener("hidden.bs.modal", () => {
-              const stream = video.srcObject;
-              if (stream) {
-                  stopVideoStream(stream);
-              }
-              $("#capturePointsModal").remove(); // Clean up
-          });
-
-          document.getElementById("captureButton").addEventListener("click", () => {
-            const stream = video.srcObject;
-            stopVideoStream(stream);
-            const modalElement = document.getElementById('capturePointsModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-            modalInstance.hide();
-            captureImage();
-          });
-      }
+      
+      captureImage(); 
 
       function captureImage() {
         var permissions = cordova.plugins.permissions;
@@ -1512,6 +1347,8 @@ function onDeviceReady() {
               destinationType: Camera.DestinationType.DATA_URL,
               correctOrientation: true // Automatically corrects the orientation of the image
             });
+            imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
           } else {
             showSnackbar('Permissions denied');
           }
@@ -1528,139 +1365,158 @@ function onDeviceReady() {
         showSnackbar(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
         $("#upload_from_file_container_help").html(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
            
-        imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+        //imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
 
-        $.ajax({
-          //url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize',
-          url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize-3',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-              api_key: 'cifxp0cktEBBv8XjLg9l',
-              inputs: {
-                  "image": { "type": "base64", "value": imageData }
-              }
-          }),
-          success: function(result) {
-            if (result && result.outputs && result.outputs[0]) {
-                const outputImage = result.outputs[0].output_image;
-                const countObjects = result.outputs[0].count_objects;
-                const predictions = result.outputs[0].predictions.predictions; // Get the predictions
-                imgAdd.closest(".col").find('.points-spinner-grow').remove();
+        if (localStorage.getItem("aiObjectsDetection") === "true") {
 
-                // Create a list of predictions
-                const predictionsHTML = predictions.map(prediction => `
-                    <li>
-                        <strong>Class:</strong> ${prediction.class} <br>
-                        <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
-                        <strong>Position:</strong> (${prediction.x}, ${prediction.y}) <br>
-                        <strong>Size:</strong> ${prediction.width}x${prediction.height}
-                    </li>
-                `).join('');  
-
-                // Modal content
-                const modalContent = `
-                <div id="capturePointsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true" style="z-index: 99999;">
-                  <div class="modal-dialog modal-fullscreen modal-dialog-centered mt-2">
-                    <div class="modal-content bg-dark text-light rounded-4 shadow">
-                      <div class="modal-header border-bottom border-secondary">
-                        <h5 class="modal-title fw-bold" id="modalTitle">Scanning ${imgAdd.attr('maessa_up')}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body d-flex flex-column justify-content-center align-items-center">
-                        <img id="responseImage" src="" alt="Result" class="img-fluid" />
-                        <p id="capturePointsModalError" class="text-primary mt-3 text-center fw-semibold">${countObjects} Objects</p>
-                        <!-- Removed JSON.stringify for security -->
-                        <div>
-                          <h6>Predictions:</h6>
-                          <ul>${predictionsHTML || '<li>No predictions available.</li>'}</ul>
+          $.ajax({
+            //url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize',
+            url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize-3',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                api_key: 'cifxp0cktEBBv8XjLg9l',
+                inputs: {
+                    "image": { "type": "base64", "value": imageData }
+                }
+            }),
+            success: function(result) {
+              if (result && result.outputs && result.outputs[0]) {
+                  const outputImage = result.outputs[0].output_image;
+                  const countObjects = result.outputs[0].count_objects;
+                  const predictions = result.outputs[0].predictions.predictions; // Get the predictions
+                  imgAdd.closest(".col").find('.points-spinner-grow').remove();
+  
+                  // Create a list of predictions
+                  const predictionsHTML = predictions.map(prediction => `
+                      <li>
+                          <strong>Class:</strong> ${prediction.class} <br>
+                          <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
+                          <strong>Position:</strong> (${prediction.x}, ${prediction.y}) <br>
+                          <strong>Size:</strong> ${prediction.width}x${prediction.height}
+                      </li>
+                  `).join('');  
+  
+                  // Modal content
+                  const modalContent = `
+                  <div id="capturePointsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true" style="z-index: 99999;">
+                    <div class="modal-dialog modal-fullscreen modal-dialog-centered mt-2">
+                      <div class="modal-content bg-dark text-light rounded-4 shadow">
+                        <div class="modal-header border-bottom border-secondary">
+                          <h5 class="modal-title fw-bold" id="modalTitle">Scanning ${imgAdd.attr('maessa_up')}</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex flex-column justify-content-center align-items-center">
+                          <img id="responseImage" src="" alt="Result" class="img-fluid" />
+                          <p id="capturePointsModalError" class="text-primary mt-3 text-center fw-semibold">${countObjects} Objects</p>
+                          <!-- Removed JSON.stringify for security -->
+                          <div>
+                            <h6>Predictions:</h6>
+                            <ul>${predictionsHTML || '<li>No predictions available.</li>'}</ul>
+                          </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-between align-items-center border-top border-secondary">
+                          <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Close</button>
+                          <button type="button" class="btn btn-success btn-lg px-4" id="captureButton">Capture</button>
                         </div>
                       </div>
-                      <div class="modal-footer d-flex justify-content-between align-items-center border-top border-secondary">
-                        <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-success btn-lg px-4" id="captureButton">Capture</button>
-                      </div>
                     </div>
-                  </div>
-                </div>`;
-        
-                // Append modal to body
-                $("body").append(modalContent);
-                
-                predictions.forEach(prediction => {
-                  if (prediction.class === imgAdd.attr('maessa_up')) {                    
-                    showSnackbar(`Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%`);
-                    $("#upload_from_file_container_help").html(`<span class="text-success">Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
-        
-                  } else {
+                  </div>`;
+          
+                  // Append modal to body
+                  $("body").append(modalContent);
+                  
+                  predictions.forEach(prediction => {
+                    if (prediction.class === imgAdd.attr('maessa_up')) {                    
+                      showSnackbar(`Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%`);
+                      $("#upload_from_file_container_help").html(`<span class="text-success">Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+          
+                      const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === imgAdd.attr('maessa_up'));
+  
+                      // Update or add the resized image data to the uploadedFiles array
+                      if (maessaUpIndex !== -1) {
+                          uploadedFiles[maessaUpIndex].imageData = resizedImageData;
+                          uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                      } else {
+                          uploadedFiles.push({ maessa_up: imgAdd.attr('maessa_up'), imageData: resizedImageData });
+                          uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
+                      }
+
+                    } else {
+                      //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
+  
+                      $("#upload_from_file_container_help").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+  
+                      $("#capturePointsModalError").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+                      showSnackbar(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+  
+                      // Show modal
+                      const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
+                      modalInstance.show();
+              
+                      // Set image source
+                      $('#responseImage').attr('src', `data:image/png;base64,${outputImage.value}`);
+  
+                    }
+  
+                    // Update the background image of the corresponding element
+                    const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+                    imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });
+                  });
+  
+                  if (predictions.length < 1) {
                     //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
-
-                    $("#upload_from_file_container_help").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
-
-                    $("#capturePointsModalError").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
-                    showSnackbar(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
-
+  
+                    $("#upload_from_file_container_help").html(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
+                    showSnackbar(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
+  
                     // Show modal
                     const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
                     modalInstance.show();
             
                     // Set image source
                     $('#responseImage').attr('src', `data:image/png;base64,${outputImage.value}`);
-
+  
+                    // Update the background image of the corresponding element
+                    const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+                    imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });                  
                   }
-
-                  // Update the background image of the corresponding element
-                  const imageSrc = "data:image/jpeg;base64," + resizedImageData;
-                  imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });
-                });
-
-                if (predictions.length < 1) {
-                  //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
-
-                  $("#upload_from_file_container_help").html(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
-                  showSnackbar(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
-
-                  // Show modal
-                  const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
-                  modalInstance.show();
+  
+                  document.getElementById("captureButton").addEventListener("click", () => {
+                    const modalElement = document.getElementById('capturePointsModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modalInstance.hide();
+                    captureImage();
+                  });
           
-                  // Set image source
-                  $('#responseImage').attr('src', `data:image/png;base64,${outputImage.value}`);
-
-                  // Update the background image of the corresponding element
-                  const imageSrc = "data:image/jpeg;base64," + resizedImageData;
-                  imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });                  
-                }
-
-                document.getElementById("captureButton").addEventListener("click", () => {
-                  const modalElement = document.getElementById('capturePointsModal');
-                  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-                  modalInstance.hide();
-                  captureImage();
-                });
-        
+              }
+            },
+            error: function(xhr, status, error) {
+                showSnackbar("Error occurred: " + JSON.stringify(xhr));
             }
-          },
-          error: function(xhr, status, error) {
-              showSnackbar("Error occurred: " + JSON.stringify(xhr));
-          }
-        });
-
-        const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === imgAdd.attr('maessa_up'));
-
-        // Update or add the resized image data to the uploadedFiles array
-        if (maessaUpIndex !== -1) {
-            uploadedFiles[maessaUpIndex].imageData = resizedImageData;
-            uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+          });
+          
         } else {
-            uploadedFiles.push({ maessa_up: imgAdd.attr('maessa_up'), imageData: resizedImageData });
-            uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
+
+          const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === imgAdd.attr('maessa_up'));
+  
+          // Update or add the resized image data to the uploadedFiles array
+          if (maessaUpIndex !== -1) {
+              uploadedFiles[maessaUpIndex].imageData = resizedImageData;
+              uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+          } else {
+              uploadedFiles.push({ maessa_up: imgAdd.attr('maessa_up'), imageData: resizedImageData });
+              uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
+          }
+  
+          // Update the background image of the corresponding element
+          const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+          imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });       
+          imgAdd.closest(".col").find('.points-spinner-grow').remove();
+   
         }
 
-        // Update the background image of the corresponding element
-        const imageSrc = "data:image/jpeg;base64," + resizedImageData;
-        imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });
-
+        
         // Display messages indicating image analysis status
         //$("#upload_from_file_container_help").html(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
         //showSnackbar(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
@@ -1746,85 +1602,1134 @@ function onDeviceReady() {
               // If maessa_up doesn't exist, push a new object
               uploadedFiles.push({ maessa_up: maessa_up, imageData: imageData });
               uploadedTimeFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-            }        
-    
-            /**request.onupgradeneeded = function(event) {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains("images")) {
-                    db.createObjectStore("images", { keyPath: "id" });
-                }
-            };
+            }
             
-            request.onsuccess = function(event) {
-                const db = event.target.result;
-                const transaction = db.transaction("images", "readwrite");
-                const store = transaction.objectStore("images");
-            
-                // First, check if the record exists
-                const getRequest = store.get(maessa_up);
-            
-                getRequest.onsuccess = function(event) {
-                    if (event.target.result) {
-                        // If the record exists, update it
-                        const existingData = event.target.result;
-                        existingData.imageData = imageData;
-                        store.put(existingData);
-                    } else {
-                        // If the record doesn't exist, add it
-                        store.add({ id: maessa_up, imageData: imageData });
-                    }
-                };
-            
-                getRequest.onerror = function(event) {
-                    showSnackbar("Error retrieving the image: " + event.target.errorCode);
-                };
-            
-                transaction.oncomplete = function() {
-                    showSnackbar("Transaction completed: data added or updated successfully.");
-                };
-            
-                transaction.onerror = function(event) {
-                    showSnackbar("Transaction error: " + event.target.errorCode);
-                };
-            };
-            
-            request.onerror = function(event) {
-                showSnackbar("Database error: " + event.target.errorCode);
-            }; */
-            
-    
             $("#upload_from_file_container_help").html('<span class="text-success">Analysing ' + maessa_up + ' image...</span>'); 
             showSnackbar('<span class="text-success">Analysing ' + maessa_up + ' image...</span>');
-            $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>'); 
-    
-            
-            /**const imageDataToUploadFormData = new FormData();
-            //$("#upload_from_file_container_help").html(imageData);
-            imageDataToUploadFormData.append('imageDataToUploadFormData[]', imageFile, fileName);
-            // AJAX call to upload the imageData to the server
-            $.ajax({
-              url: server_Url +  'upload_image.php',
-              type: 'POST',
-              data: imageDataToUploadFormData,
-              processData: false,
-              contentType: false,
-              success: function(response) {
-                if (response.status) {
-                  $("#upload_from_file_container_help").html(`<span class="text-success">${response.message}</span>`);
-                } else {
-                  $("#upload_from_file_container_help").html(`<span class="text-danger">${response.message}</span>`);
-                }
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                $("#upload_from_file_container_help").html(`<span class="text-danger">${JSON.stringify(jqXHR)}</span>`);
+            $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>');
+
+            if (localStorage.getItem("videoSection") === "true" && maessa_up === 'Logbook photo') {
+              document.querySelector(".section-30SecondVideo").classList.remove('d-none');              
+      
+              var permissions = cordova.plugins.permissions;
+              var permissionsToRequest = [
+                  permissions.CAMERA,
+                  permissions.RECORD_AUDIO, // Ensure proper recording permissions
+                  permissions.READ_EXTERNAL_STORAGE,
+                  permissions.WRITE_EXTERNAL_STORAGE, // Required for older Android versions
+              ];
+              
+              if (localStorage.getItem("aiObjectsDetection") === "truee") {     
+
+                // Check for permissions (if required by your platform, e.g., Cordova)
+                permissions.requestPermissions(permissionsToRequest, function (status) {
+                    if (status[permissions.CAMERA] === permissions.GRANTED) {
+  
+                        //openCapturePointsScanner(maessa_up);
+                    } else {
+                        showSnackbar('Permissions denied');
+                    }
+                }, function (err) {
+                  showSnackbar('Permission request failed: ' + JSON.stringify(err));
+                });
+                
+              } else {      
+                permissions.requestPermissions(permissionsToRequest, function (status) {
+                    permissions.hasPermission(permissions.CAMERA, function (status) {
+                        if (status.hasPermission) {
+                          captureVideo('params');
+                        } else {
+                          $('#capturePointsModalError').html("Permissions denied");
+                        }
+                    });
+                }, function (err) {
+                  $('#capturePointsModalError').html("Permission request failed: " + JSON.stringify(err));
+                });
               }
-            }); */
-               
+
+            } else {
+              document.querySelector(".section-30SecondVideo").classList.add('d-none');
+              document.getElementById("videoCapturePoints").classList.add('d-none');
+            }
+            
           }
         }    
       } else {
         $("#upload_from_file_container_help").html('<span class= "text-danger" >only Image files</span>');
       }
+      
+
+      function captureVideo(maessa_up) {
+        navigator.device.capture.captureVideo(
+        //navigator.camera.captureVideo(
+            function (mediaFiles) {
+                var videoPath = mediaFiles[0].fullPath;
+
+                window.resolveLocalFileSystemURL(videoPath, function (fileEntry) {
+                  fileEntry.file(function (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = function () {
+                          const blobEntry = new Blob([reader.result], { type: file.type });
+              
+                          const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
+              
+                          if (maessaUpIndex !== -1) {
+                              uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
+                              uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                          } else {
+                              uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
+                              uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+                          }
+              
+                          playVideo(fileEntry.toURL());
+                      };
+                      reader.readAsArrayBuffer(file);
+                  });
+                }, function (error) {
+                  $('#capturePointsModalError').html("Error accessing video file:", error);
+                });
+            
+              },
+            function (error) {
+              $('#capturePointsModalError').html("Video capture failed: " + error.code);
+            },
+            { limit: 1, duration: 30 } // Limit to 1 video, max duration 30 seconds
+        );
+        
+      }
+
+      function playVideo(videoPath) {
+        var videoElement = document.getElementById("videoCapturePoints");
+        videoElement.src = videoPath;
+    
+        var playPauseBtn = document.getElementById("playPauseBtn");
+        var playIcon = playPauseBtn.querySelector(".play-icon");
+        var pauseIcon = playPauseBtn.querySelector(".pause-icon");
+        var retakeIcon = playPauseBtn.querySelector(".retake-icon");
+
+        retakeIcon.addEventListener("click", function () {
+          captureVideo('params');
+        });
+
+        playPauseBtn.addEventListener("click", function () {
+            if (videoElement.paused) {
+                videoElement.play();
+                playIcon.classList.add("d-none");
+                retakeIcon.classList.add('d-none');
+                pauseIcon.classList.remove("d-none");
+            } else {
+                videoElement.pause();
+                retakeIcon.classList.add('d-none');
+                playIcon.classList.remove("d-none");
+                pauseIcon.classList.add("d-none");
+            }
+        });
+
+        // Sync button state when video ends or is paused externally
+        videoElement.addEventListener('ended', () => {
+            retakeIcon.classList.remove('d-none');
+            playIcon.classList.add('d-none');
+            pauseIcon.classList.add('d-none');
+        });
+        
+        videoElement.addEventListener('pause', () => {
+            playIcon.classList.remove('d-none');
+            pauseIcon.classList.add('d-none');
+            retakeIcon.classList.add('d-none');
+
+        });
+        
+        videoElement.addEventListener('play', () => {
+            playIcon.classList.add('d-none');
+            retakeIcon.classList.add('d-none');
+            pauseIcon.classList.remove('d-none');
+        });
+        
+      }
+
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let filePath = "";
+    
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    savedStream = stream;
+                    videoElement.play();
+                    startRecording(stream);
+                    loadModel();
+                })
+                .catch(err => {
+                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+                });
+        };
+    
+        function startRecording(stream) {
+            recordedChunks = [];
+            //mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" });
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+    
+            mediaRecorder.onstop = saveRecordedVideo;
+            mediaRecorder.start();
+        }
+    
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+        }
+    
+        function saveRecordedVideo() {
+            const blob = new Blob(recordedChunks, { type: "video/webm" });
+            const fileName = `video_${Date.now()}.webm`;
+            replayVideo(blob);
+        }
+    
+        function replayVideo(blob) {
+            const videoURL = URL.createObjectURL(blob);
+            videoElement.src = videoURL;
+            videoElement.controls = true;
+            videoElement.play().catch(error => $('#capturePointsModalError').html("Error playing video: " + error.message + " " + videoURL));
+        }
+    
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                stopRecording();
+            }
+            if (videoElement.srcObject) {
+                stopVideoStream(videoElement.srcObject);
+            }
+        }, 30000);
+    
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            model = await cocoSsd.load();
+            $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+            detectFrame();
+        };
+    
+        let frameCount = 0;
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+            frameCount++;
+            if (frameCount % 10 === 0) {
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                    const predictions = await model.detect(canvas);
+                    visualizePredictions(predictions, ctx);
+                }
+            }
+            requestAnimationFrame(detectFrame);
+        };
+    
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };
+    
+        function handleError(msg) {
+            return (error) => $('#capturePointsModalError').html(`${msg}: ${error.message}`);
+        }
+    
+        startVideoStream();
+      } */
+
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+    
+        // Stop the video stream and release resources
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        // Start the video stream from the camera
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    savedStream = stream;
+                    videoElement.play();
+                    startRecording(stream); // Start recording the stream
+                    loadModel(); // Load the COCO-SSD model for object detection
+                })
+                .catch(err => {
+                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+                });
+        };
+    
+        // Start recording the video stream
+        function startRecording(stream) {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
+    
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+    
+            mediaRecorder.onstop = saveRecordedVideo;
+            mediaRecorder.start();
+        }
+    
+        // Stop the recording
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+        }
+    
+        // Save the recorded video and replay it
+        function saveRecordedVideo() {
+            const blob = new Blob(recordedChunks, { type: "video/webm" });
+            replayVideo(blob);
+        }
+    
+        // Replay the recorded video in the video element
+        function replayVideo(blob) {
+            const videoURL = URL.createObjectURL(blob);
+            videoElement.src = videoURL;
+            videoElement.type = "video/webm"; // Ensure the type matches the blob
+            videoElement.controls = true;
+            videoElement.play().catch(error => {
+                $('#capturePointsModalError').html("Error playing video: " + error.message + " " + videoURL);
+            });
+        }
+    
+        // Automatically stop recording and release the stream after 30 seconds
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                stopRecording();
+            }
+            if (videoElement.srcObject) {
+                stopVideoStream(videoElement.srcObject);
+            }
+        }, 30000);
+    
+        // Load the COCO-SSD model for object detection
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            try {
+                model = await cocoSsd.load();
+                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+                detectFrame(); // Start detecting objects in the video frames
+            } catch (error) {
+                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
+            }
+        };
+    
+        // Detect objects in the video frames
+        let frameCount = 0;
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+            frameCount++;
+            if (frameCount % 10 === 0) { // Process every 10th frame
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                    try {
+                        const predictions = await model.detect(canvas);
+                        visualizePredictions(predictions, ctx); // Visualize the detected objects
+                    } catch (error) {
+                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
+                    }
+                }
+            }
+            requestAnimationFrame(detectFrame); // Continue detecting frames
+        };
+    
+        // Visualize the detected objects on the canvas
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };
+    
+        // Handle errors
+        function handleError(msg) {
+            return (error) => $('#capturePointsModalError').html(`${msg}: ${error.message}`);
+        }
+    
+        // Start the video stream and recording
+        startVideoStream();
+      } */
+
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+    
+        // Check for supported MIME types
+        const getSupportedMimeType = () => {
+            const mimeTypes = [
+                "video/webm; codecs=vp9",
+                "video/webm; codecs=vp8",
+                "video/webm",
+                "video/mp4",
+            ];
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    return mimeType;
+                }
+            }
+            return null;
+        };
+    
+        // Stop the video stream and release resources
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        // Start the video stream from the camera
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    savedStream = stream;
+                    videoElement.play();
+                    startRecording(stream); // Start recording the stream
+                    loadModel(); // Load the COCO-SSD model for object detection
+                })
+                .catch(err => {
+                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+                });
+        };
+    
+        // Start recording the video stream
+        function startRecording(stream) {
+            recordedChunks = [];
+            const mimeType = getSupportedMimeType();
+            if (!mimeType) {
+                $("#capturePointsModalError").html("Your browser does not support recording.");
+                return;
+            }
+    
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+    
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+    
+            mediaRecorder.onstop = saveRecordedVideo;
+            mediaRecorder.start();
+        }
+    
+        // Stop the recording
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+        }
+    
+        // Save the recorded video and replay it
+        function saveRecordedVideo() {
+            const mimeType = getSupportedMimeType();
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            replayVideo(blob);
+        }
+
+        
+    
+        // Replay the recorded video in the video element
+        function replayVideo(blob) {
+
+            videoElement.srcObject = savedStream;
+
+            videoElement.play();
+            alert(savedStream);
+
+            //playVideo(URL.createObjectURL(blob));
+        }
+    
+        // Automatically stop recording and release the stream after 30 seconds
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                stopRecording();
+            }
+            if (videoElement.srcObject) {
+                stopVideoStream(videoElement.srcObject);
+            }
+        }, 30000);
+    
+        // Load the COCO-SSD model for object detection
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            try {
+                model = await cocoSsd.load();
+                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+                detectFrame(); // Start detecting objects in the video frames
+            } catch (error) {
+                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
+            }
+        };
+    
+        // Detect objects in the video frames
+        let frameCount = 0;
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+            frameCount++;
+            if (frameCount % 10 === 0) { // Process every 10th frame
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                    try {
+                        const predictions = await model.detect(canvas);
+                        visualizePredictions(predictions, ctx); // Visualize the detected objects
+                    } catch (error) {
+                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
+                    }
+                }
+            }
+            requestAnimationFrame(detectFrame); // Continue detecting frames
+        };
+    
+        // Visualize the detected objects on the canvas
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };
+    
+        // Start the video stream and recording
+        startVideoStream();
+      } */
+            
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null; // Store the stream for replaying
+    
+        // Function to stop video stream
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        // Function to restart video stream
+        const restartVideoStream = () => {
+      
+          if (!videoElement) {
+              $('#capturePointsModalError').html("Video element not found!");
+              return;
+          }
+      
+          if (savedStream) {
+              $('#capturePointsModalError').html("Replaying saved stream...");
+      
+              // Stop existing tracks before reusing the stream
+              savedStream.getTracks().forEach(track => track.stop());
+      
+              // Ensure `srcObject` is properly reset before reassigning
+              videoElement.srcObject = savedStream;
+      
+              videoElement.onloadedmetadata = () => {
+                  videoElement.play().catch(error => $('#capturePointsModalError').html("Error playing video:", error));
+              };
+          
+              var playPauseBtn = document.getElementById("playPauseBtn");
+              var playIcon = playPauseBtn.querySelector(".play-icon");
+              var pauseIcon = playPauseBtn.querySelector(".pause-icon");
+              var retakeIcon = playPauseBtn.querySelector(".retake-icon");
+      
+              retakeIcon.addEventListener("click", function () {
+      
+                if (localStorage.getItem("aiObjectsDetection") === "true") {
+                  openCapturePointsScanner(maessa_up);
+                } else {
+                  captureVideo('params');
+                }
+      
+              });
+      
+              playPauseBtn.addEventListener("click", function () {
+                  if (videoElement.paused) {
+                      videoElement.play();
+                      playIcon.classList.add("d-none");
+                      retakeIcon.classList.add('d-none');
+                      pauseIcon.classList.remove("d-none");
+                  } else {
+                      videoElement.pause();
+                      retakeIcon.classList.add('d-none');
+                      playIcon.classList.remove("d-none");
+                      pauseIcon.classList.add("d-none");
+                  }
+              });
+      
+              // Sync button state when video ends or is paused externally
+              videoElement.addEventListener('ended', () => {
+                  retakeIcon.classList.remove('d-none');
+                  playIcon.classList.add('d-none');
+                  pauseIcon.classList.add('d-none');
+              });
+              
+              videoElement.addEventListener('pause', () => {
+                  playIcon.classList.remove('d-none');
+                  pauseIcon.classList.add('d-none');
+                  retakeIcon.classList.add('d-none');
+      
+              });
+              
+              videoElement.addEventListener('play', () => {
+                  playIcon.classList.add('d-none');
+                  retakeIcon.classList.add('d-none');
+                  pauseIcon.classList.remove('d-none');
+              });
+          } else {
+              $('#capturePointsModalError').html("No saved stream. Restarting...");
+              startVideoStream(); // Start a new stream if none is saved
+          }
+          
+        };
+      
+    
+        // Function to start video stream
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" }
+            }).then((stream) => {
+                videoElement.srcObject = stream;
+    
+                // Store the stream for replaying later
+                savedStream = stream;
+    
+                // Adjust resolution dynamically
+                const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities();
+                const maxWidth = capabilities.width?.max || 1920;
+                const maxHeight = capabilities.height?.max || 1080;
+    
+                track.applyConstraints({
+                    width: maxWidth,
+                    height: maxHeight
+                }).then(() => {
+                    videoElement.play();
+    
+                    // Store video data
+                    const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
+                    if (maessaUpIndex !== -1) {
+                        uploadedVideoFiles[maessaUpIndex].videoData = stream;
+                        uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                    } else {
+                        uploadedVideoFiles.push({ maessa_up: maessa_up, videoData: stream });
+                        uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+                    }
+    
+                    loadModel();
+                }).catch(err => {
+                  $("#capturePointsModalError").html("Failed to apply resolution constraints:", err);
+                });
+            }).catch(err => {
+                //console.error("Failed to access camera:", err);
+                $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+            });
+        };
+    
+        startVideoStream(); // Start the stream initially
+    
+        // Stop the video stream after 30 seconds and restart after 2 seconds
+        setTimeout(() => {
+            if (videoElement.srcObject) {
+              $('#capturePointsModalError').html("Stopping video stream...");
+                stopVideoStream(videoElement.srcObject);
+    
+                setTimeout(() => {
+                  $('#capturePointsModalError').html("Restarting video stream...");
+                    
+                  restartVideoStream();
+                }, 2000);
+            }
+        }, 30000);
+    
+        // Load and run COCO-SSD model
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            model = await cocoSsd.load();
+            $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+            detectFrame();
+        };
+    
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+    
+            if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                const predictions = await model.detect(canvas);
+                visualizePredictions(predictions, ctx);
+    
+                canvas.remove();
+            }
+            requestAnimationFrame(detectFrame);
+        };
+    
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";  
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(
+                    `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
+                    x,
+                    y > 10 ? y - 5 : 10
+                );
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };  
+      } */
+
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+    
+        // Check for supported MIME types
+        const getSupportedMimeType = () => {
+            const mimeTypes = [
+                "video/webm; codecs=vp9",
+                "video/webm; codecs=vp8",
+                "video/webm",
+                "video/mp4",
+            ];
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    return mimeType;
+                }
+            }
+            return null;
+        };
+    
+        // Stop the video stream and release resources
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        // Start the video stream from the camera
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    savedStream = stream;
+                    videoElement.play();
+                    startRecording(stream); // Start recording the stream
+                    loadModel(); // Load the COCO-SSD model for object detection
+                })
+                .catch(err => {
+                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+                });
+        };
+    
+        // Start recording the video stream
+        function startRecording(stream) {
+            recordedChunks = [];
+            const mimeType = getSupportedMimeType();
+            if (!mimeType) {
+                $("#capturePointsModalError").html("Your browser does not support recording.");
+                return;
+            }
+    
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+    
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+    
+            mediaRecorder.onstop = saveRecordedVideo;
+            mediaRecorder.start();
+        }
+    
+        // Stop the recording
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+        }
+    
+        // Save the recorded video and replay it
+        function saveRecordedVideo() {
+            const mimeType = getSupportedMimeType();
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            replayVideo(blob);
+        }
+    
+        // Replay the recorded video in the video element
+        function replayVideo(blob) {
+            const videoURL = URL.createObjectURL(blob);
+            videoElement.src = videoURL;
+            videoElement.type = blob.type; // Set the type to match the blob
+            videoElement.controls = true;
+            videoElement.play()
+                .then(() => {
+                    $('#capturePointsModalError').html("Video playback started successfully.");
+                })
+                .catch(error => {
+                    $('#capturePointsModalError').html("Error playing video: " + error.message);
+                });
+        }
+    
+        // Automatically stop recording and release the stream after 30 seconds
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                stopRecording();
+            }
+            if (videoElement.srcObject) {
+                stopVideoStream(videoElement.srcObject);
+            }
+        }, 30000);
+    
+        // Load the COCO-SSD model for object detection
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            try {
+                model = await cocoSsd.load();
+                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+                detectFrame(); // Start detecting objects in the video frames
+            } catch (error) {
+                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
+            }
+        };
+    
+        // Detect objects in the video frames
+        let frameCount = 0;
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+            frameCount++;
+            if (frameCount % 10 === 0) { // Process every 10th frame
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                    try {
+                        const predictions = await model.detect(canvas);
+                        visualizePredictions(predictions, ctx); // Visualize the detected objects
+                    } catch (error) {
+                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
+                    }
+                }
+            }
+            requestAnimationFrame(detectFrame); // Continue detecting frames
+        };
+    
+        // Visualize the detected objects on the canvas
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };
+    
+        // Start the video stream and recording
+        startVideoStream();
+      } */
+
+      /**function openCapturePointsScanner(maessa_up) {
+        const videoElement = document.getElementById("videoCapturePoints");
+        let savedStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+    
+        // Check for supported MIME types
+        const getSupportedMimeType = () => {
+            const mimeTypes = [
+                "video/webm; codecs=vp9",
+                "video/webm; codecs=vp8",
+                "video/webm",
+                "video/mp4",
+            ];
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    return mimeType;
+                }
+            }
+            return null;
+        };
+    
+        // Stop the video stream and release resources
+        const stopVideoStream = (stream) => {
+            if (!stream) return;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+        };
+    
+        // Start the video stream from the camera
+        const startVideoStream = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                    savedStream = stream;
+                    videoElement.play();
+                    startRecording(stream); // Start recording the stream
+                    loadModel(); // Load the COCO-SSD model for object detection
+                })
+                .catch(err => {
+                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+                });
+        };
+    
+        // Start recording the video stream
+        function startRecording(stream) {
+            recordedChunks = [];
+            const mimeType = getSupportedMimeType();
+            if (!mimeType) {
+                $("#capturePointsModalError").html("Your browser does not support recording.");
+                return;
+            }
+    
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+    
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+    
+            mediaRecorder.onstop = saveRecordedVideo;
+            mediaRecorder.start();
+        }
+    
+        // Stop the recording
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+        }
+    
+        // Save the recorded video and replay it
+        function saveRecordedVideo() {
+            const mimeType = getSupportedMimeType();
+            const blob = new Blob(recordedChunks, { type: mimeType });
+    
+            // Save the video to media storage
+            saveVideoToStorage(blob);
+    
+            // Replay the video
+            replayVideo(blob);
+        }
+    
+        // Save the video to media storage
+        function saveVideoToStorage(blob) {
+            const fileName = `recording_${Date.now()}.${blob.type.split('/')[1]}`; // e.g., recording_1234567890.webm
+            const fileURL = URL.createObjectURL(blob);
+    
+            // Create a download link
+            const a = document.createElement("a");
+            a.href = fileURL;
+            a.download = fileName;
+            a.textContent = "Download Video";
+            document.body.appendChild(a);
+    
+            // Trigger the download
+            a.click();
+    
+            // Clean up
+            URL.revokeObjectURL(fileURL);
+            document.body.removeChild(a);
+    
+            $('#capturePointsModalError').html(`Video saved as ${fileName}`);
+        }
+    
+        // Replay the recorded video in the video element
+        function replayVideo(blob) {
+            const videoURL = URL.createObjectURL(blob);
+            videoElement.src = videoURL;
+            videoElement.type = blob.type; // Set the type to match the blob
+            videoElement.controls = true;
+            videoElement.play()
+                .then(() => {
+                  $('#capturePointsModalError').html("Video playback started successfully.");
+                })
+                .catch(error => {
+                    $('#capturePointsModalError').html("Error playing video: " + error.message);
+                });
+        }
+    
+        // Automatically stop recording and release the stream after 30 seconds
+        setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                stopRecording();
+            }
+            if (videoElement.srcObject) {
+                stopVideoStream(videoElement.srcObject);
+            }
+        }, 30000);
+    
+        // Load the COCO-SSD model for object detection
+        let model;
+        const loadModel = async () => {
+            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+            try {
+                model = await cocoSsd.load();
+                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+                detectFrame(); // Start detecting objects in the video frames
+            } catch (error) {
+                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
+            }
+        };
+    
+        // Detect objects in the video frames
+        let frameCount = 0;
+        const detectFrame = async () => {
+            if (!videoElement.srcObject) return;
+            frameCount++;
+            if (frameCount % 10 === 0) { // Process every 10th frame
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+                    try {
+                        const predictions = await model.detect(canvas);
+                        visualizePredictions(predictions, ctx); // Visualize the detected objects
+                    } catch (error) {
+                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
+                    }
+                }
+            }
+            requestAnimationFrame(detectFrame); // Continue detecting frames
+        };
+    
+        // Visualize the detected objects on the canvas
+        const visualizePredictions = (predictions, ctx) => {
+            const output = document.getElementById("capturePointsModalError");
+            output.innerHTML = "";
+    
+            predictions.forEach((prediction) => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(x, y, width, height);
+    
+                ctx.fillStyle = "red";
+                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+    
+                const partDetected = document.createElement("div");
+                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+                output.appendChild(partDetected);
+            });
+        };
+    
+        // Start the video stream and recording
+        startVideoStream();
+      } */
+    
     });
     $(document).on("change",".companyLogoFile", function(event) {
       var uploadFile = $(this);
@@ -1940,7 +2845,7 @@ function onDeviceReady() {
             formData.append('userCompanyID', localStorage.getItem('userCompanyID'));
             formData.append('userRole', localStorage.getItem('userRole'));
             formData.append('action', "newHeadLogo");
-            savePdfSettings(formData);
+            savePdfSettings(formData);//maessa_up_Arr
             
           }
         }    
@@ -1975,7 +2880,7 @@ function onDeviceReady() {
         <label class="choose_logbookPhoto">Logbook Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="logbookPhotoToUpload[]" class="form-control-file uploadlogbookPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
       </div>`);
       $("#upload_uploadlogbookPhoto_help").html('');
-    }); 
+    });
 
     getCompanies(localStorage.getItem('deviceID', '' , ''));
     // Delegate click event to dynamically added .selected-company elements
@@ -2121,14 +3026,20 @@ function onDeviceReady() {
       }
     }
     function switchToFileMode() {
-      camera_toggle = 1;
-      cameraLabel.textContent = "File Mode";
+      if (localStorage.getItem("inAppCamera") === "true") {
+        cameraFlexSwitchCheckChecked.checked = true; // Use boolean `true` instead of string `'true'`
+        showSnackbar('Only in App Camera allowed');
+      } else {
+        camera_toggle = 1;
+        cameraLabel.textContent = "File Mode";
+      }
+
       $('#vehiclePhotos').html(``);
       if (inspect_action != "") {
         inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
       } else {
         vehiclePhotosInput(localStorage.getItem('FormID'));
-      }
+      }        
     }
     // Initial mode
     if (switchCheckbox.checked) {
@@ -2195,7 +3106,8 @@ function onDeviceReady() {
             //showSnackbar('User stopped scrolling.');
         }, 2000);  // Adjust the delay time to your preference
     });
-    
+    //alert("valuationForm");
+
     const valuationForm = document.getElementById("valuationForm");
 
     // Save form data to local storage
@@ -2213,164 +3125,11 @@ function onDeviceReady() {
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
     });
+    //alert("localStorage");
 
-    // Retrieve form data from local storage and populate form
-    if (localStorage.getItem("valuationFormData") != null) {
-      document.querySelector(".resumeReport").classList.remove("d-none");
-      const savedData = localStorage.getItem("valuationFormData");
 
-      if (savedData) {
-        const formData = JSON.parse(savedData);
-        const elements = valuationForm.elements;
-  
-        for (let i = 0; i < elements.length; i++) {
-          if (elements[i].name && formData[elements[i].name]) {
-            elements[i].value = formData[elements[i].name];
-          }
-        }
-      }
+    //alert("checkNotificationsPermission");
 
-      /**alert(uploadedFiles.length);
-
-      request.onsuccess = function(event) {
-          const db = event.target.result;
-          const transaction = db.transaction("images", "readonly");
-          const store = transaction.objectStore("images");
-      
-          // Retrieve all records from the store
-          const getAllRequest = store.getAll();
-      
-          getAllRequest.onsuccess = function(event) {
-              const result = event.target.result;
-      
-              if (result && result.length > 0) {
-                  result.forEach(item => {
-                      uploadedFiles.push({ maessa_up: item.id, imageData: item.imageData });
-                  });
-                  showSnackbar("All uploaded files retrieved: " + uploadedFiles.length);
-              } else {
-                  showSnackbar("No uploaded files found.");
-              }
-          };
-      
-          getAllRequest.onerror = function(event) {
-              showSnackbar("Error retrieving all images: " + event.target.errorCode);
-          };
-      
-          transaction.oncomplete = function() {
-              showSnackbar("Transaction completed: uploaded files retrieved successfully.");
-          };
-      
-          transaction.onerror = function(event) {
-              showSnackbar("Transaction error: " + event.target.errorCode);
-          };
-      };
-      
-      request.onerror = function(event) {
-          showSnackbar("Database error: " + event.target.errorCode);
-      };
-      
-      alert(uploadedFiles.length);  */
-
-      /**const request = indexedDB.open("imageStorageDB", 1);
-      
-      request.onsuccess = function(event) {
-          const db = event.target.result;
-          const transaction = db.transaction("images", "readonly");
-          const store = transaction.objectStore("images");
-      
-          // Retrieve all records from the store
-          const getAllRequest = store.getAll();
-      
-          getAllRequest.onsuccess = function(event) {
-              const result = event.target.result;
-              
-              if (result && result.length > 0) {
-                  result.forEach(item => {
-                      uploadedFiles.push({ maessa_up: item.id, imageData: item.imageData });
-                  });
-                  showSnackbar("All uploaded files retrieved:" + uploadedFiles.length);
-              } else {
-                  showSnackbar("No uploaded files found.");
-              }
-          };
-      
-          getAllRequest.onerror = function(event) {
-              showSnackbar("Error retrieving all images:" + event.target.error);
-          };
-      
-          transaction.oncomplete = function() {
-              showSnackbar("Transaction completed: uploaded files retrieved successfully.");
-          };
-      
-          transaction.onerror = function(event) {
-              showSnackbar("Transaction error:" + event.target.error);
-          };
-      };
-      
-
-      //uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles'));
-      alert(uploadedFiles.length); */   
-
-      //$('#vehiclePhotos').html(``);
-
-      /**const maessaArray = maessa_up_Arr.split(',');    
-      var companyName = localStorage.getItem('userCompanyName');        
-      // Replace spaces with underscores and convert to lowercase
-      let targetDir = companyName.replace(/ /g, '_').toLowerCase();
-      targetDir = 'arybit_' + targetDir; 
-      // Convert the company name to lowercase and replace spaces with underscores for the file name
-      let fileName = companyName.replace(/ /g, '_').toLowerCase();
-      fileName += "_logo.jpg"; // Add the ".jpg" extension      
-      var companyLogoUrl = storage_server + targetDir + '/' + fileName;
-      
-      maessaArray.forEach(function(item) {
-        uploadedFiles.forEach(fileObj => {
-          var image_src = "data:image/jpeg;base64," + fileObj.imageData; 
-          var label = fileObj.maessa_up;
-          if (label == item) {
-            input_file = `<input type="file" name="fileToUpload[]" data-url="${companyLogoUrl}" class="form-control-file uploadFile img" data-maessa_up="${label}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;">`;    
-            labelText = `<label class="choose_photo" maessa_up="${label}"> ${label} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;
-            if (camera_toggle == 0) {
-              input_file = `<input type="file" name="fileToUpload[]" data-url="${companyLogoUrl}" class="form-control-file uploadFile img d-none" data-maessa_up="${label}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;" disabled>`;    
-              labelText = `<label class="choose_photo Captured_Photos" maessa_up="${label}"> ${label} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;
-            }
-          }
-          if (item === 'Logbook photo') {
-            input_file = `<input type="file" name="logbookfileToUpload[]" data-url="${companyLogoUrl}" class="form-control-file uploadFile img" data-maessa_up="${item}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;">`;
-            labelText = `<label class="choose_photo" maessa_up="${item}"> ${item} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;
-          
-          }
-          $('#vehiclePhotos').append(`
-            <div class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
-              <div class="card imgUp position-relative" style="background-image: url('${image_src}');">
-                <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg del"><i class="fa-solid fa-xmark"></i></i>
-                ${labelText}
-              </div>
-            </div>
-          `);
-  
-        });
-      }); */ 
-      
-      /**uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles'));
-      $('#vehiclePhotos').html(``);
-      uploadedFiles.forEach(fileObj => {
-        var image_src = "data:image/jpeg;base64," + fileObj.imageData; 
-        var label = fileObj.maessa_up;
-        $('#vehiclePhotos').append(`
-          <div class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
-            <div class="card imgUp position-relative" style="background-image: url('${image_src}');">
-              <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg del"><i class="fa-solid fa-xmark"></i></i>
-              ${label}
-            </div>
-          </div>
-        `);
-
-      }); */
-
-    }
-    
     const notificationsSwitchCheckbox = document.getElementById("notificationsSwitch");
     const notificationsLabel = document.querySelector(".notifications-check-label");
     // Function to check for notifications permission and toggle the switch
@@ -2395,6 +3154,8 @@ function onDeviceReady() {
             }                                
         });
     }
+    //alert("disableNotifications");
+
     // Function to disable notifications
     function disableNotifications() {
         notificationsSwitchCheckbox.checked = false;
@@ -2464,7 +3225,8 @@ function onDeviceReady() {
                 $(".register_error").html(`<span class="text-danger text-center">${response.messageError}</span>`);
               }            
             }
-    
+            //alert(response.status);                                         
+
             if (response.status) {
               var dateObj = new Date(timestamp);
               // Format the date as yyyy-mm-dd
@@ -2485,13 +3247,14 @@ function onDeviceReady() {
               if(window.location.hostname == "localhost"){
                 //alert(window.location.hostname);
 
-                  if (cordova.platformId == "android") {                                
+                  if (cordova.platformId == "android") {   
+                    //alert(window.location.hostname);
+                             
                       FirebasePlugin.getToken(
                           function (fcmToken) {
                               localStorage.setItem('fcmToken',fcmToken);
     
                               // On fcmToken load, check the current notification permission status   
-                              //alert(fcmToken);                                         
                               checkNotificationsPermission();
                           },
                           function (error) {
@@ -2505,7 +3268,7 @@ function onDeviceReady() {
               } else{  
                   localStorage.setItem('fcmToken','fcmToken');
               }
-
+              
               updateDashboard();
               displayChart([12, 19, 9], [5, 3, 2, 6]);
     
@@ -2568,6 +3331,16 @@ function onDeviceReady() {
                   document.getElementById('additionalBodyInfo').value = selectedDetails.BodyNotes;
                   document.getElementById('additionalFooterInfo').value = selectedDetails.FootNotes;
                   document.getElementById('additionalNotationInfo').value = selectedDetails.NBNotes;
+
+                  maessa_up_Arr = selectedDetails.maessa_up_Arr;
+
+                  localStorage.setItem( 'vehicleSections', JSON.stringify(maessa_up_Arr.split(',').map(name => ({ name: name.trim() }))) );
+                  // Load saved settings
+                  //document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
+                  //document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
+
+                  
+                  //alert(selectedDetails.maessa_up_Arr);
                 }            
               } 
               
@@ -2604,7 +3377,9 @@ function onDeviceReady() {
               }
     
               refresh_dashboard = true;
-              onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+              //alert(refresh_dashboard);
+              
+              onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", ""); 
     
             } else {
               if (response.action == "loginUser") {
@@ -2752,6 +3527,7 @@ function onDeviceReady() {
             updatePlanButton.classList.remove('d-none');
         }
     });
+    //alert("updatePlanButton");
 
     updatePlanButton.addEventListener('click', function () {
       const plan = this.getAttribute('plan');
@@ -2848,14 +3624,34 @@ function onDeviceReady() {
             switchTab(currentIndex + 1); // Swipe left
         }
     });
+    //alert("getCompanies");
 
     document.getElementById("newReportModal_close").addEventListener("click", function () {
-      let modalElement = document.getElementById("newReportModal");
-      let modalInstance = bootstrap.Modal.getInstance(modalElement);
+      //alert("Close the modal properly");
+      const newReportModal = document.getElementById("newReportModal");
+      const modalInstance = bootstrap.Modal.getInstance(newReportModal);
       if (modalInstance) {
-          //modalInstance.hide();
+        modalInstance.hide();
       }
-    }); 
+    
+      // Remove modal backdrop and reset body state
+      document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+
+    });    
+    
+    $("#checklistModalLabel_close").click(function () {
+      //alert("Close the modal properly");
+      const checklistModalLabel = new bootstrap.Modal(document.getElementById('checklistModalLabel'));
+      checklistModalLabel.hide();
+    
+      // Remove modal backdrop and reset body state
+      document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+
+    });
   
     const savedColor = localStorage.getItem('themePdfColor') || '#171716'; 
     if (savedColor) {
@@ -2864,29 +3660,35 @@ function onDeviceReady() {
         });
         document.getElementById('colorPdfPicker').value = savedColor; // Update the color picker UI
     }
+    
+    // Load saved settings
+    document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
+    document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
 
-    // Listen for color changes and update elements & localStorage
-    document.getElementById('colorPdfPicker').addEventListener('input', function() {
-        const newColor = this.value;
-        document.querySelectorAll('.text-theme').forEach(el => {
-            el.style.color = newColor;
-        });
-        localStorage.setItem('themePdfColor', newColor); // Save to localStorage
-    });
-    const fontSizeSlider = document.getElementById('fontSizeSlider');
-    const fontSizeValue = document.getElementById('fontSizeValue');
-
-    // Handle font size change
-    fontSizeSlider.addEventListener('input', function() {
-        const newSize = this.value;
-        document.querySelectorAll('.text-theme').forEach(el => {
-            el.style.fontSize = newSize + 'em';
-        });
-        fontSizeValue.textContent = newSize;
-        localStorage.setItem('themePdfFontSize', newSize);
-    });
-
+    //const video = document.getElementById('videoCapturePoints');
+    
+    //alert("teamPerformanceDonutChart");
     teamPerformanceDonutChart('params');
+
+    // Retrieve form data from local storage and populate form
+    if (localStorage.getItem("valuationFormData") != null) {
+      document.querySelector(".resumeReport").classList.remove("d-none");
+      const savedData = localStorage.getItem("valuationFormData");
+      //alert("savedData");
+      if (savedData) {
+        const formData = JSON.parse(savedData);
+        const elements = valuationForm.elements;
+        //alert("elements");
+
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].name && formData[elements[i].name]) {
+            elements[i].value = formData[elements[i].name];
+          }
+        }
+      }
+      //alert("savedData");
+
+    }
 }
 
 // Function to display a Team Performance Donut Chart
@@ -2992,7 +3794,11 @@ function updateChartTeamPerformance(newData, newLabels, newColors) {
 }
 // Example function to update the chart dynamically with new data
 function updateStorageChartData(newStorageUsed, newMaxStorage, newValuations, newLabels) {
+  //alert(newStorageUsed + " updatedMaxStorage " + newMaxStorage + " updatedValuations " + newValuations + " newLabels " + newLabels);
+
   storageStatusChart.data.labels = newLabels;
+  //alert(newStorageUsed + " updatedMaxStorage " + newMaxStorage + " updatedValuations " + newValuations + " newLabels " + newLabels);
+
 
   storageStatusChart.data.datasets[0].data = newStorageUsed;
   storageStatusChart.data.datasets[1].data = newMaxStorage;
@@ -3549,11 +4355,11 @@ function positionGenerateReport() {
           fileImagesHTML3Array.push({ [label]: imageHTML });
           fileImagesHTML3 += imageHTML;   
         } else {
-          if (uploadedFilesfilesProcessed >= 8) {
+          if (uploadedFilesfilesProcessed >= 8 && uploadedFilesfilesProcessed < 16) {
             label_name = label_name + ',' + label;
             fileImagesHTML2Array.push({ [label]: imageHTML });
             fileImagesHTML2 += imageHTML;
-          } else {
+          } else if (uploadedFilesfilesProcessed <= 8) {
             label_name = label_name + ',' + label;
             fileImagesHTMLArray.push({ [label]: imageHTML });
             fileImagesHTML += imageHTML;
@@ -3588,14 +4394,14 @@ function positionGenerateReport() {
               }
             break;
           case 'normal':
-            if (processImageURLfilesProcessed >= 8) {
+            if (processImageURLfilesProcessed >= 8 && processImageURLfilesProcessed < 16) {
               if (label_name.includes(label)) {
                 addHiddenFields(url,label);
                 imagesHTML2 += getImageHTML(label,fileImagesHTML2Array);
               } else {
                 imagesHTML2 += imageHTML;
               }
-            } else {
+            } else  if (processImageURLfilesProcessed <= 8){
               if (label_name.includes(label)) {
                 addHiddenFields(url,label);    
                 imagesHTML += getImageHTML(label,fileImagesHTMLArray);
@@ -4083,18 +4889,6 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
     }
   });  
 
-  $(".newReportModalHeader").html(`<div class="row gy-2 gx-3 align-items-center">
-    <div class="col-6">
-        <label for="colorPdfPicker" class="form-label">Select Text Theme Color:</label>
-        <input type="color" id="colorPdfPicker" class="form-control form-control-color" value="#8DB600">
-    </div>
-    <div class="col-6">                        
-        <label for="fontSizeSlider" class="form-label mt-3">Adjust Text Font Size:</label>
-        <input type="range" id="fontSizeSlider" class="form-range" min="0.7" max="0.9" step="0.05">
-        <span id="fontSizeValue"></span>em  
-    </div>
-  </div>`);
-
   const savedColor = localStorage.getItem('themePdfColor') || '#171716'; 
   const fontSizeSlider = document.getElementById('fontSizeSlider');
   const fontSizeValue = document.getElementById('fontSizeValue');
@@ -4287,8 +5081,8 @@ function submitReport() {
             //const compressedFile = await compressImage(file);
             //formData.append(input.name, compressedFile);
           }
-        }        
-        addNetworkEventListener_count = 1;     
+        }
+        addNetworkEventListener_count = 1;
         document.getElementById('pdfRetryUpload').classList.add('d-none');
         document.getElementById('submitReport').classList.remove('d-none');
 
@@ -4337,7 +5131,7 @@ function submitReport() {
                 showSnackbar('All images resized successfully');
               }).catch(() => {
                 showSnackbar('Some images failed to resize');
-              });              
+              });
 
               // Step 1: Collect data from hidden inputs
               const hiddenInputs = document.querySelectorAll('input[name="fileDataUrls[]"]');
@@ -4370,10 +5164,8 @@ function submitReport() {
               // Step 7: Append the file with a key name 'metadata'
               metadataFormData.append('metadata[]', jsonBlob, fileName);
               metadataFormData.append('ReportID', response.message.ReportID); // Append the corresponding ReportID      
-              metadataFormData.append('VehicleID', response.message.VehicleID); // Append the corresponding VehicleID 
-
+              metadataFormData.append('VehicleID', response.message.VehicleID); // Append the corresponding VehicleID
               //alert('Make ' + response.Make + ' Model ' + response.Model);
-
               metadataFormData.append('make', response.Make); // Append the corresponding make     
               metadataFormData.append('model', response.Model); // Append the corresponding model 
               metadataFormData.append('modelType', response.ModelType); // Append the corresponding modelType     
@@ -4382,23 +5174,71 @@ function submitReport() {
 
               // Step 8: Upload the metadata using AJAX
               if (uploadedFiles.length == 0) {
-                $('#submitReport').html('Submit Report'); 
-                action = "submitReport";                  
-                document.getElementById('submitReport').disabled = false;
-                document.getElementById('newReport').disabled = false;
-                document.getElementById('downloadReport').disabled = false;
-                document.getElementById('submitReport').classList.add('d-none');
-                document.getElementById('viewReport').classList.remove('d-none');
-                addNetworkEventListener_count = 0;
-                addNetworkEventGenerateReportListener_count = 0;
-                refresh_dashboard = true; 
-                onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
 
-                $('#newReportModal').modal('hide');
-                document.querySelectorAll(".resumeReport").forEach(element => {
-                  element.classList.add("d-none");
-                });
-                setupNewReport();
+                if (uploadedVideoFiles.length == 0) {
+                  $('#submitReport').html('Submit Report'); 
+                  action = "submitReport";                  
+                  document.getElementById('submitReport').disabled = false;
+                  document.getElementById('newReport').disabled = false;
+                  document.getElementById('downloadReport').disabled = false;
+                  document.getElementById('submitReport').classList.add('d-none');
+                  document.getElementById('viewReport').classList.remove('d-none');
+                  addNetworkEventListener_count = 0;
+                  addNetworkEventGenerateReportListener_count = 0;
+                  refresh_dashboard = true; 
+                  onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+  
+                  const newReportModal = document.getElementById("newReportModal");
+                  const modalInstance = bootstrap.Modal.getInstance(newReportModal);
+                  if (modalInstance) {
+                    modalInstance.hide();
+                  }
+                
+                  // Remove modal backdrop and reset body state
+                  document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+                  document.body.classList.remove("modal-open");
+                  document.body.style.overflow = "";
+  
+                  document.querySelectorAll(".resumeReport").forEach(element => {
+                    element.classList.add("d-none");
+                  });
+                  setupNewReport();
+                  
+                } else {
+                  const metadataVideoData = new FormData();
+                  let fileVideoName;
+
+                  uploadedVideoFiles.forEach((file, index) => {
+                      // Step 1: Create a unique file name based on make, model, modelType, and registrationNo
+                      fileVideoName = `${response.Make}_${response.Model}_${response.ModelType}_${response.RegistrationNo}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+                  
+                      // Step 2: Attach the video file as Blob to FormData
+                      metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileVideoName);
+                  });
+                  
+                  // Step 3: Append metadata fields
+                  metadataVideoData.append('ReportID', response.message.ReportID);
+                  metadataVideoData.append('VehicleID', response.message.VehicleID);
+                  metadataVideoData.append('make', response.Make);
+                  metadataVideoData.append('model', response.Model);
+                  metadataVideoData.append('modelType', response.ModelType);
+                  metadataVideoData.append('registrationNo', response.RegistrationNo);
+                  metadataVideoData.append('action', action);
+
+                  document.getElementById('submitReport').classList.remove('d-none');
+                  $("#upload_valuationReport_help").html('<span class="text-success">Uploading ' + fileVideoName + '</span>');
+                  $('#submitReport').html('Uploading ' + uploadedVideoFiles.length + ' Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+
+                  // Step 4: Upload the FormData
+                  uploadVideo(metadataVideoData);
+
+
+                  document.getElementById('chuckRetryVideoUpload').addEventListener('click', function() {
+                    $('#submitReport').html('Uploading ' + uploadedVideoFiles.length + ' Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+                    uploadVideo(metadataVideoData);
+                  });
+
+                }
               } else {
                 document.getElementById('submitReport').classList.remove('d-none');
                 $('#submitReport').html('Uploading ' + uploadedFiles.length + ' Images...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
@@ -4410,11 +5250,7 @@ function submitReport() {
                 document.getElementById('chuckRetryUpload').addEventListener('click', function() {
                   document.getElementById('submitReport').classList.remove('d-none');
                   $('#submitReport').html('Uploading ' + uploadedFiles.length + ' Images...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
-                  
-                  //alert('ReportID ' + metadataFormData.get('ReportID') + ' VehicleID ' + metadataFormData.get('VehicleID') + ' metadata ' + metadataFormData.get('metadata[]'));
-                  
-                  uploadChunkedMetadata(metadataFormData);
-                  
+                  uploadChunkedMetadata(metadataFormData);                  
                 });
               }              
             } else {
@@ -4424,10 +5260,8 @@ function submitReport() {
               //document.getElementById('submitReport').classList.add('d-none');
               document.getElementById('valuationForm').style.display = "block";
               document.getElementById('report').style.display = "none";
-
               $('#submitReport').html('Submit Report');
               $("#upload_valuationReport_help").html('');
-
             }
           },
           error: function(xhr, status, error) {
@@ -4596,7 +5430,8 @@ function setupNewReport() {
   $("#examiner").val(localStorage.getItem('userUsername'));
 
 }
-function uploadChunkedMetadata(metadataFormData) {
+
+/**function uploadChunkedMetadata(metadataFormData) {
   addNetworkEventListener_count = 1;
   document.getElementById('chuckRetryUpload').classList.add('d-none');
   $.ajax({
@@ -4623,23 +5458,66 @@ function uploadChunkedMetadata(metadataFormData) {
       if (response.status) {
         $("#upload_valuationReport_help").html(response.message);
 
-        $('#submitReport').html('Submit Report'); 
-        action = "submitReport";                  
-        document.getElementById('submitReport').disabled = false;
-        document.getElementById('newReport').disabled = false;
-        document.getElementById('downloadReport').disabled = false;
-        document.getElementById('submitReport').classList.add('d-none');
-        document.getElementById('viewReport').classList.remove('d-none');
-        addNetworkEventListener_count = 0;
-        addNetworkEventGenerateReportListener_count = 0;
-        refresh_dashboard = true; 
-        onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+        if (uploadedVideoFiles.length == 0) {
+
+          $('#submitReport').html('Submit Report'); 
+          action = "submitReport";                  
+          document.getElementById('submitReport').disabled = false;
+          document.getElementById('newReport').disabled = false;
+          document.getElementById('downloadReport').disabled = false;
+          document.getElementById('submitReport').classList.add('d-none');
+          document.getElementById('viewReport').classList.remove('d-none');
+          addNetworkEventListener_count = 0;
+          addNetworkEventGenerateReportListener_count = 0;
+          refresh_dashboard = true; 
+          onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+          
+          const newReportModal = document.getElementById("newReportModal");
+          const modalInstance = bootstrap.Modal.getInstance(newReportModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
         
-        $('#newReportModal').modal('hide');
-        document.querySelectorAll(".resumeReport").forEach(element => {
-          element.classList.add("d-none");
-        });
-        setupNewReport();
+          // Remove modal backdrop and reset body state
+          document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+          document.body.classList.remove("modal-open");
+          document.body.style.overflow = "";
+  
+          document.querySelectorAll(".resumeReport").forEach(element => {
+            element.classList.add("d-none");
+          });
+          setupNewReport();
+          
+        } else {
+
+          const metadataVideoData = new FormData();
+          let fileVideoName;
+
+          uploadedVideoFiles.forEach((file, index) => {
+              // Step 1: Create a unique file name based on make, model, modelType, and registrationNo
+              fileVideoName = `${metadataFormData.get('Make')}_${metadataFormData.get('Model')}_${metadataFormData.get('ModelType')}_${metadataFormData.get('RegistrationNo')}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+          
+              // Step 2: Attach the video file as Blob to FormData
+              metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileName);
+          });
+          
+          // Step 3: Append metadata fields
+          metadataVideoData.append('ReportID', metadataFormData.get('ReportID'));
+          metadataVideoData.append('VehicleID', metadataFormData.get('VehicleID'));
+          metadataVideoData.append('make', metadataFormData.get('Make'));
+          metadataVideoData.append('model', metadataFormData.get('Model'));
+          metadataVideoData.append('modelType', metadataFormData.get('ModelType'));
+          metadataVideoData.append('registrationNo', metadataFormData.get('RegistrationNo'));
+          metadataVideoData.append('action', metadataFormData.get('action'));
+
+          document.getElementById('submitReport').classList.remove('d-none');
+          $("#upload_valuationReport_help").html('<span class="text-success">Uploading ' + fileVideoName + '</span>');
+          $('#submitReport').html('Uploading ' + uploadedVideoFiles.length + ' Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+
+          // Step 4: Upload the FormData
+          uploadVideo(metadataVideoData);
+          
+        }
       } else {
         $("#upload_valuationReport_help").html(response.messageError);
         document.getElementById('chuckRetryUpload').classList.remove('d-none');
@@ -4655,6 +5533,200 @@ function uploadChunkedMetadata(metadataFormData) {
       $('#submitReport').html('Submit Report'); 
     }
   });
+} */
+
+function uploadChunkedMetadata(metadataFormData) {
+  addNetworkEventListener_count = 1;
+  document.getElementById('chuckRetryUpload').classList.add('d-none');
+
+  $.ajax({
+    url: server_Url + 'metadataFormData.php',
+    type: 'POST',
+    data: metadataFormData,
+    processData: false,
+    contentType: false,
+    xhr: function () {
+      var xhr = new window.XMLHttpRequest();
+      xhr.upload.addEventListener("progress", function (evt) {
+        if (evt.lengthComputable) {
+          var percentage = Math.floor((evt.loaded / evt.total) * 100);
+          var progressbar = `
+            <div class="progress" role="progressbar" aria-label="Uploading..." aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ${percentage}%;">${percentage}%</div>
+            </div>`;
+          $("#upload_valuationReport_help").html(progressbar);
+        }
+      }, false);
+      return xhr;
+    },
+    success: function (response) {
+      try {
+        if (typeof response === "string") {
+          response = JSON.parse(response);
+        }
+
+        if (response.status) {
+          $("#upload_valuationReport_help").html(response.message);
+
+          if (uploadedVideoFiles.length === 0) {
+            $('#submitReport').html('Submit Report');
+            action = "submitReport";
+            document.getElementById('submitReport').disabled = false;
+            document.getElementById('newReport').disabled = false;
+            document.getElementById('downloadReport').disabled = false;
+            document.getElementById('submitReport').classList.add('d-none');
+            document.getElementById('viewReport').classList.remove('d-none');
+            addNetworkEventListener_count = 0;
+            addNetworkEventGenerateReportListener_count = 0;
+            refresh_dashboard = true;
+
+            onlineGimbo(localStorage.getItem('userUsername'), localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+
+            const newReportModal = document.getElementById("newReportModal");
+            const modalInstance = bootstrap.Modal.getInstance(newReportModal);
+            if (modalInstance) {
+              modalInstance.hide();
+            }
+
+            // Remove modal backdrop and reset body state
+            document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.overflow = "";
+
+            document.querySelectorAll(".resumeReport").forEach(element => {
+              element.classList.add("d-none");
+            });
+
+            setupNewReport();
+
+          } else {
+            const metadataVideoData = new FormData();
+
+            uploadedVideoFiles.forEach((file, index) => {
+              // Step 1: Generate a unique filename
+              const fileVideoName = `${metadataFormData.get('make')}_${metadataFormData.get('model')}_${metadataFormData.get('modelType')}_${metadataFormData.get('registrationNo')}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+
+              // Step 2: Attach video file to FormData
+              metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileVideoName);
+            });
+
+            // Step 3: Append metadata
+            metadataVideoData.append('ReportID', metadataFormData.get('ReportID'));
+            metadataVideoData.append('VehicleID', metadataFormData.get('VehicleID'));
+            metadataVideoData.append('make', metadataFormData.get('make'));
+            metadataVideoData.append('model', metadataFormData.get('model'));
+            metadataVideoData.append('modelType', metadataFormData.get('modelType'));
+            metadataVideoData.append('registrationNo', metadataFormData.get('registrationNo'));
+            metadataVideoData.append('action', metadataFormData.get('action'));
+
+            document.getElementById('submitReport').classList.remove('d-none');
+            $("#upload_valuationReport_help").html(`<span class="text-success">Uploading ${uploadedVideoFiles.length} videos...</span>`);
+            $('#submitReport').html(`Uploading ${uploadedVideoFiles.length} Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+            // Step 4: Upload the FormData
+            uploadVideo(metadataVideoData);
+
+
+            document.getElementById('chuckRetryVideoUpload').addEventListener('click', function() {
+              $('#submitReport').html('Uploading ' + uploadedVideoFiles.length + ' Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+              uploadVideo(metadataVideoData);
+            });
+          }
+        } else {
+          $("#upload_valuationReport_help").html(response.messageError);
+          document.getElementById('chuckRetryUpload').classList.remove('d-none');
+          document.getElementById('submitReport').classList.add('d-none');
+          $('#submitReport').html('Submit Report');
+        }
+      } catch (error) {
+        //console.error("Error processing response:", error);
+        $("#upload_valuationReport_help").html("An unexpected error occurred.");
+        document.getElementById('chuckRetryUpload').classList.remove('d-none');
+        document.getElementById('submitReport').classList.add('d-none');
+        $('#submitReport').html('Submit Report');
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      //console.error("Upload failed:", textStatus, errorThrown);
+      $("#upload_valuationReport_help").html(JSON.stringify(jqXHR));
+      document.getElementById('chuckRetryUpload').classList.remove('d-none');
+      document.getElementById('submitReport').classList.add('d-none');
+      $('#submitReport').html('Submit Report');
+    }
+  });
+}
+
+/**
+ * Uploads video to the server using FormData
+ */
+function uploadVideo(formData) {
+    document.getElementById('chuckRetryVideoUpload').classList.add('d-none');
+    document.getElementById('submitReport').classList.remove('d-none');
+    $.ajax({
+      url: server_Url +  'uploadVideo.php',
+      type: "POST",
+        data: formData,
+        processData: false, // Prevent jQuery from automatically processing data
+        contentType: false, // Prevent jQuery from setting content type
+        xhr: function () {
+          var xhr = new window.XMLHttpRequest();
+          xhr.upload.addEventListener("progress", function (evt) {
+            if (evt.lengthComputable) {
+              var percentage = Math.floor((evt.loaded / evt.total) * 100);
+              var progressbar = '<div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="' + percentage + '" aria-valuemin="0" aria-valuemax="100">' +
+                '<div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ' + percentage + '%;">' + percentage + '%</div>' +
+                '</div>';
+              $("#upload_valuationReport_help").html(progressbar);
+            }
+          }, false);
+          return xhr;
+        },
+        success: function (response) {
+          alert(JSON.stringify(response));
+          
+          if (response.status) {
+            $("#upload_valuationReport_help").html('<span class="text-danger">' + response.message + '</span>');
+
+            $('#submitReport').html('Submit Report'); 
+            action = "submitReport";                  
+            document.getElementById('submitReport').disabled = false;
+            document.getElementById('newReport').disabled = false;
+            document.getElementById('downloadReport').disabled = false;
+            document.getElementById('submitReport').classList.add('d-none');
+            document.getElementById('viewReport').classList.remove('d-none');
+            addNetworkEventListener_count = 0;
+            addNetworkEventGenerateReportListener_count = 0;
+            refresh_dashboard = true; 
+            onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
+            
+            const newReportModal = document.getElementById("newReportModal");
+            const modalInstance = bootstrap.Modal.getInstance(newReportModal);
+            if (modalInstance) {
+              modalInstance.hide();
+            }
+          
+            // Remove modal backdrop and reset body state
+            document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.overflow = "";
+          
+            document.querySelectorAll(".resumeReport").forEach(element => {
+              element.classList.add("d-none");
+            });
+            setupNewReport();
+                        
+          } else {
+            document.getElementById('chuckRetryVideoUpload').classList.remove('d-none');
+            document.getElementById('submitReport').classList.add('d-none');
+            $("#upload_valuationReport_help").html('<span class="text-danger">' +  response.messageError + '</span>');
+          }
+        },
+        error: function (xhr, status, error) {
+            document.getElementById('chuckRetryVideoUpload').classList.remove('d-none');
+            document.getElementById('submitReport').classList.add('d-none');
+            $("#upload_valuationReport_help").html('<span class="text-danger">' + error + '</span>');
+        }
+    });
 }
 function onlineGimbo(userUsername,_email,password,action,id) {
   if (action == "dashboard" && id != 4) {
@@ -4699,7 +5771,7 @@ function updateDashboard(maxRetries = 4, currentRetry = 0) {
 
     }
     updateDashboard(maxRetries, currentRetry + 1);
-  }, 10000);
+  }, 5000);
 }
 function getDashboard(userUsername,_email,password,action,id) {
   //alert(action + ' ' + id);
@@ -4791,15 +5863,7 @@ function getDashboard(userUsername,_email,password,action,id) {
       }
 
       if (response.limit > response.reports.length) {
-
-        if (response.message.success) {
-          
-        } else {
-          //alert(response.message.messageError);
-
-        }
-        //alert(response.message.messageError);
-
+        
         let notification_count = 0;
         $('.notifications-list').html(`
             <ul class="nav justify-content-center mt-3 mb-3 sticky-top">
@@ -4863,8 +5927,8 @@ function getDashboard(userUsername,_email,password,action,id) {
         response_requestsVehicles = response.requestsVehicles;
         response_requestsReports = response.requestsReports;
         get_Location = response.getLocation;
-        role = response.message.role;  
-  
+        role = response.message.role;        
+
         var pending_requests_count = 0;
         var accepted_requests_count = 0;
         var rejected_requests_count = 0;
@@ -4972,6 +6036,7 @@ function getDashboard(userUsername,_email,password,action,id) {
             document.querySelector(".pdf-settings").classList.remove("d-none");
             document.querySelector(".principal-valuer-signature").classList.remove("d-none");
             //document.querySelector(".storage-alert").classList.remove("d-none");
+            document.querySelector(".vehicleChecklistManager").classList.remove("d-none");
 
           }
           document.querySelector(".storage-message").innerHTML = 'contact your admin';
@@ -4981,6 +6046,8 @@ function getDashboard(userUsername,_email,password,action,id) {
           document.querySelector("#companyInfo").classList.remove("d-none");
           //document.querySelector(".storage-alert").classList.remove("d-none");
           document.querySelector(".storage-message").innerHTML = 'update your plan';
+
+          document.querySelector(".vehicleChecklistManager").classList.remove("d-none");
 
           document.querySelector(".pdf-settings").classList.remove("d-none");
           document.querySelector(".company-settings").classList.remove("d-none");
@@ -5062,7 +6129,7 @@ function getDashboard(userUsername,_email,password,action,id) {
           var newLabels = storageData.map(function(record) {
             return record.month_year; // Directly return the month as it is a string
           });
-          
+            
           const slider = document.getElementById('storageSlider');
           const storageLabel = document.getElementById('storageLabel');
           const planLabel = document.getElementById('planLabel');
@@ -5158,6 +6225,7 @@ function getDashboard(userUsername,_email,password,action,id) {
             }
           }
 
+
           //alert(JSON.stringify(storageData));
 
           var percentageRemainingStorage = storageData.map(function(record) {
@@ -5191,9 +6259,9 @@ function getDashboard(userUsername,_email,password,action,id) {
             } else {
               reportButtons.forEach(button => {        
                 button.addEventListener("click", function () {
-                    // Show the message
-                    const qrCodeModal = new bootstrap.Modal(document.getElementById('newReportModal'));
-                    qrCodeModal.show();
+                    // Open the modal properly
+                    const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+                    newReportModal.show();
                 });
               });
             }
@@ -5228,12 +6296,14 @@ function getDashboard(userUsername,_email,password,action,id) {
             return remainingPercentage; // Return the calculated percentage
           });
 
-          //alert(percentageRemainingStorage);
+          //alert('percentageRemainingStorage');
 
           //updateProgressBar(percentageRemainingStorage);
+          //alert(updatedStorageUsed + " updatedMaxStorage " + updatedMaxStorage + " updatedValuations " + updatedValuations + " newLabels " + newLabels);
 
-          updateStorageChartData(updatedStorageUsed, updatedMaxStorage, updatedValuations, newLabels);
-          
+          //updateStorageChartData(updatedStorageUsed, updatedMaxStorage, updatedValuations, newLabels);
+          //alert(updatedStorageUsed + " updatedMaxStorage " + updatedMaxStorage + " updatedValuations " + updatedValuations + " newLabels " + newLabels);
+
           const teamPerformanceData = response.teamPerformance;
 
           // Extract values for the chart
@@ -5244,14 +6314,233 @@ function getDashboard(userUsername,_email,password,action,id) {
           const teamMemberNames = filteredData.map(item => item.team_member_name);
           const completedTasks = filteredData.map(item => parseInt(item.completed_tasks, 10));
 
+          //alert(response.message.messageError);
+
           // Generate random colors
           const colors = filteredData.map(() => {
               const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
               return randomColor;
+          }); 
+
+          //alert('response.message.messageError');
+
+          var selectedDetails = companyDetails.find(function(details) {
+            return details.CompanyID == response.message.CompanyID;
           });
+          if (selectedDetails) {
+            maessa_up_Arr = selectedDetails.maessa_up_Arr;
+          }
+          let additional_checklist = {};
+          let inspections_valuations = response.inspections_valuations || []; // Ensure it's an array          
+          if (Array.isArray(inspections_valuations)) {
+              var selectedInspectionsValuations = inspections_valuations.find(function(details) {
+                  return details.user_id == response.message.CompanyID;
+              });          
+              if (selectedInspectionsValuations && selectedInspectionsValuations.additional_checklist) {
+                  try {
+                      additional_checklist = JSON.parse(selectedInspectionsValuations.additional_checklist); // ✅ Convert string to object
+                  } catch (error) {
+                      showSnackbar("Error parsing additional_checklist JSON:", error);
+                  }
+              }
+          }          
+          const fontSizeSlider = document.getElementById('fontSizeSlider');
+          const fontSizeValue = document.getElementById('fontSizeValue');
+
+          localStorage.setItem('themePdfColor', additional_checklist.themePdfColor); // Save to localStorage
+          localStorage.setItem('themePdfFontSize', additional_checklist.themePdfFontSize); // Save to localStorage
+
+          fontSizeSlider.value = additional_checklist.themePdfFontSize;
+          fontSizeValue.textContent = additional_checklist.themePdfFontSize + 'em';
+          document.getElementById("colorPdfPicker").value = localStorage.getItem("themePdfColor");
+
+          localStorage.setItem('inAppCamera', additional_checklist.inAppCamera); // Save to localStorage
+          localStorage.setItem('videoSection', additional_checklist.videoSection); // Save to localStorage
+
+          localStorage.setItem('aiObjectsDetection', additional_checklist.aiObjectsDetection); // Save to localStorage
+          localStorage.setItem('aiDamageDetection', additional_checklist.aiDamageDetection); // Save to localStorage
+          localStorage.setItem('aiValuePrediction', additional_checklist.aiValuePrediction); // Save to localStorage
+          localStorage.setItem('priorityStandard', additional_checklist.priorityStandard); // Save to localStorage
+          localStorage.setItem('priorityExpress', additional_checklist.priorityExpress); // Save to localStorage
+
+          document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
+          document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
+
+          document.getElementById("aiObjectsDetection").checked = localStorage.getItem("aiObjectsDetection") === "true";
+          document.getElementById("aiDamageDetectionSwitch").checked = localStorage.getItem("aiDamageDetection") === "true";
+          document.getElementById("aiValuePrediction").checked = localStorage.getItem("aiValuePrediction") === "true";
+          document.getElementById("priorityStandard").checked = localStorage.getItem("priorityStandard") === "true";
+          document.getElementById("priorityExpress").checked = localStorage.getItem("priorityExpress") === "true";
+
+          localStorage.setItem( 'vehicleSections', JSON.stringify(maessa_up_Arr.split(',').map(name => ({ name: name.trim() }))) );
+          // Load from localStorage or initialize with defaults
+          let sections = JSON.parse(localStorage.getItem('vehicleSections')) || maessa_up_Arr.split(',').map(name => ({ name: name.trim() }));
+          
+          document.getElementById('colorPdfPicker').addEventListener('input', function() {
+            const newColor = this.value;
+            //alert(newColor);
+            document.querySelectorAll('.text-theme').forEach(el => {
+                el.style.color = newColor;
+            });
+            localStorage.setItem('themePdfColor', newColor); // Save to localStorage
+            saveSections();
+          });
+      
+          // Handle font size change
+          fontSizeSlider.addEventListener('input', function() {
+              const newSize = this.value;
+              document.querySelectorAll('.text-theme').forEach(el => {
+                  el.style.fontSize = newSize + 'em';
+              });
+              fontSizeValue.textContent = newSize;
+              localStorage.setItem('themePdfFontSize', newSize);
+              saveSections();
+          });
+
+          document.getElementById("flexSwitchInAppCamera").addEventListener("change", function () {
+            localStorage.setItem("inAppCamera", this.checked);
+            saveSections();
+          });
+    
+          document.getElementById("30SecondVideoSwitch").addEventListener("change", function () {
+            localStorage.setItem("videoSection", this.checked);
+            saveSections();
+          });
+          document.getElementById("aiObjectsDetection").addEventListener("change", function () {
+            localStorage.setItem("aiObjectsDetection", this.checked);
+            saveSections();
+          });
+          document.getElementById("aiDamageDetectionSwitch").addEventListener("change", function () {
+            localStorage.setItem("aiDamageDetection", this.checked);
+            saveSections();
+          });
+          document.getElementById("aiValuePrediction").addEventListener("change", function () {
+            localStorage.setItem("aiValuePrediction", this.checked);
+            saveSections();
+          });
+          document.getElementById("priorityStandard").addEventListener("change", function () {
+            localStorage.setItem("priorityStandard", this.checked);
+            localStorage.setItem("priorityExpress", '');
+            saveSections();
+          });
+          document.getElementById("priorityExpress").addEventListener("change", function () {
+            localStorage.setItem("priorityExpress", this.checked);
+            localStorage.setItem("priorityStandard", '');
+            saveSections();
+          });
+          const addSectionManager = document.querySelectorAll(".addSection");
+          addSectionManager.forEach(button => {
+              button.addEventListener("click", function () {
+                  const newSectionName = document.getElementById('newSectionName').value.trim();
+                  if (newSectionName) {
+                      sections.push({ name: newSectionName });
+                      saveSections(); // Save to localStorage
+                      displaySections();
+                      document.getElementById('newSectionName').value = ''; // Clear input
+                  } else {
+                      showSnackbar('Please enter a valid section name');
+                  }
+              });
+          });          
+          const vehicleChecklistManager = document.querySelectorAll(".vehicleChecklistManager");
+          vehicleChecklistManager.forEach(button => {        
+            button.addEventListener("click", function () {
+                // Open the modal properly
+                const checklistModalLabel = new bootstrap.Modal(document.getElementById('checklistModalLabel'));
+                checklistModalLabel.show();
+        
+                // Initial display
+                displaySections();
+            });
+          });
+          // Function to save to localStorage
+          function saveSections() {
+              localStorage.setItem('vehicleSections', JSON.stringify(sections));
+              maessa_up_Arr = sections.map(section => section.name).join(','); // Update maessa_up_Arr dynamically
+              const formData = new FormData();
+              formData.append('deviceID', localStorage.getItem('deviceID'));
+              formData.append('userCompanyID', localStorage.getItem('userCompanyID'));
+              formData.append('userRole', localStorage.getItem('userRole'));
+              formData.append('maessa_up_Arr', maessa_up_Arr);
+              formData.append('inAppCamera', localStorage.getItem('inAppCamera'));
+              formData.append('videoSection', localStorage.getItem('videoSection'));
+              formData.append('themePdfColor', localStorage.getItem('themePdfColor'));
+              formData.append('themePdfFontSize', localStorage.getItem('themePdfFontSize'));
+
+              formData.append('aiObjectsDetection', localStorage.getItem('aiObjectsDetection'));
+              formData.append('aiDamageDetection', localStorage.getItem('aiDamageDetection'));
+              formData.append('aiValuePrediction', localStorage.getItem('aiValuePrediction'));
+              formData.append('priorityStandard', localStorage.getItem('priorityStandard'));
+              formData.append('priorityExpress', localStorage.getItem('priorityExpress'));
+
+              formData.append('action', "maessa_up_Arr");
+              savePdfSettings(formData);//maessa_up_Arr
+
+          }  
+          // Function to display sections
+          function displaySections() {
+            const sectionsDiv = document.getElementById('checklist-sections-container');
+            sectionsDiv.innerHTML = ''; // Clear previous content
+        
+            sections.forEach((section, index) => {
+                const div = document.createElement('div');
+                div.className = 'checklist-section';
+        
+                div.innerHTML = `
+                    <span id="section-text-${index}">${section.name}</span>
+                    <input type="text" id="section-input-${index}" value="${section.name}" style="display: none;">
+                    <button class="checklist-edit-btn">Edit</button>
+                    <button class="checklist-delete-btn">Delete</button>
+                `;
+        
+                sectionsDiv.appendChild(div);
+        
+                const span = div.querySelector(`#section-text-${index}`);
+                const input = div.querySelector(`#section-input-${index}`);
+                const editBtn = div.querySelector(".checklist-edit-btn");
+                const deleteBtn = div.querySelector(".checklist-delete-btn");
+        
+                // Event Listeners
+                span.addEventListener("click", () => toggleEdit(index));
+                editBtn.addEventListener("click", () => toggleEdit(index));
+                deleteBtn.addEventListener("click", () => removeSection(index));
+                input.addEventListener("blur", () => saveEdit(index));
+            });
+          }  
+          // Function to toggle editing mode
+          function toggleEdit(index) {
+              const span = document.getElementById(`section-text-${index}`);
+              const input = document.getElementById(`section-input-${index}`);
+  
+              span.style.display = 'none';
+              input.style.display = 'inline';
+              input.focus();
+          }  
+          // Function to save edits on blur
+          function saveEdit(index) {
+              const span = document.getElementById(`section-text-${index}`);
+              const input = document.getElementById(`section-input-${index}`);
+  
+              sections[index].name = input.value.trim();
+              span.textContent = input.value.trim();
+              span.style.display = 'inline';
+              input.style.display = 'none';
+  
+              saveSections(); // Save to localStorage
+          }  
+          // Function to remove a section
+          function removeSection(index) {
+            sections.splice(index, 1);
+            saveSections(); // Save to localStorage
+            displaySections();
+          }
                     
           // Update the chart
+
+          //alert("Update the chart");
           updateChartTeamPerformance(completedTasks, teamMemberNames, colors);
+          updateStorageChartData(updatedStorageUsed, updatedMaxStorage, updatedValuations, newLabels);
+
 
         }
         

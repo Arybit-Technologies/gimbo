@@ -183,8 +183,8 @@
             </div>
         </div>
 
-    </div>    
-      
+    </div>
+    
     <div class="container-fluid bg-dark text-light individual-dashboard d-none">
 
         <div class="tab-content" id="individualTabContent">
@@ -468,8 +468,10 @@
                 <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
                     <h3 class="mb-3">Dashboard</h3>
                     <h1 class="text-center mt-4"><b class="company_name"></b> Vehicle Technical Valuation</h1>
-                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
-                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+                    <button type="button" class="btn btn-bd-primary newReport mb-2">New Report</button>
+                    <button type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</button>
+                                      
+                    <span type="button" class="btn btn-bd-primary vehicleChecklistManager mb-2 d-none">Vehicle Checklist Manager</span>                    
 
                     <p class="loogg">Welcome to the dashboard. This is the main overview of your activities and statistics.</p>
 
@@ -873,8 +875,8 @@
                 <div class="container-fluid bg-dark text-light game-list-container text-center mt-5 pt-5 mb-5 pb-5">
                     <h3 class="mb-4">Dashboard Overview</h3>
                     <h1 class="text-center mt-4"><b class="company_name"></b> Vehicle Technical Valuation</h1>
-                    <span type="button" class="btn btn-bd-primary newReport mb-2">New Report</span>                    
-                    <span type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</span>                    
+                    <button type="button" class="btn btn-bd-primary newReport mb-2">New Report</button>
+                    <button type="button" class="btn btn-bd-primary mb-2 resumeReport d-none">Resume Report</button>                                        
 
                     <!-- Add Dashboard Content Here -->    
                     <div class="row mb-4 equal-height-cards">
@@ -1438,7 +1440,7 @@
             <div class="bg-dark text-light modal-content">
                 <div class="modal-header newReportModalHeader align-items-center">
                     <h5 class="modal-title" id="newReportModalLabel">New Report</h5>
-                    <button id="newReportModal_close" type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button id="newReportModal_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
                     
@@ -1718,6 +1720,21 @@
                                 <span id="upload_from_file_container_help" class="mb-3"></span>
                             </div> 
                             
+                            <!-- 30-Second Video Section -->
+                            <div class="container text-center section-30SecondVideo d-flex flex-column justify-content-center align-items-center d-none">
+                                <h2>30-Second Video Section</h2>
+                                
+                                <div class="video-container position-relative w-100" style="max-height: 80vh;">
+                                    <video id="videoCapturePoints" class="w-100 rounded" style="max-height: 80vh; object-fit: cover;" autoplay playsinline></video>
+                                    <button type="button" id="playPauseBtn" class="play-pause-btn position-absolute">
+                                        <span class="play-icon">▶</span>
+                                        <span class="pause-icon d-none">❚❚</span>
+                                        <span class="retake-icon d-none">⟳</span>
+                                    </button>
+                                </div>
+                                <p id="capturePointsModalError" class="text-danger mt-3 text-center fw-semibold"></p>
+                            </div>                                                     
+                            
                             <div class="container text-center">
                                 <!-- Coachwork Notes -->
                                 <label for="coachworkNotes">Coachwork Notes</label>
@@ -1832,6 +1849,7 @@
                                 <button id="newReport" type="button" class="btn btn-bd-primary d-none">New Report</button>
                                 <button id="pdfRetryUpload" type="button" class="btn btn-bd-primary d-none">Retry Upload</button>
                                 <button id="chuckRetryUpload" type="button" class="btn btn-bd-primary d-none">Retry Upload</button>
+                                <button id="chuckRetryVideoUpload" type="button" class="btn btn-bd-primary d-none">Retry Upload</button>
                                 <button id="printButton" type="button" class="btn btn-bd-primary d-none">Print Report</button>
                                 <button id="submitReport" type="button" class="btn btn-bd-primary">Submit Report</button>
                                 <button id="downloadReport" type="button" class="btn btn-bd-primary d-none">Download Report</button>
@@ -2057,6 +2075,64 @@
                         <li class="text-muted text-center">No new notifications</li>
                     </ul> 
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-dark text-light modal fade" id="checklistModalLabel" tabindex="-1" aria-labelledby="checklistModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-xl">
+            <div class="bg-dark text-light modal-content">
+                <div class="modal-header">
+                    <button id="checklistModalLabel_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h2>Vehicle inspection checklist</h2>
+                
+                    <div id="checklist-sections-container" class="mb-3"></div>
+                    
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchInAppCamera">
+                        <label class="form-check-label text-light" for="flexSwitchInAppCamera">In App Camera</label>
+                    </div>
+
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="30SecondVideoSwitch">
+                        <label class="form-check-label text-light" for="30SecondVideoSwitch">30-Second Video Section</label>
+                    </div>
+
+                    <!-- New Settings -->
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="aiObjectsDetection">
+                        <label class="form-check-label text-light" for="aiObjectsDetection">AI Objects Detection</label>
+                    </div>
+                    
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="aiDamageDetectionSwitch">
+                        <label class="form-check-label text-light" for="aiDamageDetectionSwitch">AI Damage Detection</label>
+                    </div>
+
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="aiValuePrediction">
+                        <label class="form-check-label text-light" for="aiValuePrediction">AI Value Prediction</label>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="inspectionPriority" class="text-light">Inspection Priority</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="inspectionPriority" id="priorityStandard" value="standard" checked>
+                            <label class="form-check-label text-light" for="priorityStandard">Standard</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="inspectionPriority" id="priorityExpress" value="express">
+                            <label class="form-check-label text-light" for="priorityExpress">Express (AI-Only)</label>
+                        </div>
+                    </div>
+
+                    <input type="text" class="form-control mt-3" id="newSectionName" placeholder="Enter new checklist name" aria-label="Enter new checklist name" aria-describedby="button-newSectionName">
+                    <button class="btn btn-bd-primary btn-sm addSection" type="button" id="button-newSectionName">Add to checklist</button>
+                    
+                </div>
+
             </div>
         </div>
     </div>

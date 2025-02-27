@@ -1374,3 +1374,97 @@ span.psw {
 .slider {
   width: 80%;
 }
+
+#checklist-sections-container {
+  width: 100%;
+  max-width: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  max-height: 300px; /* Scrollable */
+  overflow-y: auto;
+}
+.checklist-section {
+  margin: 5px 0;
+  padding: 8px;
+  border: 1px solid #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+}
+.checklist-section input {
+  width: 150px;
+  margin-right: 5px;
+  display: none;
+}
+.checklist-edit-btn {
+  background-color: inherit;
+  color: white;
+  border: none;
+  padding: 5px;
+  border-radius: 3px;
+}
+.checklist-delete-btn {
+  background-color: inherit;
+  color: white;
+  border: none;
+  padding: 5px;
+  border-radius: 3px;
+}
+.checklist-add-btn {
+  background-color: inherit;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.checklist-group-section {
+  margin: 5px 0;
+  padding: 8px;
+  border: 1px solid #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+}
+
+/* Style for the video container */
+.video-container {
+  overflow: hidden;
+}
+
+/* Style for the play/pause button */
+.play-pause-btn {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.play-pause-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.play-pause-btn:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+/* Toggle visibility of icons */
+.play-icon, .pause-icon {
+  line-height: 1;
+}
