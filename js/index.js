@@ -47,6 +47,7 @@ let responseValuationForms = [];  // Initialize as an empty array
 let responseImages = [];  // Initialize as an empty array
 let responseVehicles = [];  // Initialize as an empty array
 let storageData = [];  // Initialize as an empty array
+let response_inspections_requests_valuations = [];  // Initialize as an empty array
 
 let response_assignments;
 let response_recentActivity;
@@ -66,7 +67,8 @@ let storageStatusChart;
 
 let storage_server; 
 //var server_Url = 'http://192.168.8.109/arybit/';
-var server_Url = 'https://treadstone-es.co.ke/api/';
+//var server_Url = 'https://treadstone-es.co.ke/api/';
+var server_Url = 'https://autovaluationpro.arybit.co.ke/api/';
 //var server_Url = 'http://192.168.8.109/api/';
 //var server_Url = 'https://arybit.co.ke/api/';
 //var server_Url = 'http://localhost/api/';
@@ -155,7 +157,7 @@ function onDeviceReady() {
     //cordova.plugins.backgroundMode.setEnabled(true);
     //localStorage.setItem('themeColor','#32062e');
 
-    var app_version = '1.0.18';
+    var app_version = '1.0.19';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
@@ -893,7 +895,36 @@ function onDeviceReady() {
           });
           
           $('#vehiclePhotos').html(``);
-          localStorage.setItem('inspectVehicleID',VehicleID);
+          localStorage.setItem('inspectVehicleID',VehicleID);     
+          
+          let additional_requests_checklist = {};
+          let inspections_requests_valuations = response_inspections_requests_valuations || []; // Ensure it's an array          
+          if (Array.isArray(inspections_requests_valuations)) {
+              var selectedInspectionsValuations = inspections_requests_valuations.find(function(details) {
+                  return details.vehicle_id == localStorage.getItem('inspectVehicleID');
+              });          
+              if (selectedInspectionsValuations && selectedInspectionsValuations.additional_checklist) {
+                  try {
+                      additional_requests_checklist = JSON.parse(selectedInspectionsValuations.additional_checklist); // ✅ Convert string to object
+                      maessa_up_Arr = selectedInspectionsValuations.maessa_up_Arr;
+
+                  } catch (error) {
+                      showSnackbar("Error parsing additional_requests_checklist JSON:", error);
+                  }
+              }
+          }          
+
+          localStorage.setItem('requests_themePdfColor', additional_requests_checklist.themePdfColor); // Save to localStorage
+          localStorage.setItem('requests_themePdfFontSize', additional_requests_checklist.themePdfFontSize); // Save to localStorage
+          localStorage.setItem('requests_inAppCamera', additional_requests_checklist.inAppCamera); // Save to localStorage
+          localStorage.setItem('requests_videoSection', additional_requests_checklist.videoSection); // Save to localStorage
+          localStorage.setItem('requests_aiObjectsDetection', additional_requests_checklist.aiObjectsDetection); // Save to localStorage
+          localStorage.setItem('requests_aiDamageDetection', additional_requests_checklist.aiDamageDetection); // Save to localStorage
+          localStorage.setItem('requests_aiValuePrediction', additional_requests_checklist.aiValuePrediction); // Save to localStorage
+          localStorage.setItem('requests_priorityStandard', additional_requests_checklist.priorityStandard); // Save to localStorage
+          localStorage.setItem('requests_priorityExpress', additional_requests_checklist.priorityExpress); // Save to localStorage
+
+          //alert(localStorage.getItem('requests_inAppCamera'));
 
           inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
 
@@ -1082,84 +1113,122 @@ function onDeviceReady() {
     $(document).on('click', '.copy-button', function() {      
       var ReportFileURL = $(this).attr('ReportFileURL');
       copyToClipboard(ReportFileURL);
-    });    
-    // Event delegation for dynamically handling clicks on the vehicle image
+    }); 
+    
+    // Event delegation for dynamically handling clicks on vehicle images and videos    
     $(document).off('click', '.vehicle-image').on('click', '.vehicle-image', function() {
       var VehicleID = $(this).attr('VehicleID');
       let vehicleImagePath = "";
-      let fancyboxImages = []; // Array to store Fancybox-compatible image objects
-    
-      // Build the gallery images based on the clicked VehicleID
+      let fancyboxImages = []; // Store Fancybox-compatible image/video objects
+  
       response_images.forEach(image => {
-        if (VehicleID === image.VehicleID) {
-          // Check if fancyboxImages already contains an object with the same description
-          const exists = fancyboxImages.some(fancyboxImage => fancyboxImage.opts.caption === image.Description);
-    
-          if (!exists) {
-            // Add each image to the Fancybox-compatible array only if it doesn't exist
-            fancyboxImages.push({
-              src: image.ImagePath,
-              type: 'image',
-              opts: {
-                caption: image.Description
+          if (VehicleID === String(image.VehicleID)) {
+              const isVideo = image.ImagePath.endsWith(".mp4") || 
+                              image.ImagePath.includes("youtube.com") || 
+                              image.ImagePath.includes("vimeo.com");
+  
+              // Avoid duplicate entries
+              const exists = fancyboxImages.some(fancyboxImage => fancyboxImage.src === image.ImagePath);
+              if (!exists) {
+                  if (isVideo) {
+                      fancyboxImages.push({
+                          src: `<video controls autoplay muted loop playsinline>
+                                  <source src="${image.ImagePath}" type="video/mp4">
+                                  Your browser does not support the video tag.
+                                </video>`,
+                          type: "html",
+                          caption: image.Description,
+                          customDownloadUrl: image.ImagePath // Custom property for download
+                      });
+  
+                      if (vehicleImagePath === "") {
+                          vehicleImagePath = `
+                              <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                                  <video src="${image.ImagePath}" poster="${image.Thumbnail || ''}" class="vehicle-thumb" autoplay muted loop playsinline></video>
+                              </a>
+                          `;
+                      }
+                  } else {
+                      fancyboxImages.push({
+                          src: image.ImagePath,
+                          type: "image",
+                          caption: image.Description,
+                          customDownloadUrl: image.ImagePath
+                      });
+  
+                      vehicleImagePath += `
+                          <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                              <img src="${image.ImagePath}" alt="${image.Description}" class="${image.Description === 'Right front' ? '' : 'd-none'}">
+                          </a>
+                      `;
+                  }
               }
-            });
-    
-            // Optionally add image thumbnails or markup in the UI if needed
-            vehicleImagePath += `
-              <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
-                <img src="${image.ImagePath}" alt="${image.Description}" class="${image.Description == 'Right front' ? '' : 'd-none'}">
-              </a>
-            `;
           }
-        }
       });
-
-      if (vehicleImagePath == "") {
-        response_requestsVehicles.forEach(vehicle => {    
-          if (vehicle.VehicleID == VehicleID) {
-            // Check if fancyboxImages already contains an object with the same description
-            const exists = fancyboxImages.some(fancyboxImage => fancyboxImage.opts.caption === 'Logbook photo');
-      
-            if (!exists) {
-              // Add each image to the Fancybox-compatible array only if it doesn't exist
-              fancyboxImages.push({
-                src: vehicle.LogbookFileURL,
-                type: 'image',
-                opts: {
-                  caption: 'Logbook photo'
-                }
-              });
-      
-              // Optionally add image thumbnails or markup in the UI if needed
-
-              vehicleImagePath = ` 
-              <a href="${vehicle.LogbookFileURL}" data-fancybox="gallery" data-caption="Logbook photo">
-                <img src="${vehicle.LogbookFileURL}" alt="Logbook photo">
-              </a>
-              `;
-            }
-          }
-        });
+  
+      // Handle Logbook image if no images/videos were found
+      if (fancyboxImages.length === 0) {
+          response_requestsVehicles.forEach(vehicle => {
+              if (VehicleID === String(vehicle.VehicleID) && vehicle.LogbookFileURL) {
+                  fancyboxImages.push({
+                      src: vehicle.LogbookFileURL,
+                      type: "image",
+                      caption: "Logbook photo",
+                      customDownloadUrl: vehicle.LogbookFileURL
+                  });
+  
+                  vehicleImagePath = ` 
+                      <a href="${vehicle.LogbookFileURL}" data-fancybox="gallery" data-caption="Logbook photo">
+                          <img src="${vehicle.LogbookFileURL}" alt="Logbook photo">
+                      </a>
+                  `;
+              }
+          });
       }
-    
-      // Find the specific .vehicleImageLogo for the clicked vehicle and update it
+  
+      // **Sort Fancybox images to show videos first**
+      fancyboxImages.sort((a, b) => (a.type === "html" ? -1 : 1));
+  
+      // Update the specific .vehicleImageLogo for the clicked vehicle
       $(`.vehicleImageLogo[VehicleID="${VehicleID}"]`).html(vehicleImagePath);
-      
-      // Rebind Fancybox to handle the newly added images
-      Fancybox.bind("[data-fancybox='gallery']", {
-        infinite: true,
-        buttons: [
-          "zoom",
-          "slideShow",
-          "thumbs",
-          "close"
-        ]
-      });
+  
+      // Initialize Fancybox v5 with a custom download button
+      if (fancyboxImages.length > 0) {
+          Fancybox.show(fancyboxImages, {
+              Toolbar: {
+                  display: {
+                      left: [],
+                      middle: [],
+                      right: ["download", "zoom", "slideshow", "fullscreen", "close"]
+                  }
+              },
+              callbacks: {
+                  ready: (fancybox) => {
+                      let downloadButton = document.createElement("button");
+                      downloadButton.classList.add("fancybox-button", "fancybox-button--download");
+                      downloadButton.innerHTML = "⬇️";
+                      downloadButton.title = "Download";
+                      downloadButton.onclick = () => {
+                          let currentSlide = fancybox.getSlide();
+                          let downloadUrl = currentSlide.customDownloadUrl || currentSlide.src;
+                          let link = document.createElement("a");
+                          link.href = downloadUrl;
+                          link.setAttribute("download", downloadUrl.split('/').pop());
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                      };
+  
+                      // Add the download button to Fancybox toolbar
+                      fancybox.container.querySelector(".fancybox__toolbar").appendChild(downloadButton);
+                  }
+              }
+          });
+      } else {
+          showSnackbar("No images or videos found for this vehicle.");
+      }
+    });  
     
-      // Trigger Fancybox for all images associated with the clicked VehicleID
-      Fancybox.show(fancyboxImages);
-    });
     // Bind the function to both the class and the ID
     $(document).on('click', '.newReport', function(){
       document.querySelectorAll(".resumeReport").forEach(element => {
@@ -1286,7 +1355,18 @@ function onDeviceReady() {
         formData.append('userPasswordHash', localStorage.getItem('userPasswordHash'));
         formData.append('CompanyID', localStorage.getItem('userCompanyInputID'));
         //alert(localStorage.getItem('userCompanyInputID'));
-        //formData.append('CompanyID', 4);
+        //formData.append('CompanyID', 4);        
+        formData.append('maessa_up_Arr', maessa_up_Arr);
+        formData.append('inAppCamera', localStorage.getItem('inAppCamera'));
+        formData.append('videoSection', localStorage.getItem('videoSection'));
+        formData.append('themePdfColor', localStorage.getItem('themePdfColor'));
+        formData.append('themePdfFontSize', localStorage.getItem('themePdfFontSize'));
+
+        formData.append('aiObjectsDetection', localStorage.getItem('aiObjectsDetection'));
+        formData.append('aiDamageDetection', localStorage.getItem('aiDamageDetection'));
+        formData.append('aiValuePrediction', localStorage.getItem('aiValuePrediction'));
+        formData.append('priorityStandard', localStorage.getItem('priorityStandard'));
+        formData.append('priorityExpress', localStorage.getItem('priorityExpress'));
 
         formData.append('action', action);
         addNetworkEventListener_count = 1;
@@ -1367,7 +1447,7 @@ function onDeviceReady() {
            
         //imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
 
-        if (localStorage.getItem("aiObjectsDetection") === "true") {
+        if (localStorage.getItem("aiObjectsDetection") === "true" || localStorage.getItem("requests_aiObjectsDetection") === "true") {
 
           $.ajax({
             //url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize',
@@ -1608,7 +1688,7 @@ function onDeviceReady() {
             showSnackbar('<span class="text-success">Analysing ' + maessa_up + ' image...</span>');
             $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>');
 
-            if (localStorage.getItem("videoSection") === "true" && maessa_up === 'Logbook photo') {
+            if ((localStorage.getItem("videoSection") === "true" || localStorage.getItem("requests_videoSection") === "true") && maessa_up === 'Logbook photo') {
               document.querySelector(".section-30SecondVideo").classList.remove('d-none');              
       
               var permissions = cordova.plugins.permissions;
@@ -1657,45 +1737,89 @@ function onDeviceReady() {
       } else {
         $("#upload_from_file_container_help").html('<span class= "text-danger" >only Image files</span>');
       }
-      
 
+      function compressVideo(videoPath, maessa_up, callback) {
+        const outputPath = videoPath.replace('.mp4', `_${maessa_up}_compressed.mp4`);
+        const ffmpegCommand = `-i ${videoPath} -b:v 800k -preset fast ${outputPath}`;
+    
+        let progressBar = $('#compressionProgress');
+        let progressLabel = $('#compressionProgressLabel');
+    
+        // Ensure progress bar is visible
+        progressBar.removeClass('d-none');
+        progressBar.css('width', '0%');
+        progressLabel.text('Starting compression...');
+        
+        window.ffmpeg.exec(ffmpegCommand, function () {
+          // Success callback
+          progressBar.css('width', '100%');
+          progressLabel.text('Compression complete!');
+
+          setTimeout(() => {
+
+            $('#capturePointsModalError').html('<span class="text-success">Compression successful</span>');
+            callback(outputPath);
+          }, 2000);
+        }, function (error) {
+          $('#capturePointsModalError').html("Compression failed:" + error);
+        },
+        function (progress) {
+            if (progress && progress.percent) {
+                let percentage = Math.round(progress.percent);
+                progressBar.css('width', percentage + '%');
+                progressLabel.text(`Compressing... ${percentage}%`);
+            }
+        });
+      }
+      
       function captureVideo(maessa_up) {
         navigator.device.capture.captureVideo(
-        //navigator.camera.captureVideo(
             function (mediaFiles) {
-                var videoPath = mediaFiles[0].fullPath;
-
-                window.resolveLocalFileSystemURL(videoPath, function (fileEntry) {
-                  fileEntry.file(function (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = function () {
-                          const blobEntry = new Blob([reader.result], { type: file.type });
-              
-                          const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
-              
-                          if (maessaUpIndex !== -1) {
-                              uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
-                              uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
-                          } else {
-                              uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
-                              uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-                          }
-              
-                          playVideo(fileEntry.toURL());
-                      };
-                      reader.readAsArrayBuffer(file);
-                  });
-                }, function (error) {
-                  $('#capturePointsModalError').html("Error accessing video file:", error);
-                });
+                var videoPath = mediaFiles[0].fullPath || mediaFiles[0].localURL;
+                
+                //$('#capturePointsModalError').html('<span class="text-info">Compressing Video...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div></span>');
             
-              },
-            function (error) {
-              $('#capturePointsModalError').html("Video capture failed: " + error.code);
+                $('#capturePointsModalError').html(`
+                  <span class="text-info">Compressing Video...
+                  <div class="spinner-grow" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                  </div></span>
+                  <div class="progress mt-2">
+                      <div id="compressionProgress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                          role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <small id="compressionProgressLabel" class="text-muted">Initializing...</small>
+                `);
+
+                compressVideo(videoPath, maessa_up, function (compressedPath) {
+                    window.resolveLocalFileSystemURL(compressedPath, function (fileEntry) {
+                        fileEntry.file(function (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = function () {
+                                const blobEntry = new Blob([reader.result], { type: file.type });
+              
+                                const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
+                    
+                                if (maessaUpIndex !== -1) {
+                                    uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
+                                    uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                                } else {
+                                    uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
+                                    uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+                                }                    
+    
+                                playVideo(fileEntry.toURL());
+                            };
+                            reader.readAsArrayBuffer(file);
+                        });
+                    });
+                });
             },
-            { limit: 1, duration: 30 } // Limit to 1 video, max duration 30 seconds
+            function (error) {
+                $('#capturePointsModalError').html("Video capture failed: " + error.code);
+            },
+            { limit: 1, duration: 30 }
         );
-        
       }
 
       function playVideo(videoPath) {
@@ -1743,9 +1867,47 @@ function onDeviceReady() {
             playIcon.classList.add('d-none');
             retakeIcon.classList.add('d-none');
             pauseIcon.classList.remove('d-none');
-        });
-        
+        });        
       }
+
+      /**function cCaptureVideo(maessa_up) {
+        navigator.device.capture.captureVideo(
+        //navigator.camera.captureVideo(
+            function (mediaFiles) {
+                var videoPath = mediaFiles[0].fullPath;
+
+                window.resolveLocalFileSystemURL(videoPath, function (fileEntry) {
+                  fileEntry.file(function (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = function () {
+                          const blobEntry = new Blob([reader.result], { type: file.type });
+              
+                          const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
+              
+                          if (maessaUpIndex !== -1) {
+                              uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
+                              uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                          } else {
+                              uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
+                              uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+                          }
+              
+                          playVideo(fileEntry.toURL());
+                      };
+                      reader.readAsArrayBuffer(file);
+                  });
+                }, function (error) {
+                  $('#capturePointsModalError').html("Error accessing video file:", error);
+                });
+            
+              },
+            function (error) {
+              $('#capturePointsModalError').html("Video capture failed: " + error.code);
+            },
+            { limit: 1, duration: 30 } // Limit to 1 video, max duration 30 seconds
+        );
+        
+      } */
 
       /**function openCapturePointsScanner(maessa_up) {
         const videoElement = document.getElementById("videoCapturePoints");
@@ -3026,7 +3188,7 @@ function onDeviceReady() {
       }
     }
     function switchToFileMode() {
-      if (localStorage.getItem("inAppCamera") === "true") {
+      if (localStorage.getItem("inAppCamera") === "true" || localStorage.getItem("requests_inAppCamera") === "true") {
         cameraFlexSwitchCheckChecked.checked = true; // Use boolean `true` instead of string `'true'`
         showSnackbar('Only in App Camera allowed');
       } else {
@@ -5682,8 +5844,7 @@ function uploadVideo(formData) {
           return xhr;
         },
         success: function (response) {
-          alert(JSON.stringify(response));
-          
+          //alert(JSON.stringify(response));
           if (response.status) {
             $("#upload_valuationReport_help").html('<span class="text-danger">' + response.message + '</span>');
 
@@ -5724,7 +5885,8 @@ function uploadVideo(formData) {
         error: function (xhr, status, error) {
             document.getElementById('chuckRetryVideoUpload').classList.remove('d-none');
             document.getElementById('submitReport').classList.add('d-none');
-            $("#upload_valuationReport_help").html('<span class="text-danger">' + error + '</span>');
+            $("#upload_valuationReport_help").html('<span class="text-danger">' + JSON.stringify(xhr) + '</span>');
+            //alert(JSON.stringify(xhr));
         }
     });
 }
@@ -5957,11 +6119,9 @@ function getDashboard(userUsername,_email,password,action,id) {
         });
         response_industryTypes.forEach(industry => {
           $("#industryType").append(`<option value="${industry.IndustryName}" title="${industry.Description}">${industry.IndustryName}</option>`);
-        });
-  
+        });  
         //$(".reject-button").html(`<i class="fa-solid fa-ban"></i> <span class="d-none d-sm-none d-md-inline">Reject</span>`);
-        //$(".approve-button").html(`<i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span>`);
-        
+        //$(".approve-button").html(`<i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span>`);        
         $(".accept-valuation-requests-btn").html(`Accept`);
         $(".reject-valuation-requests").html(`Reject`);
         $(".spinner-valuation").html(`Assign`);
@@ -5982,11 +6142,8 @@ function getDashboard(userUsername,_email,password,action,id) {
         document.querySelector(".principal-valuer-signature").classList.add("d-none");      
         document.querySelector(".company-settings").classList.add("d-none");
         document.querySelector("#companyInfo").classList.add("d-none");
-
         //document.querySelector(".storage-alert").classList.add("d-none");
-        //alert(response.companyUsers);
         //document.querySelector(".loogg").innerHTML = `${JSON.stringify(response.companyUsers)}`;
-
         const companyUsers = response.companyUsers;
         const employeeSelect = document.getElementById('companyEmployee');
         const roleSelect = document.getElementById('companyEmployeeRole');
@@ -6027,8 +6184,16 @@ function getDashboard(userUsername,_email,password,action,id) {
 
         });
 
+        document.querySelectorAll(".vehicleChecklistManager").forEach(el => {
+          el.classList.remove("d-none");        
+        }); 
+
         if (response.message.role == "Elite Technician") {
           document.querySelector(".storage-message").innerHTML = 'contact your admin';
+
+          document.querySelectorAll(".vehicleChecklistManager").forEach(el => {
+            el.classList.add("d-none");        
+          });       
 
           toggleDashboardVisibility('.valuer-dashboard', ['.individual-dashboard', '.approver-dashboard', '.directorPrincipal-dashboard', '.appraiser-dashboard', '.carDealer-dashboard']);
         } else if (response.message.role == "Principal Valuer" || response.message.role == "Senior Valuer") {
@@ -6036,8 +6201,6 @@ function getDashboard(userUsername,_email,password,action,id) {
             document.querySelector(".pdf-settings").classList.remove("d-none");
             document.querySelector(".principal-valuer-signature").classList.remove("d-none");
             //document.querySelector(".storage-alert").classList.remove("d-none");
-            document.querySelector(".vehicleChecklistManager").classList.remove("d-none");
-
           }
           document.querySelector(".storage-message").innerHTML = 'contact your admin';
 
@@ -6047,7 +6210,6 @@ function getDashboard(userUsername,_email,password,action,id) {
           //document.querySelector(".storage-alert").classList.remove("d-none");
           document.querySelector(".storage-message").innerHTML = 'update your plan';
 
-          document.querySelector(".vehicleChecklistManager").classList.remove("d-none");
 
           document.querySelector(".pdf-settings").classList.remove("d-none");
           document.querySelector(".company-settings").classList.remove("d-none");
@@ -6057,6 +6219,12 @@ function getDashboard(userUsername,_email,password,action,id) {
         } else if (response.message.role == "Appraiser") {
           toggleDashboardVisibility('.appraiser-dashboard', ['.approver-dashboard', '.valuer-dashboard', '.individual-dashboard', '.directorPrincipal-dashboard', '.carDealer-dashboard']);
         } else if (response.message.role == "Individual" || response.message.role == "CarDealer" || response.message.role == "Micro Finance" || response.message.role == "Bank" || response.message.role == "Insurance") {
+          
+          if (response.message.role == "Individual") {
+            document.querySelectorAll(".vehicleChecklistManager").forEach(el => {
+              el.classList.add("d-none");        
+            }); 
+          }
           toggleDashboardVisibility('.individual-dashboard', ['.approver-dashboard', '.valuer-dashboard', '.carDealer-dashboard', '.directorPrincipal-dashboard', '.appraiser-dashboard']);
           //toggleDashboardVisibility('.carDealer-dashboard', ['.approver-dashboard', '.valuer-dashboard', '.individual-dashboard', '.directorPrincipal-dashboard', '.appraiser-dashboard']);
         }
@@ -6240,13 +6408,13 @@ function getDashboard(userUsername,_email,password,action,id) {
 
             //alert(totalMaxValuations + '==' + totalValuations);
 
-            if (totalMaxValuations <= totalValuations) {
+            if (totalMaxValuations <= totalValuations && totalValuations !==0) {
 
               reportButtons.forEach(button => {
                 button.addEventListener("click", function () {
                     // Show the message
                     storageAlert.classList.remove("d-none");
-
+                    //
                     showSnackbar(`You are using <strong class="using-storage">${calculateStorageLabelValue(totalUsed)}</strong> of the <strong class="available-storage">${calculateStorageLabelValue(maxStorage)}</strong> of storage available to you.</span>`);
             
                     // Hide the message after 3 seconds
@@ -6262,6 +6430,16 @@ function getDashboard(userUsername,_email,password,action,id) {
                     // Open the modal properly
                     const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
                     newReportModal.show();
+                    localStorage.setItem('requests_themePdfColor', ''); // Save to localStorage
+                    localStorage.setItem('requests_themePdfFontSize', ''); // Save to localStorage
+                    localStorage.setItem('requests_inAppCamera', ''); // Save to localStorage
+                    localStorage.setItem('requests_videoSection', ''); // Save to localStorage
+                    localStorage.setItem('requests_aiObjectsDetection', ''); // Save to localStorage
+                    localStorage.setItem('requests_aiDamageDetection', ''); // Save to localStorage
+                    localStorage.setItem('requests_aiValuePrediction', ''); // Save to localStorage
+                    localStorage.setItem('requests_priorityStandard', ''); // Save to localStorage
+                    localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
+          
                 });
               });
             }
@@ -6343,7 +6521,28 @@ function getDashboard(userUsername,_email,password,action,id) {
                       showSnackbar("Error parsing additional_checklist JSON:", error);
                   }
               }
-          }          
+          }
+          response_inspections_requests_valuations = response.inspections_requests_valuations;
+          //alert(JSON.stringify(response.inspections_requests_valuations));
+
+          /**let additional_requests_checklist = {};
+          response_inspections_requests_valuations = response.inspections_requests_valuations;
+          let inspections_requests_valuations = response_inspections_requests_valuations || []; // Ensure it's an array          
+          if (Array.isArray(inspections_requests_valuations)) {
+              var selectedInspectionsValuations = inspections_requests_valuations.find(function(details) {
+                  return details.user_id == response.message.CompanyID;
+              });          
+              if (selectedInspectionsValuations && selectedInspectionsValuations.additional_checklist) {
+                  try {
+                      additional_requests_checklist = JSON.parse(selectedInspectionsValuations.additional_checklist); // ✅ Convert string to object
+                      maessa_up_Arr = selectedInspectionsValuations.maessa_up_Arr;
+
+                  } catch (error) {
+                      showSnackbar("Error parsing additional_requests_checklist JSON:", error);
+                  }
+              }
+          }   */   
+
           const fontSizeSlider = document.getElementById('fontSizeSlider');
           const fontSizeValue = document.getElementById('fontSizeValue');
 
@@ -6533,14 +6732,11 @@ function getDashboard(userUsername,_email,password,action,id) {
             sections.splice(index, 1);
             saveSections(); // Save to localStorage
             displaySections();
-          }
-                    
+          }                    
           // Update the chart
-
           //alert("Update the chart");
           updateChartTeamPerformance(completedTasks, teamMemberNames, colors);
           updateStorageChartData(updatedStorageUsed, updatedMaxStorage, updatedValuations, newLabels);
-
 
         }
         
@@ -6691,6 +6887,7 @@ function displayValuationForms(valuation_Forms, _reports, role) {
     var vehicle_name = '';
     var vehicleImagePath = '';
     var vehicleID = 0;
+    var poster = '';
 
     response_requestsVehicles.forEach(vehicle => {    
       if (vehicle.VehicleID == assignments.VehicleID) {
@@ -6699,9 +6896,51 @@ function displayValuationForms(valuation_Forms, _reports, role) {
         response_images.forEach(image => {
           if (vehicle.VehicleID == image.VehicleID) {
             if (image.Description == "Right front") {
+              poster = image.ImagePath;
+            }
+
+            if (image.Description == "Right front") {
               vehicleImagePath = ` 
                 <img src="${image.ImagePath}" alt="${image.Description}" class="vehicle-image" VehicleID="${vehicle.VehicleID}">
               `;
+            } else if (isVideoFile(image.ImagePath)) {
+              vehicleImagePath = ` 
+                <video src="${image.ImagePath}" poster="${poster}" class="vehicle-image request_video_${image.VehicleID}" VehicleID="${vehicle.VehicleID}" style="object-fit: cover;" playsinline></video>
+              `; 
+              
+              setTimeout(() => {
+                // Get all video elements matching the class
+                const videos = document.getElementsByClassName(`request_video_${image.VehicleID}`);
+            
+                if (videos.length > 0) {
+                    Array.from(videos).forEach((video) => {
+                        // Play on hover
+                        video.addEventListener("mouseenter", () => {
+                            video.play();
+                        });
+            
+                        // Pause when mouse leaves
+                        video.addEventListener("mouseleave", () => {
+                            video.pause();
+                        });
+            
+                        // Toggle play/pause on click
+                        video.addEventListener("click", () => {
+                            if (video.paused) {
+                                video.play();
+                            } else {
+                                video.pause();
+                            }
+                        });
+            
+                        // Ensure video restarts when it ends
+                        video.addEventListener("ended", () => {
+                            video.currentTime = 0;
+                        });
+                    });
+                }
+              }, 100);
+          
             }
           }
           if (vehicleImagePath == "" && image.Description == "Logbook photo") {
@@ -6844,6 +7083,7 @@ function displayValuationForms(valuation_Forms, _reports, role) {
     var vehicle_name = "";
     var vehicleID = 0;
     var vehicleImagePath = "";
+    var poster = '';
 
     const requestsVehiclesListItemFragment = document.createDocumentFragment();
     response_requestsVehicles.forEach(vehicle => {    
@@ -6853,10 +7093,51 @@ function displayValuationForms(valuation_Forms, _reports, role) {
         response_images.forEach(image => {
           if (vehicle.VehicleID == image.VehicleID) {
             if (image.Description == "Right front") {
+              poster = image.ImagePath;
+            }
+            if (image.Description == "Right front") {
               vehicleImagePath = ` 
                 <img src="${image.ImagePath}" alt="${image.Description}" class="vehicle-image" VehicleID="${vehicle.VehicleID}">
               `;
+            } else if (isVideoFile(image.ImagePath)) {
+              vehicleImagePath = ` 
+                <video src="${image.ImagePath}" poster="${poster}" class="vehicle-image requestsVehicles_video_${image.VehicleID}" VehicleID="${vehicle.VehicleID}" style="object-fit: cover;" playsinline></video>
+              `;      
+              setTimeout(() => {
+                // Get all video elements matching the class
+                const videos = document.getElementsByClassName(`requestsVehicles_video_${image.VehicleID}`);
+            
+                if (videos.length > 0) {
+                    Array.from(videos).forEach((video) => {
+                        // Play on hover
+                        video.addEventListener("mouseenter", () => {
+                            video.play();
+                        });
+            
+                        // Pause when mouse leaves
+                        video.addEventListener("mouseleave", () => {
+                            video.pause();
+                        });
+            
+                        // Toggle play/pause on click
+                        video.addEventListener("click", () => {
+                            if (video.paused) {
+                                video.play();
+                            } else {
+                                video.pause();
+                            }
+                        });
+            
+                        // Ensure video restarts when it ends
+                        video.addEventListener("ended", () => {
+                            video.currentTime = 0;
+                        });
+                    });
+                }
+              }, 100); 
+          
             }
+
           }
           if (vehicleImagePath == "" && image.Description == "Logbook photo") {
             vehicleImagePath = ` 
@@ -7123,15 +7404,56 @@ function displayValuationForms(valuation_Forms, _reports, role) {
           <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button d-none d-sm-none d-md-inline" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
       `;
     }
+    var poster = '';
 
     response_images.forEach(image => {
       if (vehicleID == image.VehicleID) {
-
+        if (image.Description == "Right front") {
+          poster = image.ImagePath;
+        }
+        //alert(poster);
         if (image.Description == "Right front") {
           vehicleImagePath = ` 
             <img src="${image.ImagePath}" alt="${image.Description}" class="vehicle-image" VehicleID="${vehicleID}">
           `;
-        }
+        } else if (isVideoFile(image.ImagePath)) {
+          vehicleImagePath = ` 
+            <video id="video_${image.VehicleID}" src="${image.ImagePath}" poster="${poster}" class="vehicle-image video_${image.VehicleID}" VehicleID="${vehicleID}" style="object-fit: cover;" playsinline></video>
+          `;
+          setTimeout(() => {
+            // Get all video elements matching the class
+            const videos = document.getElementsByClassName(`video_${image.VehicleID}`);
+        
+            if (videos.length > 0) {
+                Array.from(videos).forEach((video) => {
+                    // Play on hover
+                    video.addEventListener("mouseenter", () => {
+                        video.play();
+                    });
+        
+                    // Pause when mouse leaves
+                    video.addEventListener("mouseleave", () => {
+                        video.pause();
+                    });
+        
+                    // Toggle play/pause on click
+                    video.addEventListener("click", () => {
+                        if (video.paused) {
+                            video.play();
+                        } else {
+                            video.pause();
+                        }
+                    });
+        
+                    // Ensure video restarts when it ends
+                    video.addEventListener("ended", () => {
+                        video.currentTime = 0;
+                    });
+                });
+            }
+          }, 100);
+      
+        }        
       }
     });
 
@@ -8041,4 +8363,9 @@ function updateProgressBar(fileSizeMB) {
   } else {
       progressBar.classList.add('text-bg-danger');
   }
+}
+function isVideoFile(filePath) {
+  const videoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.mpeg'];
+  const ext = filePath.split('.').pop().toLowerCase();
+  return videoExtensions.includes(`.${ext}`);
 }

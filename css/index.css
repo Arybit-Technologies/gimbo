@@ -196,7 +196,13 @@ border-radius: 50%;
   width: 60px;
   height: 60px;
   border-radius: 16%;
-  }
+}
+.vehicleImageLogo video {
+  width: 60px;
+  height: 60px;
+  border-radius: 16%;
+}
+  
 .qr_code{
   right: 3px;
   width: 100px;
