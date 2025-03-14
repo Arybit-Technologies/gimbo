@@ -1474,3 +1474,31 @@ span.psw {
 .play-icon, .pause-icon {
   line-height: 1;
 }
+
+.scrollable-content {
+  height: 90vh; /* 90% of viewport height, adjust as needed */
+  overflow-y: auto; /* Enables vertical scrolling */
+  overflow-y: hidden; /* Hides horizontal scrollbar */
+  padding: 20px; /* Optional: Adds padding inside the scrollable area */
+}
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+}
+/* For Firefox */
+.scrollable-content {
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}
+
+.responseValuator-group{
+  max-height: 90vh; 
+  overflow-y: auto;
+}
+.responseValuator-group::-webkit-scrollbar {
+  display: none;
+}
+/* For Firefox */
+.responseValuator-group {
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}

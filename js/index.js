@@ -68,11 +68,15 @@ let storageStatusChart;
 let storage_server; 
 //var server_Url = 'http://192.168.8.109/arybit/';
 //var server_Url = 'https://treadstone-es.co.ke/api/';
-var server_Url = 'https://autovaluationpro.arybit.co.ke/api/';
+//var server_Url = 'https://autovaluationpro.arybit.co.ke/api/';
 //var server_Url = 'http://192.168.8.109/api/';
 //var server_Url = 'https://arybit.co.ke/api/';
 //var server_Url = 'http://localhost/api/';
+//var urlValuator = 'http://localhost';
+var urlValuator = 'https://autovaluationpro.arybit.co.ke';
+var server_Url = '' + urlValuator + '/api/';
 
+var vehicleValuatorData = "";
 let approvalStatusChart = null;
 let assignmentStatusChart = null;
 let uploadedFiles = [];
@@ -132,6 +136,9 @@ const carData = {
   "Kia": ["Cadenza", "Forte", "K900", "Niro", "Optima", "Rio", "Seltos", "Soul", "Soul EV", "Sportage", "Stinger", "Telluride", "Sorento", "Sedona", "Borrego", "Optima Hybrid", "K900 Luxury", "Forte5"],
   "Toyota": ["4Runner", "86", "Avalon", "C-HR", "Camry", "Corolla", "Corolla Cross", "GR Supra", "Highlander", "Land Cruiser", "Mirai", "Prius", "RAV4", "Sequoia", "Sienna", "Tacoma", "Tundra", "Venza", "Yaris", "Celica", "Echo", "FJ Cruiser", "MR2", "Paseo", "Previa", "Sera", "Starlet", "Supra", "Tercel", "Tercel 4WD Wagon", "Cressida", "Matrix", "MR2 Spyder"]
 };
+
+let carRData = []; // Will be populated from AJAX response
+
 var addEventListener_count = 0;
 
 var addNetworkEventListener_count = 0;
@@ -140,6 +147,11 @@ var refresh_dashboard = false;
 
 localStorage.setItem('offset', 0);
 localStorage.setItem('limit', 10);
+
+var inHouseMessage = "";
+var compression_complete = 0;
+
+//alert(window.location.hostname);
 
 if(window.location.hostname == "localhost"){
   document.addEventListener('deviceready', onDeviceReady, false);
@@ -151,13 +163,30 @@ if(window.location.hostname == "localhost"){
 //const request = indexedDB.open("imageStorageDB", 1);
 
 function onDeviceReady() {
-  //alert(window.location.hostname);
+    //alert(window.location.hostname);
     // Cordova is now initialized. Have fun!
     // Enable background mode
     //cordova.plugins.backgroundMode.setEnabled(true);
     //localStorage.setItem('themeColor','#32062e');
 
-    var app_version = '1.0.19';
+
+    /**if(window.location.hostname == "localhost"){
+      if (cordova.platformId == "android") {   
+        //server_Url = 'https://autovaluationpro.arybit.co.ke/api/';        
+      } else {
+        //alert(cordova.platformId);
+      }
+    } else{  
+      //alert(window.location.hostname);  
+      if (cordova.platformId == "android") {   
+        //server_Url = 'https://autovaluationpro.arybit.co.ke/api/';      
+      } else {
+        //alert(cordova.platformId);
+      }
+    } */
+    
+
+    var app_version = '1.0.20';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
@@ -636,10 +665,27 @@ function onDeviceReady() {
 
     });
     $('.logout-button').click(function() {
-        localStorage.clear();               
+        localStorage.clear();
+        document.querySelector(".landing-page").classList.remove("d-none");
+        document.querySelector(".login-page").classList.remove("d-none");
+        document.querySelector(".register-page").classList.add("d-none");
+        document.querySelector(".client_info").classList.remove("d-none");
+        document.querySelector(".password_info").classList.add("d-none");
+        document.querySelector(".forgot-password-page").classList.add("d-none");
+        document.querySelector("#next-register-button").classList.remove("d-none");
+        document.querySelector("#registerValuer").classList.add("d-none");
+        //alert('client_info');
+        //document.querySelector(".settings-page").classList.add("d-none");
+        document.querySelector(".report-information").classList.add("d-none");
+        document.querySelector(".recovery_email").classList.remove("d-none");
+        document.querySelector(".sendVerification_Code").classList.remove("d-none");
+        document.querySelector(".verify_Code").classList.add("d-none");
+        document.querySelector(".submit_new_password").classList.add("d-none");
+        document.querySelector(".recovery_code").classList.add("d-none");
+        document.querySelector(".recovery_new_password").classList.add("d-none");
         localStorage.setItem('version',app_version);
         localStorage.setItem('themeColor','#32062e');
-
+        //alert('themeColor');
         var corporateRefNo = generateCorporateRefNo();
         var serialNo = generateSerialNo();
         localStorage.setItem('corporateRefNo',corporateRefNo);
@@ -649,24 +695,18 @@ function onDeviceReady() {
         localStorage.setItem('serialNo',serialNo);
         document.getElementById('corporateRefNo').value = corporateRefNo;
         document.getElementById('serialNo').value = serialNo;
-
         localStorage.setItem('offset', 0);
         localStorage.setItem('limit', 10);
-
         // Hide the modal
         //alert();
-
         const accountSettingsModal = document.getElementById('accountSettingsModal');
-        const qrCodeModal = bootstrap.Modal.getInstance(accountSettingsModal);
-        
+        const qrCodeModal = bootstrap.Modal.getInstance(accountSettingsModal);        
         if (qrCodeModal) {
             qrCodeModal.hide(); // Properly hides the modal
         } else {
            alert('Modal instance not found!');
-        }
-        
+        }        
         toggleDashboardVisibility('.login-page', ['.valuer-dashboard', '.individual-dashboard', '.approver-dashboard', '.directorPrincipal-dashboard', '.appraiser-dashboard', '.carDealer-dashboard']);
-
         document.querySelectorAll(".login_buttons").forEach(element => {
             element.classList.remove("d-none");
         });
@@ -674,25 +714,6 @@ function onDeviceReady() {
           element.classList.add("d-none");
         });
         //$('#settingsModalLabel').modal('hide');
-
-        document.querySelector(".landing-page").classList.remove("d-none");
-        document.querySelector(".login-page").classList.remove("d-none");
-        document.querySelector(".register-page").classList.add("d-none");
-        document.querySelector(".client_info").classList.remove("d-none");
-        document.querySelector(".password_info").classList.add("d-none");
-        document.querySelector(".forgot-password-page").classList.add("d-none");
-        document.querySelector("#next-register-button").classList.remove("d-none");
-        document.querySelector("#registerValuer").classList.add("d-none");
-        document.querySelector(".settings-page").classList.add("d-none");
-        document.querySelector(".report-information").classList.add("d-none");
-
-        document.querySelector(".recovery_email").classList.remove("d-none");
-        document.querySelector(".sendVerification_Code").classList.remove("d-none");
-        document.querySelector(".verify_Code").classList.add("d-none");
-        document.querySelector(".submit_new_password").classList.add("d-none");
-        document.querySelector(".recovery_code").classList.add("d-none");
-        document.querySelector(".recovery_new_password").classList.add("d-none");
-
     }); 
     $('.settings-button').click(function() {
       document.querySelector(".settings-page").classList.remove("d-none");
@@ -924,6 +945,14 @@ function onDeviceReady() {
           localStorage.setItem('requests_priorityStandard', additional_requests_checklist.priorityStandard); // Save to localStorage
           localStorage.setItem('requests_priorityExpress', additional_requests_checklist.priorityExpress); // Save to localStorage
 
+          //alert(additional_requests_checklist.videoChecklistArray);
+          let videoChecklistString  = additional_requests_checklist.videoChecklistArray || []; // Preserve selections
+          //alert(additional_requests_checklist.videoChecklistArray);
+
+          if (videoChecklistString  !== null && videoChecklistString .length > 0) {
+              let videoChecklistArray = videoChecklistString .split(","); // Convert string to array
+              localStorage.setItem("requests_videoChecklistArray", JSON.stringify(videoChecklistArray));
+          }          
           //alert(localStorage.getItem('requests_inAppCamera'));
 
           inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
@@ -947,6 +976,12 @@ function onDeviceReady() {
       inspect_action = "";
 
       uploadedFiles = [];
+
+      uploadedTimeFiles = [];
+
+      uploadedVideoFiles = [];
+      uploadedTimeVideoFiles = [];
+
       document.querySelector(".camera-toggle").classList.remove("d-none");
       document.querySelectorAll(".resumeReport").forEach(element => {
         element.classList.remove("d-none");
@@ -1140,6 +1175,8 @@ function onDeviceReady() {
                           caption: image.Description,
                           customDownloadUrl: image.ImagePath // Custom property for download
                       });
+
+                      //alert(image.Description);
   
                       if (vehicleImagePath === "") {
                           vehicleImagePath = `
@@ -1147,7 +1184,14 @@ function onDeviceReady() {
                                   <video src="${image.ImagePath}" poster="${image.Thumbnail || ''}" class="vehicle-thumb" autoplay muted loop playsinline></video>
                               </a>
                           `;
+                      } else {
+                        vehicleImagePath = `
+                            <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                                <video src="${image.ImagePath}" poster="${image.Thumbnail || ''}" class="vehicle-thumb" autoplay muted loop playsinline></video>
+                            </a>
+                        `;
                       }
+
                   } else {
                       fancyboxImages.push({
                           src: image.ImagePath,
@@ -1357,6 +1401,9 @@ function onDeviceReady() {
         //alert(localStorage.getItem('userCompanyInputID'));
         //formData.append('CompanyID', 4);        
         formData.append('maessa_up_Arr', maessa_up_Arr);
+              
+        formData.append('videoChecklistArray', JSON.parse(localStorage.getItem("videoChecklistArray")));
+
         formData.append('inAppCamera', localStorage.getItem('inAppCamera'));
         formData.append('videoSection', localStorage.getItem('videoSection'));
         formData.append('themePdfColor', localStorage.getItem('themePdfColor'));
@@ -1410,8 +1457,12 @@ function onDeviceReady() {
     $(document).on("click", ".Captured_Photos", function() {
 
       const imgAdd = $(this);
+      if (compression_complete == 0) {
+        captureImage(); 
+      } else {
+        showSnackbar(inHouseMessage);
+      }
       
-      captureImage(); 
 
       function captureImage() {
         var permissions = cordova.plugins.permissions;
@@ -1522,6 +1573,12 @@ function onDeviceReady() {
                           uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
                       }
 
+                      var duration = 10;
+                      //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + imgAdd.attr('maessa_up') + ' video</span>');
+                      setTimeout(() => {
+                        videoSection(imgAdd,imgAdd.attr('maessa_up'),duration);
+                      }, 100);
+
                     } else {
                       //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
   
@@ -1592,7 +1649,13 @@ function onDeviceReady() {
           // Update the background image of the corresponding element
           const imageSrc = "data:image/jpeg;base64," + resizedImageData;
           imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });       
-          imgAdd.closest(".col").find('.points-spinner-grow').remove();
+          //imgAdd.closest(".col").find('.points-spinner-grow').remove();
+
+            var duration = 10;
+            //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + imgAdd.attr('maessa_up') + ' video</span>');
+            setTimeout(() => {
+              videoSection(imgAdd,imgAdd.attr('maessa_up'),duration);
+            }, 100);
    
         }
 
@@ -1647,1251 +1710,66 @@ function onDeviceReady() {
     });
     $(document).on("change",".uploadFile", function(event) {
       var uploadFile = $(this);
-      var maessa_up = uploadFile.attr('data-maessa_up');
-      var files = !!this.files ? this.files : [];
-      if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
-      if (/^image/.test( files[0].type)){ // only image file  
-        const imageFile = event.target.files[0];
-        if (imageFile.size > 10000000) {
-          $("#upload_from_file_container_help").html('<span class="text-danger">Image file size exceeds the limit (10 MB).</span>');
-        } else{
-          uploadFile.closest(".col").find('.imgUp').removeClass('d-none');  
-          //uploadFile.closest(".col").find('.delimg').removeClass('d-none'); 
-          var reader = new FileReader(); // instance of the FileReader
-          reader.readAsDataURL(files[0]); // read the local file
-          reader.onloadend = function(){ // set image data as background of div
-            // The result will be a base64-encoded string 
-            var imageData = reader.result.split(',')[1]; // Extract base64 part
-            var image_src = "data:image/jpeg;base64," + imageData; // Construct the image src URL
-            uploadFile.closest(".col").find('.imgUp').css("background-image", "url("+image_src+")"); 
-            const fileName = imageFile.name;
-            const specialCharactersRegex = /[^\w\d]+/g;
-            const newFileName = fileName.replace(specialCharactersRegex, "");
-            uploadFile.closest(".col").find('.delimg').addClass('' + newFileName + '');
-            imgAdd_count = imgAdd_count + 1;
-    
-            // Find if maessa_up exists in the 
-            const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === maessa_up);
-        
-            if (maessaUpIndex !== -1) {
-              // If maessa_up exists, update imageData
-              uploadedFiles[maessaUpIndex].imageData = imageData;
-              uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
-              
-            } else {
-              // If maessa_up doesn't exist, push a new object
-              uploadedFiles.push({ maessa_up: maessa_up, imageData: imageData });
-              uploadedTimeFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-            }
-            
-            $("#upload_from_file_container_help").html('<span class="text-success">Analysing ' + maessa_up + ' image...</span>'); 
-            showSnackbar('<span class="text-success">Analysing ' + maessa_up + ' image...</span>');
-            $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>');
 
-            if ((localStorage.getItem("videoSection") === "true" || localStorage.getItem("requests_videoSection") === "true") && maessa_up === 'Logbook photo') {
-              document.querySelector(".section-30SecondVideo").classList.remove('d-none');              
+      if (compression_complete == 0) {
+        uploadFile.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+        var maessa_up = uploadFile.attr('data-maessa_up');
+        var files = !!this.files ? this.files : [];
+        if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+        if (/^image/.test( files[0].type)){ // only image file  
+          const imageFile = event.target.files[0];
+          if (imageFile.size > 10000000) {
+            $("#upload_from_file_container_help").html('<span class="text-danger">Image file size exceeds the limit (10 MB).</span>');
+          } else{
+            uploadFile.closest(".col").find('.imgUp').removeClass('d-none');  
+            //uploadFile.closest(".col").find('.delimg').removeClass('d-none'); 
+            var reader = new FileReader(); // instance of the FileReader
+            reader.readAsDataURL(files[0]); // read the local file
+            reader.onloadend = function(){ // set image data as background of div
+              // The result will be a base64-encoded string 
+              var imageData = reader.result.split(',')[1]; // Extract base64 part
+              var image_src = "data:image/jpeg;base64," + imageData; // Construct the image src URL
+              uploadFile.closest(".col").find('.imgUp').css("background-image", "url("+image_src+")"); 
+              const fileName = imageFile.name;
+              const specialCharactersRegex = /[^\w\d]+/g;
+              const newFileName = fileName.replace(specialCharactersRegex, "");
+              uploadFile.closest(".col").find('.delimg').addClass('' + newFileName + '');
+              imgAdd_count = imgAdd_count + 1;
       
-              var permissions = cordova.plugins.permissions;
-              var permissionsToRequest = [
-                  permissions.CAMERA,
-                  permissions.RECORD_AUDIO, // Ensure proper recording permissions
-                  permissions.READ_EXTERNAL_STORAGE,
-                  permissions.WRITE_EXTERNAL_STORAGE, // Required for older Android versions
-              ];
-              
-              if (localStorage.getItem("aiObjectsDetection") === "truee") {     
-
-                // Check for permissions (if required by your platform, e.g., Cordova)
-                permissions.requestPermissions(permissionsToRequest, function (status) {
-                    if (status[permissions.CAMERA] === permissions.GRANTED) {
-  
-                        //openCapturePointsScanner(maessa_up);
-                    } else {
-                        showSnackbar('Permissions denied');
-                    }
-                }, function (err) {
-                  showSnackbar('Permission request failed: ' + JSON.stringify(err));
-                });
+              // Find if maessa_up exists in the 
+              const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === maessa_up);
+          
+              if (maessaUpIndex !== -1) {
+                // If maessa_up exists, update imageData
+                uploadedFiles[maessaUpIndex].imageData = imageData;
+                uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
                 
-              } else {      
-                permissions.requestPermissions(permissionsToRequest, function (status) {
-                    permissions.hasPermission(permissions.CAMERA, function (status) {
-                        if (status.hasPermission) {
-                          captureVideo('params');
-                        } else {
-                          $('#capturePointsModalError').html("Permissions denied");
-                        }
-                    });
-                }, function (err) {
-                  $('#capturePointsModalError').html("Permission request failed: " + JSON.stringify(err));
-                });
+              } else {
+                // If maessa_up doesn't exist, push a new object
+                uploadedFiles.push({ maessa_up: maessa_up, imageData: imageData });
+                uploadedTimeFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
               }
-
-            } else {
-              document.querySelector(".section-30SecondVideo").classList.add('d-none');
-              document.getElementById("videoCapturePoints").classList.add('d-none');
+              
+              $("#upload_from_file_container_help").html('<span class="text-success">Analysing ' + maessa_up + ' image...</span>'); 
+              showSnackbar('<span class="text-success">Analysing ' + maessa_up + ' image...</span>');
+              $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>');
+  
+              var duration = 10;
+              //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + maessa_up + ' video</span>');
+              setTimeout(() => {
+                videoSection(uploadFile,maessa_up,duration);
+              }, 100);
+              
             }
-            
-          }
-        }    
+          }    
+        } else {
+          $("#upload_from_file_container_help").html('<span class= "text-danger" >only Image files</span>');
+        }
       } else {
-        $("#upload_from_file_container_help").html('<span class= "text-danger" >only Image files</span>');
-      }
-
-      function compressVideo(videoPath, maessa_up, callback) {
-        const outputPath = videoPath.replace('.mp4', `_${maessa_up}_compressed.mp4`);
-        const ffmpegCommand = `-i ${videoPath} -b:v 800k -preset fast ${outputPath}`;
-    
-        let progressBar = $('#compressionProgress');
-        let progressLabel = $('#compressionProgressLabel');
-    
-        // Ensure progress bar is visible
-        progressBar.removeClass('d-none');
-        progressBar.css('width', '0%');
-        progressLabel.text('Starting compression...');
-        
-        window.ffmpeg.exec(ffmpegCommand, function () {
-          // Success callback
-          progressBar.css('width', '100%');
-          progressLabel.text('Compression complete!');
-
-          setTimeout(() => {
-
-            $('#capturePointsModalError').html('<span class="text-success">Compression successful</span>');
-            callback(outputPath);
-          }, 2000);
-        }, function (error) {
-          $('#capturePointsModalError').html("Compression failed:" + error);
-        },
-        function (progress) {
-            if (progress && progress.percent) {
-                let percentage = Math.round(progress.percent);
-                progressBar.css('width', percentage + '%');
-                progressLabel.text(`Compressing... ${percentage}%`);
-            }
-        });
+        showSnackbar(inHouseMessage);
       }
       
-      function captureVideo(maessa_up) {
-        navigator.device.capture.captureVideo(
-            function (mediaFiles) {
-                var videoPath = mediaFiles[0].fullPath || mediaFiles[0].localURL;
-                
-                //$('#capturePointsModalError').html('<span class="text-info">Compressing Video...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div></span>');
-            
-                $('#capturePointsModalError').html(`
-                  <span class="text-info">Compressing Video...
-                  <div class="spinner-grow" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                  </div></span>
-                  <div class="progress mt-2">
-                      <div id="compressionProgress" class="progress-bar progress-bar-striped progress-bar-animated" 
-                          role="progressbar" style="width: 0%"></div>
-                  </div>
-                  <small id="compressionProgressLabel" class="text-muted">Initializing...</small>
-                `);
-
-                compressVideo(videoPath, maessa_up, function (compressedPath) {
-                    window.resolveLocalFileSystemURL(compressedPath, function (fileEntry) {
-                        fileEntry.file(function (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = function () {
-                                const blobEntry = new Blob([reader.result], { type: file.type });
-              
-                                const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
-                    
-                                if (maessaUpIndex !== -1) {
-                                    uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
-                                    uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
-                                } else {
-                                    uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
-                                    uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-                                }                    
-    
-                                playVideo(fileEntry.toURL());
-                            };
-                            reader.readAsArrayBuffer(file);
-                        });
-                    });
-                });
-            },
-            function (error) {
-                $('#capturePointsModalError').html("Video capture failed: " + error.code);
-            },
-            { limit: 1, duration: 30 }
-        );
-      }
-
-      function playVideo(videoPath) {
-        var videoElement = document.getElementById("videoCapturePoints");
-        videoElement.src = videoPath;
-    
-        var playPauseBtn = document.getElementById("playPauseBtn");
-        var playIcon = playPauseBtn.querySelector(".play-icon");
-        var pauseIcon = playPauseBtn.querySelector(".pause-icon");
-        var retakeIcon = playPauseBtn.querySelector(".retake-icon");
-
-        retakeIcon.addEventListener("click", function () {
-          captureVideo('params');
-        });
-
-        playPauseBtn.addEventListener("click", function () {
-            if (videoElement.paused) {
-                videoElement.play();
-                playIcon.classList.add("d-none");
-                retakeIcon.classList.add('d-none');
-                pauseIcon.classList.remove("d-none");
-            } else {
-                videoElement.pause();
-                retakeIcon.classList.add('d-none');
-                playIcon.classList.remove("d-none");
-                pauseIcon.classList.add("d-none");
-            }
-        });
-
-        // Sync button state when video ends or is paused externally
-        videoElement.addEventListener('ended', () => {
-            retakeIcon.classList.remove('d-none');
-            playIcon.classList.add('d-none');
-            pauseIcon.classList.add('d-none');
-        });
-        
-        videoElement.addEventListener('pause', () => {
-            playIcon.classList.remove('d-none');
-            pauseIcon.classList.add('d-none');
-            retakeIcon.classList.add('d-none');
-
-        });
-        
-        videoElement.addEventListener('play', () => {
-            playIcon.classList.add('d-none');
-            retakeIcon.classList.add('d-none');
-            pauseIcon.classList.remove('d-none');
-        });        
-      }
-
-      /**function cCaptureVideo(maessa_up) {
-        navigator.device.capture.captureVideo(
-        //navigator.camera.captureVideo(
-            function (mediaFiles) {
-                var videoPath = mediaFiles[0].fullPath;
-
-                window.resolveLocalFileSystemURL(videoPath, function (fileEntry) {
-                  fileEntry.file(function (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = function () {
-                          const blobEntry = new Blob([reader.result], { type: file.type });
-              
-                          const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
-              
-                          if (maessaUpIndex !== -1) {
-                              uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
-                              uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
-                          } else {
-                              uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
-                              uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-                          }
-              
-                          playVideo(fileEntry.toURL());
-                      };
-                      reader.readAsArrayBuffer(file);
-                  });
-                }, function (error) {
-                  $('#capturePointsModalError').html("Error accessing video file:", error);
-                });
-            
-              },
-            function (error) {
-              $('#capturePointsModalError').html("Video capture failed: " + error.code);
-            },
-            { limit: 1, duration: 30 } // Limit to 1 video, max duration 30 seconds
-        );
-        
-      } */
-
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-        let filePath = "";
-    
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    savedStream = stream;
-                    videoElement.play();
-                    startRecording(stream);
-                    loadModel();
-                })
-                .catch(err => {
-                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-                });
-        };
-    
-        function startRecording(stream) {
-            recordedChunks = [];
-            //mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-            mediaRecorder = new MediaRecorder(stream, { mimeType: "video/mp4" });
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-    
-            mediaRecorder.onstop = saveRecordedVideo;
-            mediaRecorder.start();
-        }
-    
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-        }
-    
-        function saveRecordedVideo() {
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            const fileName = `video_${Date.now()}.webm`;
-            replayVideo(blob);
-        }
-    
-        function replayVideo(blob) {
-            const videoURL = URL.createObjectURL(blob);
-            videoElement.src = videoURL;
-            videoElement.controls = true;
-            videoElement.play().catch(error => $('#capturePointsModalError').html("Error playing video: " + error.message + " " + videoURL));
-        }
-    
-        setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                stopRecording();
-            }
-            if (videoElement.srcObject) {
-                stopVideoStream(videoElement.srcObject);
-            }
-        }, 30000);
-    
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            model = await cocoSsd.load();
-            $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-            detectFrame();
-        };
-    
-        let frameCount = 0;
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-            frameCount++;
-            if (frameCount % 10 === 0) {
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = videoElement.videoWidth;
-                    canvas.height = videoElement.videoHeight;
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                    const predictions = await model.detect(canvas);
-                    visualizePredictions(predictions, ctx);
-                }
-            }
-            requestAnimationFrame(detectFrame);
-        };
-    
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };
-    
-        function handleError(msg) {
-            return (error) => $('#capturePointsModalError').html(`${msg}: ${error.message}`);
-        }
-    
-        startVideoStream();
-      } */
-
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-    
-        // Stop the video stream and release resources
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        // Start the video stream from the camera
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    savedStream = stream;
-                    videoElement.play();
-                    startRecording(stream); // Start recording the stream
-                    loadModel(); // Load the COCO-SSD model for object detection
-                })
-                .catch(err => {
-                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-                });
-        };
-    
-        // Start recording the video stream
-        function startRecording(stream) {
-            recordedChunks = [];
-            mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
-    
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-    
-            mediaRecorder.onstop = saveRecordedVideo;
-            mediaRecorder.start();
-        }
-    
-        // Stop the recording
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-        }
-    
-        // Save the recorded video and replay it
-        function saveRecordedVideo() {
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            replayVideo(blob);
-        }
-    
-        // Replay the recorded video in the video element
-        function replayVideo(blob) {
-            const videoURL = URL.createObjectURL(blob);
-            videoElement.src = videoURL;
-            videoElement.type = "video/webm"; // Ensure the type matches the blob
-            videoElement.controls = true;
-            videoElement.play().catch(error => {
-                $('#capturePointsModalError').html("Error playing video: " + error.message + " " + videoURL);
-            });
-        }
-    
-        // Automatically stop recording and release the stream after 30 seconds
-        setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                stopRecording();
-            }
-            if (videoElement.srcObject) {
-                stopVideoStream(videoElement.srcObject);
-            }
-        }, 30000);
-    
-        // Load the COCO-SSD model for object detection
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            try {
-                model = await cocoSsd.load();
-                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-                detectFrame(); // Start detecting objects in the video frames
-            } catch (error) {
-                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
-            }
-        };
-    
-        // Detect objects in the video frames
-        let frameCount = 0;
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-            frameCount++;
-            if (frameCount % 10 === 0) { // Process every 10th frame
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = videoElement.videoWidth;
-                    canvas.height = videoElement.videoHeight;
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                    try {
-                        const predictions = await model.detect(canvas);
-                        visualizePredictions(predictions, ctx); // Visualize the detected objects
-                    } catch (error) {
-                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
-                    }
-                }
-            }
-            requestAnimationFrame(detectFrame); // Continue detecting frames
-        };
-    
-        // Visualize the detected objects on the canvas
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };
-    
-        // Handle errors
-        function handleError(msg) {
-            return (error) => $('#capturePointsModalError').html(`${msg}: ${error.message}`);
-        }
-    
-        // Start the video stream and recording
-        startVideoStream();
-      } */
-
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-    
-        // Check for supported MIME types
-        const getSupportedMimeType = () => {
-            const mimeTypes = [
-                "video/webm; codecs=vp9",
-                "video/webm; codecs=vp8",
-                "video/webm",
-                "video/mp4",
-            ];
-            for (const mimeType of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mimeType)) {
-                    return mimeType;
-                }
-            }
-            return null;
-        };
-    
-        // Stop the video stream and release resources
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        // Start the video stream from the camera
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    savedStream = stream;
-                    videoElement.play();
-                    startRecording(stream); // Start recording the stream
-                    loadModel(); // Load the COCO-SSD model for object detection
-                })
-                .catch(err => {
-                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-                });
-        };
-    
-        // Start recording the video stream
-        function startRecording(stream) {
-            recordedChunks = [];
-            const mimeType = getSupportedMimeType();
-            if (!mimeType) {
-                $("#capturePointsModalError").html("Your browser does not support recording.");
-                return;
-            }
-    
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
-    
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-    
-            mediaRecorder.onstop = saveRecordedVideo;
-            mediaRecorder.start();
-        }
-    
-        // Stop the recording
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-        }
-    
-        // Save the recorded video and replay it
-        function saveRecordedVideo() {
-            const mimeType = getSupportedMimeType();
-            const blob = new Blob(recordedChunks, { type: mimeType });
-            replayVideo(blob);
-        }
-
-        
-    
-        // Replay the recorded video in the video element
-        function replayVideo(blob) {
-
-            videoElement.srcObject = savedStream;
-
-            videoElement.play();
-            alert(savedStream);
-
-            //playVideo(URL.createObjectURL(blob));
-        }
-    
-        // Automatically stop recording and release the stream after 30 seconds
-        setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                stopRecording();
-            }
-            if (videoElement.srcObject) {
-                stopVideoStream(videoElement.srcObject);
-            }
-        }, 30000);
-    
-        // Load the COCO-SSD model for object detection
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            try {
-                model = await cocoSsd.load();
-                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-                detectFrame(); // Start detecting objects in the video frames
-            } catch (error) {
-                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
-            }
-        };
-    
-        // Detect objects in the video frames
-        let frameCount = 0;
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-            frameCount++;
-            if (frameCount % 10 === 0) { // Process every 10th frame
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = videoElement.videoWidth;
-                    canvas.height = videoElement.videoHeight;
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                    try {
-                        const predictions = await model.detect(canvas);
-                        visualizePredictions(predictions, ctx); // Visualize the detected objects
-                    } catch (error) {
-                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
-                    }
-                }
-            }
-            requestAnimationFrame(detectFrame); // Continue detecting frames
-        };
-    
-        // Visualize the detected objects on the canvas
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };
-    
-        // Start the video stream and recording
-        startVideoStream();
-      } */
-            
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null; // Store the stream for replaying
-    
-        // Function to stop video stream
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        // Function to restart video stream
-        const restartVideoStream = () => {
-      
-          if (!videoElement) {
-              $('#capturePointsModalError').html("Video element not found!");
-              return;
-          }
-      
-          if (savedStream) {
-              $('#capturePointsModalError').html("Replaying saved stream...");
-      
-              // Stop existing tracks before reusing the stream
-              savedStream.getTracks().forEach(track => track.stop());
-      
-              // Ensure `srcObject` is properly reset before reassigning
-              videoElement.srcObject = savedStream;
-      
-              videoElement.onloadedmetadata = () => {
-                  videoElement.play().catch(error => $('#capturePointsModalError').html("Error playing video:", error));
-              };
-          
-              var playPauseBtn = document.getElementById("playPauseBtn");
-              var playIcon = playPauseBtn.querySelector(".play-icon");
-              var pauseIcon = playPauseBtn.querySelector(".pause-icon");
-              var retakeIcon = playPauseBtn.querySelector(".retake-icon");
-      
-              retakeIcon.addEventListener("click", function () {
-      
-                if (localStorage.getItem("aiObjectsDetection") === "true") {
-                  openCapturePointsScanner(maessa_up);
-                } else {
-                  captureVideo('params');
-                }
-      
-              });
-      
-              playPauseBtn.addEventListener("click", function () {
-                  if (videoElement.paused) {
-                      videoElement.play();
-                      playIcon.classList.add("d-none");
-                      retakeIcon.classList.add('d-none');
-                      pauseIcon.classList.remove("d-none");
-                  } else {
-                      videoElement.pause();
-                      retakeIcon.classList.add('d-none');
-                      playIcon.classList.remove("d-none");
-                      pauseIcon.classList.add("d-none");
-                  }
-              });
-      
-              // Sync button state when video ends or is paused externally
-              videoElement.addEventListener('ended', () => {
-                  retakeIcon.classList.remove('d-none');
-                  playIcon.classList.add('d-none');
-                  pauseIcon.classList.add('d-none');
-              });
-              
-              videoElement.addEventListener('pause', () => {
-                  playIcon.classList.remove('d-none');
-                  pauseIcon.classList.add('d-none');
-                  retakeIcon.classList.add('d-none');
-      
-              });
-              
-              videoElement.addEventListener('play', () => {
-                  playIcon.classList.add('d-none');
-                  retakeIcon.classList.add('d-none');
-                  pauseIcon.classList.remove('d-none');
-              });
-          } else {
-              $('#capturePointsModalError').html("No saved stream. Restarting...");
-              startVideoStream(); // Start a new stream if none is saved
-          }
-          
-        };
-      
-    
-        // Function to start video stream
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" }
-            }).then((stream) => {
-                videoElement.srcObject = stream;
-    
-                // Store the stream for replaying later
-                savedStream = stream;
-    
-                // Adjust resolution dynamically
-                const track = stream.getVideoTracks()[0];
-                const capabilities = track.getCapabilities();
-                const maxWidth = capabilities.width?.max || 1920;
-                const maxHeight = capabilities.height?.max || 1080;
-    
-                track.applyConstraints({
-                    width: maxWidth,
-                    height: maxHeight
-                }).then(() => {
-                    videoElement.play();
-    
-                    // Store video data
-                    const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
-                    if (maessaUpIndex !== -1) {
-                        uploadedVideoFiles[maessaUpIndex].videoData = stream;
-                        uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
-                    } else {
-                        uploadedVideoFiles.push({ maessa_up: maessa_up, videoData: stream });
-                        uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
-                    }
-    
-                    loadModel();
-                }).catch(err => {
-                  $("#capturePointsModalError").html("Failed to apply resolution constraints:", err);
-                });
-            }).catch(err => {
-                //console.error("Failed to access camera:", err);
-                $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-            });
-        };
-    
-        startVideoStream(); // Start the stream initially
-    
-        // Stop the video stream after 30 seconds and restart after 2 seconds
-        setTimeout(() => {
-            if (videoElement.srcObject) {
-              $('#capturePointsModalError').html("Stopping video stream...");
-                stopVideoStream(videoElement.srcObject);
-    
-                setTimeout(() => {
-                  $('#capturePointsModalError').html("Restarting video stream...");
-                    
-                  restartVideoStream();
-                }, 2000);
-            }
-        }, 30000);
-    
-        // Load and run COCO-SSD model
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            model = await cocoSsd.load();
-            $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-            detectFrame();
-        };
-    
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-    
-            if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-                canvas.width = videoElement.videoWidth;
-                canvas.height = videoElement.videoHeight;
-                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                const predictions = await model.detect(canvas);
-                visualizePredictions(predictions, ctx);
-    
-                canvas.remove();
-            }
-            requestAnimationFrame(detectFrame);
-        };
-    
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";  
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(
-                    `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
-                    x,
-                    y > 10 ? y - 5 : 10
-                );
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };  
-      } */
-
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-    
-        // Check for supported MIME types
-        const getSupportedMimeType = () => {
-            const mimeTypes = [
-                "video/webm; codecs=vp9",
-                "video/webm; codecs=vp8",
-                "video/webm",
-                "video/mp4",
-            ];
-            for (const mimeType of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mimeType)) {
-                    return mimeType;
-                }
-            }
-            return null;
-        };
-    
-        // Stop the video stream and release resources
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        // Start the video stream from the camera
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    savedStream = stream;
-                    videoElement.play();
-                    startRecording(stream); // Start recording the stream
-                    loadModel(); // Load the COCO-SSD model for object detection
-                })
-                .catch(err => {
-                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-                });
-        };
-    
-        // Start recording the video stream
-        function startRecording(stream) {
-            recordedChunks = [];
-            const mimeType = getSupportedMimeType();
-            if (!mimeType) {
-                $("#capturePointsModalError").html("Your browser does not support recording.");
-                return;
-            }
-    
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
-    
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-    
-            mediaRecorder.onstop = saveRecordedVideo;
-            mediaRecorder.start();
-        }
-    
-        // Stop the recording
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-        }
-    
-        // Save the recorded video and replay it
-        function saveRecordedVideo() {
-            const mimeType = getSupportedMimeType();
-            const blob = new Blob(recordedChunks, { type: mimeType });
-            replayVideo(blob);
-        }
-    
-        // Replay the recorded video in the video element
-        function replayVideo(blob) {
-            const videoURL = URL.createObjectURL(blob);
-            videoElement.src = videoURL;
-            videoElement.type = blob.type; // Set the type to match the blob
-            videoElement.controls = true;
-            videoElement.play()
-                .then(() => {
-                    $('#capturePointsModalError').html("Video playback started successfully.");
-                })
-                .catch(error => {
-                    $('#capturePointsModalError').html("Error playing video: " + error.message);
-                });
-        }
-    
-        // Automatically stop recording and release the stream after 30 seconds
-        setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                stopRecording();
-            }
-            if (videoElement.srcObject) {
-                stopVideoStream(videoElement.srcObject);
-            }
-        }, 30000);
-    
-        // Load the COCO-SSD model for object detection
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            try {
-                model = await cocoSsd.load();
-                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-                detectFrame(); // Start detecting objects in the video frames
-            } catch (error) {
-                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
-            }
-        };
-    
-        // Detect objects in the video frames
-        let frameCount = 0;
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-            frameCount++;
-            if (frameCount % 10 === 0) { // Process every 10th frame
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = videoElement.videoWidth;
-                    canvas.height = videoElement.videoHeight;
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                    try {
-                        const predictions = await model.detect(canvas);
-                        visualizePredictions(predictions, ctx); // Visualize the detected objects
-                    } catch (error) {
-                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
-                    }
-                }
-            }
-            requestAnimationFrame(detectFrame); // Continue detecting frames
-        };
-    
-        // Visualize the detected objects on the canvas
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };
-    
-        // Start the video stream and recording
-        startVideoStream();
-      } */
-
-      /**function openCapturePointsScanner(maessa_up) {
-        const videoElement = document.getElementById("videoCapturePoints");
-        let savedStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-    
-        // Check for supported MIME types
-        const getSupportedMimeType = () => {
-            const mimeTypes = [
-                "video/webm; codecs=vp9",
-                "video/webm; codecs=vp8",
-                "video/webm",
-                "video/mp4",
-            ];
-            for (const mimeType of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mimeType)) {
-                    return mimeType;
-                }
-            }
-            return null;
-        };
-    
-        // Stop the video stream and release resources
-        const stopVideoStream = (stream) => {
-            if (!stream) return;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-        };
-    
-        // Start the video stream from the camera
-        const startVideoStream = () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    savedStream = stream;
-                    videoElement.play();
-                    startRecording(stream); // Start recording the stream
-                    loadModel(); // Load the COCO-SSD model for object detection
-                })
-                .catch(err => {
-                    $("#capturePointsModalError").html("Failed to access camera: " + err.message);
-                });
-        };
-    
-        // Start recording the video stream
-        function startRecording(stream) {
-            recordedChunks = [];
-            const mimeType = getSupportedMimeType();
-            if (!mimeType) {
-                $("#capturePointsModalError").html("Your browser does not support recording.");
-                return;
-            }
-    
-            mediaRecorder = new MediaRecorder(stream, { mimeType });
-    
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-    
-            mediaRecorder.onstop = saveRecordedVideo;
-            mediaRecorder.start();
-        }
-    
-        // Stop the recording
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-        }
-    
-        // Save the recorded video and replay it
-        function saveRecordedVideo() {
-            const mimeType = getSupportedMimeType();
-            const blob = new Blob(recordedChunks, { type: mimeType });
-    
-            // Save the video to media storage
-            saveVideoToStorage(blob);
-    
-            // Replay the video
-            replayVideo(blob);
-        }
-    
-        // Save the video to media storage
-        function saveVideoToStorage(blob) {
-            const fileName = `recording_${Date.now()}.${blob.type.split('/')[1]}`; // e.g., recording_1234567890.webm
-            const fileURL = URL.createObjectURL(blob);
-    
-            // Create a download link
-            const a = document.createElement("a");
-            a.href = fileURL;
-            a.download = fileName;
-            a.textContent = "Download Video";
-            document.body.appendChild(a);
-    
-            // Trigger the download
-            a.click();
-    
-            // Clean up
-            URL.revokeObjectURL(fileURL);
-            document.body.removeChild(a);
-    
-            $('#capturePointsModalError').html(`Video saved as ${fileName}`);
-        }
-    
-        // Replay the recorded video in the video element
-        function replayVideo(blob) {
-            const videoURL = URL.createObjectURL(blob);
-            videoElement.src = videoURL;
-            videoElement.type = blob.type; // Set the type to match the blob
-            videoElement.controls = true;
-            videoElement.play()
-                .then(() => {
-                  $('#capturePointsModalError').html("Video playback started successfully.");
-                })
-                .catch(error => {
-                    $('#capturePointsModalError').html("Error playing video: " + error.message);
-                });
-        }
-    
-        // Automatically stop recording and release the stream after 30 seconds
-        setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                stopRecording();
-            }
-            if (videoElement.srcObject) {
-                stopVideoStream(videoElement.srcObject);
-            }
-        }, 30000);
-    
-        // Load the COCO-SSD model for object detection
-        let model;
-        const loadModel = async () => {
-            $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
-            try {
-                model = await cocoSsd.load();
-                $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
-                detectFrame(); // Start detecting objects in the video frames
-            } catch (error) {
-                $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
-            }
-        };
-    
-        // Detect objects in the video frames
-        let frameCount = 0;
-        const detectFrame = async () => {
-            if (!videoElement.srcObject) return;
-            frameCount++;
-            if (frameCount % 10 === 0) { // Process every 10th frame
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = videoElement.videoWidth;
-                    canvas.height = videoElement.videoHeight;
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    
-                    try {
-                        const predictions = await model.detect(canvas);
-                        visualizePredictions(predictions, ctx); // Visualize the detected objects
-                    } catch (error) {
-                        $('#capturePointsModalError').html(`Detection error: ${error.message}`);
-                    }
-                }
-            }
-            requestAnimationFrame(detectFrame); // Continue detecting frames
-        };
-    
-        // Visualize the detected objects on the canvas
-        const visualizePredictions = (predictions, ctx) => {
-            const output = document.getElementById("capturePointsModalError");
-            output.innerHTML = "";
-    
-            predictions.forEach((prediction) => {
-                const [x, y, width, height] = prediction.bbox;
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-    
-                ctx.fillStyle = "red";
-                ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
-    
-                const partDetected = document.createElement("div");
-                partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
-                output.appendChild(partDetected);
-            });
-        };
-    
-        // Start the video stream and recording
-        startVideoStream();
-      } */
-    
     });
     $(document).on("change",".companyLogoFile", function(event) {
       var uploadFile = $(this);
@@ -3851,6 +2729,499 @@ function onDeviceReady() {
       //alert("savedData");
 
     }
+
+    onValuatorDeviceReady();
+}
+
+function getParsedLocalStorage(key) {
+  let storedValue = localStorage.getItem(key);
+  
+  // Ensure the value is neither null nor empty before parsing
+  if (storedValue && storedValue !== "null" && storedValue !== "[]") {
+      return JSON.parse(storedValue);
+  }
+  return []; // Return empty array if null or empty
+}
+
+function videoSection(imgAdd,mae_ssa_up,dura_tion) {
+  var count_maessa_up_Arr = maessa_up_Arr.split(',');
+  var maessa_up = mae_ssa_up;
+  var duration = dura_tion;
+
+  // Retrieve checklist arrays safely
+  let requests_savedVideoChecklist = getParsedLocalStorage("requests_videoChecklistArray");
+  let savedVideoChecklist = getParsedLocalStorage("videoChecklistArray");
+
+  if ((localStorage.getItem("videoSection") === "true" || localStorage.getItem("requests_videoSection") === "true") && (count_maessa_up_Arr.length === uploadedFiles.length )) {
+    maessa_up = '30 seconds video ' + mae_ssa_up;
+    duration = 30;
+    videoInitializing();
+  } else if ( requests_savedVideoChecklist.includes(maessa_up) || savedVideoChecklist.includes(maessa_up) ) {
+    videoInitializing();
+  } else {
+
+    imgAdd.closest(".col").find('.points-spinner-grow').remove();   
+    $("#upload_from_file_container_help").html('');
+   
+  }
+
+  function videoInitializing() {
+    showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + maessa_up + ' video</span>');
+   
+    setTimeout(() => {
+
+      var permissions = cordova.plugins.permissions;
+      var permissionsToRequest = [
+          permissions.CAMERA,
+          permissions.RECORD_AUDIO, // Ensure proper recording permissions
+          permissions.READ_EXTERNAL_STORAGE,
+          permissions.WRITE_EXTERNAL_STORAGE, // Required for older Android versions
+      ];
+      
+      if (localStorage.getItem("aiObjectsDetection") === "truee") {     
+  
+        // Check for permissions (if required by your platform, e.g., Cordova)
+        permissions.requestPermissions(permissionsToRequest, function (status) {
+            if (status[permissions.CAMERA] === permissions.GRANTED) {
+  
+                openCapturePointsScanner(maessa_up,duration);
+            } else {
+                showSnackbar('Permissions denied');
+                imgAdd.closest(".col").find('.points-spinner-grow').remove();
+            }
+        }, function (err) {
+          showSnackbar('Permission request failed: ' + JSON.stringify(err));
+          imgAdd.closest(".col").find('.points-spinner-grow').remove();
+          $("#upload_from_file_container_help").html('');
+
+        });
+        
+      } else {      
+        permissions.requestPermissions(permissionsToRequest, function (status) {
+            permissions.hasPermission(permissions.CAMERA, function (status) {
+                if (status.hasPermission) {
+                  captureVideo(maessa_up,duration);
+                } else {
+                  imgAdd.closest(".col").find('.imgUp').html("Permissions denied");
+                  imgAdd.closest(".col").find('.points-spinner-grow').remove();
+                  $("#upload_from_file_container_help").html('');
+                }
+            });
+        }, function (err) {
+          imgAdd.closest(".col").find('.imgUp').html("Permission request failed: " + JSON.stringify(err));
+          imgAdd.closest(".col").find('.points-spinner-grow').remove();
+          $("#upload_from_file_container_help").html('');
+
+        });
+      }      
+    }, 3000);
+  }
+
+  function compressVideo(videoPath, maessa_up, callback) {
+    const outputPath = videoPath.replace(/\.mp4$/, `_${maessa_up.replace(/ /g, "_")}_compressed.mp4`);
+    const ffmpegCommand = `-i ${videoPath} -b:v 800k -preset fast ${outputPath}`;
+    //imgAdd.closest(".col").find('.imgUp').html('<span class="text-info">Starting compression...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div></span>');
+    compression_complete = 1;
+    inHouseMessage = '<span class="text-info">' + maessa_up + ' video compression inprogress...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div></span>';
+
+    window.ffmpeg.exec(ffmpegCommand, function () {
+      // Success callback
+      setTimeout(() => {
+        //imgAdd.closest(".col").find('.imgUp').html('<span class="text-success">Compression successful</span>');
+        callback(outputPath);
+        compression_complete = 0;
+      }, 1000);
+    }, function (error) {
+      imgAdd.closest(".col").find('.imgUp').html("Compression failed:" + error);
+      imgAdd.closest(".col").find('.points-spinner-grow').remove();
+      compression_complete = 0;
+    },
+    function (progress) {
+        if (progress && progress.percent) {
+            let percentage = Math.round(progress.percent);
+            //imgAdd.closest(".col").find('.imgUp').html(`Compressing... ${percentage}%`);
+        }
+    });
+  }
+  
+  function captureVideo(maessa_up,duration) {
+    navigator.device.capture.captureVideo(
+        function (mediaFiles) {
+            var videoPath = mediaFiles[0].fullPath || mediaFiles[0].localURL; 
+            
+            compressVideo(videoPath, maessa_up, function (compressedPath) {
+                window.resolveLocalFileSystemURL(compressedPath, function (fileEntry) {
+                    fileEntry.file(function (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = function () {
+                            const blobEntry = new Blob([reader.result], { type: file.type });
+          
+                            const maessaUpIndex = uploadedVideoFiles.findIndex(file => file.maessa_up === maessa_up);
+                
+                            if (maessaUpIndex !== -1) {
+                                uploadedVideoFiles[maessaUpIndex].blobEntry = blobEntry;
+                                uploadedTimeVideoFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                            } else {
+                                uploadedVideoFiles.push({ maessa_up: maessa_up, blobEntry: blobEntry });
+                                uploadedTimeVideoFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+                            }                    
+                            imgAdd.closest(".col").find('.points-spinner-grow').remove();
+                            $("#upload_from_file_container_help").html('');
+                            playVideo(fileEntry.toURL());
+                        };
+                        reader.readAsArrayBuffer(file);
+                    });
+                });
+            });
+        },
+        function (error) {
+            imgAdd.closest(".col").find('.imgUp').html("Video capture failed: " + error.code);
+            imgAdd.closest(".col").find('.points-spinner-grow').remove();
+        },
+        { limit: 1, duration: duration }
+    );
+  }
+
+  function playVideo(videoPath) {
+    const safeId = maessa_up.replace(/\s+/g, '_').replace(/[^a-z0-9_\-\.]/gi, '').toLowerCase();
+
+    createVideoContainer(safeId);
+    var videoElement = document.getElementById("video_" + safeId + "");
+    videoElement.src = videoPath;
+
+    var playPauseBtn = document.getElementById("play_" + safeId + "");
+    var playIcon = playPauseBtn.querySelector(".play-icon");
+    var pauseIcon = playPauseBtn.querySelector(".pause-icon");
+    var retakeIcon = playPauseBtn.querySelector(".retake-icon");
+
+    retakeIcon.addEventListener("click", function () {
+      captureVideo(maessa_up,duration);
+    });
+
+    playPauseBtn.addEventListener("click", function () {
+        if (videoElement.paused) {
+            videoElement.play();
+            playIcon.classList.add("d-none");
+            retakeIcon.classList.add('d-none');
+            pauseIcon.classList.remove("d-none");
+        } else {
+            videoElement.pause();
+            retakeIcon.classList.add('d-none');
+            playIcon.classList.remove("d-none");
+            pauseIcon.classList.add("d-none");
+        }
+    });
+
+    // Sync button state when video ends or is paused externally
+    videoElement.addEventListener('ended', () => {
+        retakeIcon.classList.remove('d-none');
+        playIcon.classList.add('d-none');
+        pauseIcon.classList.add('d-none');
+    });
+    
+    videoElement.addEventListener('pause', () => {
+        playIcon.classList.remove('d-none');
+        pauseIcon.classList.add('d-none');
+        retakeIcon.classList.add('d-none');
+
+    });
+    
+    videoElement.addEventListener('play', () => {
+        playIcon.classList.add('d-none');
+        retakeIcon.classList.add('d-none');
+        pauseIcon.classList.remove('d-none');
+    });        
+  }
+  
+  function openCapturePointsScanner(maessa_up,duration) {
+    const videoElement = document.getElementById("videoCapturePoints");
+    let savedStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    // Check for supported MIME types
+    const getSupportedMimeType = () => {
+        const mimeTypes = [
+            "video/webm; codecs=vp9",
+            "video/webm; codecs=vp8",
+            "video/webm",
+            "video/mp4",
+        ];
+        for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+                return mimeType;
+            }
+        }
+        return null;
+    };
+
+    // Stop the video stream and release resources
+    const stopVideoStream = (stream) => {
+        if (!stream) return;
+        stream.getTracks().forEach(track => track.stop());
+        videoElement.srcObject = null;
+    };
+
+    // Start the video stream from the camera
+    const startVideoStream = () => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then((stream) => {
+                videoElement.srcObject = stream;
+                savedStream = stream;
+                videoElement.play();
+                startRecording(stream); // Start recording the stream
+                loadModel(); // Load the COCO-SSD model for object detection
+            })
+            .catch(err => {
+                $("#capturePointsModalError").html("Failed to access camera: " + err.message);
+            });
+    };
+
+    // Start recording the video stream
+    function startRecording(stream) {
+        recordedChunks = [];
+        const mimeType = getSupportedMimeType();
+        if (!mimeType) {
+            $("#capturePointsModalError").html("Your browser does not support recording.");
+            return;
+        }
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = saveRecordedVideo;
+        mediaRecorder.start();
+    }
+
+    // Stop the recording
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
+    }
+
+    // Save the recorded video and replay it
+    function saveRecordedVideo() {
+        const mimeType = getSupportedMimeType();
+        const blob = new Blob(recordedChunks, { type: mimeType });
+
+        // Save the video to media storage
+        saveVideoToStorage(blob);
+
+        // Replay the video
+        replayVideo(blob);
+    }
+
+    // Save the video to media storage
+    function saveVideoToStorage(blob) {
+        const fileName = `recording_${Date.now()}.${blob.type.split('/')[1]}`; // e.g., recording_1234567890.webm
+        const fileURL = URL.createObjectURL(blob);
+
+        // Create a download link
+        const a = document.createElement("a");
+        a.href = fileURL;
+        a.download = fileName;
+        a.textContent = "Download Video";
+        document.body.appendChild(a);
+
+        // Trigger the download
+        a.click();
+
+        // Clean up
+        URL.revokeObjectURL(fileURL);
+        document.body.removeChild(a);
+
+        $('#capturePointsModalError').html(`Video saved as ${fileName}`);
+    }
+
+    // Replay the recorded video in the video element
+    function replayVideo(blob) {
+        const videoURL = URL.createObjectURL(blob);
+        videoElement.src = videoURL;
+        videoElement.type = blob.type; // Set the type to match the blob
+        videoElement.controls = true;
+        videoElement.play()
+            .then(() => {
+              $('#capturePointsModalError').html("Video playback started successfully.");
+            })
+            .catch(error => {
+                $('#capturePointsModalError').html("Error playing video: " + error.message);
+            });
+    }
+
+    // Automatically stop recording and release the stream after 30 seconds
+    setTimeout(() => {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            stopRecording();
+        }
+        if (videoElement.srcObject) {
+            stopVideoStream(videoElement.srcObject);
+        }
+    }, (duration*1000));
+
+    // Load the COCO-SSD model for object detection
+    let model;
+    const loadModel = async () => {
+        $('#capturePointsModalError').html('<span class="text-success">Loading Model!</span>');
+        try {
+            model = await cocoSsd.load();
+            $('#capturePointsModalError').html('<span class="text-success">Model loaded!</span>');
+            detectFrame(); // Start detecting objects in the video frames
+        } catch (error) {
+            $('#capturePointsModalError').html(`Failed to load model: ${error.message}`);
+        }
+    };
+
+    // Detect objects in the video frames
+    let frameCount = 0;
+    const detectFrame = async () => {
+        if (!videoElement.srcObject) return;
+        frameCount++;
+        if (frameCount % 10 === 0) { // Process every 10th frame
+            if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                try {
+                    const predictions = await model.detect(canvas);
+                    visualizePredictions(predictions, ctx); // Visualize the detected objects
+                } catch (error) {
+                    $('#capturePointsModalError').html(`Detection error: ${error.message}`);
+                }
+            }
+        }
+        requestAnimationFrame(detectFrame); // Continue detecting frames
+    };
+
+    // Visualize the detected objects on the canvas
+    const visualizePredictions = (predictions, ctx) => {
+        const output = document.getElementById("capturePointsModalError");
+        output.innerHTML = "";
+
+        predictions.forEach((prediction) => {
+            const [x, y, width, height] = prediction.bbox;
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, width, height);
+
+            ctx.fillStyle = "red";
+            ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+
+            const partDetected = document.createElement("div");
+            partDetected.innerText = `${prediction.class} - ${Math.round(prediction.score * 100)}%`;
+            output.appendChild(partDetected);
+        });
+    };
+
+    // Start the video stream and recording
+    startVideoStream();
+  }  
+  function createVideoContainer(safeId) {
+    //const safeId = maessa_up.replace(/\s+/g, '_').replace(/[^a-z0-9_\-\.]/gi, '').toLowerCase();
+
+    // Create container div
+    const videoContainer = document.createElement("div");
+    videoContainer.className = "video-container position-relative w-100";
+    videoContainer.style.maxHeight = "80vh";
+
+    // Create video element
+    const videoElement = document.createElement("video");
+    videoElement.id = "video_" + safeId + "";
+    videoElement.className = "w-100 rounded";
+    videoElement.style.maxHeight = "80vh";
+    videoElement.style.objectFit = "cover";
+    videoElement.autoplay = true;
+    videoElement.setAttribute("playsinline", ""); 
+
+    // Create play/pause button
+    const playPauseBtn = document.createElement("button");
+    playPauseBtn.type = "button";
+    playPauseBtn.id = "play_" + safeId + "";
+    playPauseBtn.className = "play-pause-btn position-absolute";
+
+    // Create play icon
+    const playIcon = document.createElement("span");
+    playIcon.className = "play-icon";
+    playIcon.innerHTML = "▶";
+
+    // Create pause icon
+    const pauseIcon = document.createElement("span");
+    pauseIcon.className = "pause-icon d-none";
+    pauseIcon.innerHTML = "❚❚";
+
+    // Create retake icon
+    const retakeIcon = document.createElement("span");
+    retakeIcon.className = "retake-icon d-none";
+    retakeIcon.innerHTML = "⟳";
+
+    // Append icons to button
+    playPauseBtn.appendChild(playIcon);
+    playPauseBtn.appendChild(pauseIcon);
+    playPauseBtn.appendChild(retakeIcon);
+
+    // Append video and button to container
+    videoContainer.appendChild(videoElement);
+    videoContainer.appendChild(playPauseBtn);
+
+    imgAdd.closest(".col").find('.imgUp').html(videoContainer);
+
+    // Append container to specified parent element
+    /**const parentElement = document.querySelector(parentSelector);
+    if (parentElement) {
+        parentElement.appendChild(videoContainer);
+    } else {
+        showSnackbar("Parent element not found!");
+    } */
+
+    return videoContainer;
+  }
+
+  async function cCompressVideo(videoPath, maessa_up, callback) {
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+    }
+
+    const outputPath = `${maessa_up.replace(/ /g, "_")}_compressed.mp4`;
+
+    // Load video into FFmpeg
+    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoPath));
+
+    // Run compression
+    await ffmpeg.run('-i', 'input.mp4', '-b:v', '800k', '-preset', 'fast', outputPath);
+
+    // Get compressed video
+    const data = ffmpeg.FS('readFile', outputPath);
+    const compressedBlob = new Blob([data.buffer], { type: 'video/mp4' });
+
+    callback(URL.createObjectURL(compressedBlob));
+  }
+  function cCaptureVideo(maessa_up, duration) {
+    navigator.device.capture.captureVideo(
+        function (mediaFiles) {
+            const videoPath = mediaFiles[0].fullPath || mediaFiles[0].localURL;
+
+            compressVideo(videoPath, maessa_up, function (compressedPath) {
+                playVideo(maessa_up, compressedPath); // Use the compressed video
+            });
+        },
+        function (error) {
+            showSnackbar("Video capture failed: " + error.code);
+        },
+        { limit: 1, duration: duration }
+    );
+  }
+  
 }
 
 // Function to display a Team Performance Donut Chart
@@ -4317,6 +3688,9 @@ function savePdfSettings(formData) {
     },
     success: function(response) {
       if (response.status) {
+
+        //alert(response.message);
+
         $("#uploadSignaturePhotoHelp").html(`<span class="text-success">${response.message} </span>`);
         document.querySelector(".signature-button-group").classList.add("d-none");
 
@@ -4665,7 +4039,7 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
   //formData.append('examiner', localStorage.getItem('userUsername'));
   //alert(formData.get('valuer'));
   
-  const avatar = ` <div class="card" style="background-image: url('${headLogo}'); width: 250px; height: 100px; background-size: contain; background-position: center; background-repeat: no-repeat; "></div>`;
+  /**const avatar = ` <div class="card" style="background-image: url('${headLogo}'); width: 250px; height: 100px; background-size: contain; background-position: center; background-repeat: no-repeat; "></div>`;
 
   const date = new Date();
   //report_Card_Content
@@ -5005,7 +4379,410 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
   }
   reportContent = reportContent + `</div>`;
   // Set reportContent to report element
-  document.getElementById('report_Content').innerHTML = reportContent;
+  document.getElementById('report_Content').innerHTML = reportContent; */
+  
+  const avatar = `
+    <div class="card" style="background-image: url('${headLogo}'); width: 250px; height: 100px; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+  `;
+
+const date = new Date();
+
+// Assume valuationType is provided (e.g., 'market', 'forced', 'insurance', 'custom')
+const valuationType = formData.get('valuationType') || 'market'; // Default to market
+
+var reportContent = `<div class="report_Card_Content">`;
+
+// Base A4 Card (Header and Common Details)
+reportContent += `
+  <div class="card a4-card mb-1">
+    <div class="card-header">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          ${avatar}
+        </div>
+        <div class="col-6">
+          <span class="text-size-header-small">${headNotes}</span><br>
+          <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+        </div>
+        <div class="col">
+          <div class="qr_code qrrcode"></div>          
+        </div>
+      </div>
+    </div>
+    <div class="card-body text-start p-3">
+      <h1><b>${formData.get('make').toUpperCase()} ${formData.get('model').toUpperCase()} ${formData.get('modelType').toUpperCase()} ${formData.get('registrationNo').toUpperCase()} ${valuationType.toUpperCase()} VALUATION REPORT</b></h1>
+      <div class="row justify-content-md-center mt-2">
+        <div class="col">
+          <strong class="text-size-strong">Ref. No.</strong> <span class="text-theme">${formData.get('corporateRefNo')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">SERIAL No</strong> <span class="text-theme">${formData.get('serialNo')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">ISSUED BY</strong> <span class="text-theme">${formData.get('valuer')}</span>
+        </div>
+      </div>
+`;
+
+// Valuation-Type-Specific Header Section
+if (valuationType === 'insurance') {
+  reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">INSURER</strong> <span class="text-theme">${formData.get('insurer')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">EXPIRY DATE</strong> <span class="text-theme">${formData.get('expiryDate')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">POLICY NO.</strong> <span class="text-theme">${formData.get('policyNo')}</span>
+        </div>
+      </div>
+  `;
+}
+
+reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">CLIENT NAME</strong> <span class="text-theme">${formData.get('clientName')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">CONTACTS</strong> <span class="text-theme">${formData.get('contactNumber')}</span>
+        </div>
+        <div class="col-5">
+          <div class="row">
+            <div class="col-5">
+              <strong class="text-size-strong">KRA PIN</strong> <span class="text-theme">${formData.get('contactKRA')}</span>
+            </div>
+            <div class="col-7">
+              <strong class="text-size-strong">Email</strong> <span class="text-theme">${formData.get('emaill')}</span>
+            </div>          
+          </div>
+        </div>
+      </div>
+      <div class="float-start">
+        <span class="text-size-strong">${bodyNotes}</span>
+      </div><br> 
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">REGISTRATION NO</strong> <span class="text-theme">${formData.get('registrationNo')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">MAKE</strong> <span class="text-theme">${formData.get('make')}</span>
+        </div>
+        <div class="col-5">
+          <div class="row">
+            <div class="col-5">
+              <strong class="text-size-strong">Model</strong> <span class="text-theme">${formData.get('model')}</span>
+            </div>
+            <div class="col-7">
+              <strong class="text-size-strong">Model TYPE</strong> <span class="text-theme">${formData.get('modelType')}</span>
+            </div>          
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">Body Type</strong> <span class="text-theme">${formData.get('bodyType')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">FUEL TYPE</strong> <span class="text-theme">${formData.get('fuelType')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">GEAR BOX</strong> <span class="text-theme">${formData.get('gearBox')}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">CHASSIS NO</strong> <span class="text-theme">${formData.get('chassisNo')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">ENGINE NO</strong> <span class="text-theme">${formData.get('engineNo')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">ENGINE RATING</strong> <span class="text-theme">${formData.get('engineRating')}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">YEAR OF MANF.</strong> <span class="text-theme">${formData.get('yearOfManf')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">DATE OF REG.</strong> <span class="text-theme">${formData.get('dateOfReg')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">ODOMETER-CURRENT READING</strong> <span class="text-theme">${addCommasToNumber(formData.get('odometerReading'))} ${formData.get('unitSelection')}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">Country of Origin</strong> <span class="text-theme">${formData.get('countryOfOrigin')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">COLOUR</strong> <span class="text-theme">${formData.get('colour')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">Tyres</strong> <span class="text-theme">${formData.get('tyres')}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">NO OF AIRBAGS</strong> <span class="text-theme">${formData.get('noOfAirbags')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">Anti Theft</strong> <span class="text-theme">${formData.get('antiTheft')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">TYPES OF LIGHTS</strong> <span class="text-theme">${formData.get('typesOfLights')}</span>
+        </div>
+      </div>
+`;
+
+// Valuation-Type-Specific Body Section
+reportContent += `
+      <div class="row">
+        <h6 class="text-size-strong">Coachwork Notes</h6>
+        <p class="text-theme">${formData.get('coachworkNotes')}</p>
+        <h6 class="text-size-strong">Extras</h6>
+        <p class="text-theme">${formData.get('extras')}</p>
+        <h6 class="text-size-strong">Electrical Notes</h6>
+        <p class="text-theme">${formData.get('electricalNotes')}</p>
+        <h6 class="text-size-strong">Mechanical Notes</h6>
+        <p class="text-theme">${formData.get('mechanicalNotes')}</p><br>
+        <strong class="text-size-strong">General Condition</strong> <span class="text-theme">${formData.get('generalCondition')}</span>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">Location of Inspection</strong> <span class="text-theme">${formData.get('locationOfInspection')}</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">Destination</strong> <span class="text-theme">${formData.get('destination')}</span>
+        </div>
+      </div>
+`;
+
+// Valuation Results Section
+if (valuationType === 'market' || valuationType === 'insurance') {
+  reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-Value">Market Value: </strong> 
+          <span class="text-Value">${addCommasToNumber(formData.get('marketValue'))} /=</span> 
+          <span class="text-danger">${convertNumberToWords(formData.get('marketValue'))}, Kenya Shillings Only</span>
+        </div>
+      </div>
+  `;
+}
+
+if (valuationType === 'forced' || valuationType === 'custom') {
+  reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-Value">Forced Value: </strong> 
+          <span class="text-Value">${addCommasToNumber(formData.get('forcedValue'))} /=</span> 
+          <span class="text-danger">${convertNumberToWords(formData.get('forcedValue'))}, Kenya Shillings Only</span>
+        </div>
+      </div>
+  `;
+}
+
+if (valuationType === 'custom') {
+  reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-Value">Radio Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('radioEstimate'))} /=</span>
+        </div>
+        <div class="col">
+          <strong class="text-size-Value">Windscreen Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('windscreenEstimate'))} /=</span>
+        </div>
+      </div>
+  `;
+}
+
+// Trends (Market Valuation Specific)
+if (valuationType === 'market') {
+  // Assume trends come from valuation algorithm (e.g., stored in formData or fetched separately)
+  const trends = JSON.parse(formData.get('trends') || '[]');
+  if (trends.length > 0) {
+    reportContent += `
+      <div class="row mt-2">
+        <h6 class="text-size-strong">Market Trends</h6>
+        <ul class="text-theme">
+    `;
+    trends.forEach(trend => {
+      reportContent += `<li>${trend}</li>`;
+    });
+    reportContent += `
+        </ul>
+      </div>
+    `;
+  }
+}
+
+// Remarks and NB
+reportContent += `
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">Remarks</strong> <span class="text-danger">${formData.get('remarks')}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <strong class="text-size-strong">NB</strong> <span class="text-danger">${formData.get('remedy')}</span>
+        </div>
+      </div>
+`;
+
+// Footer Section
+reportContent += `
+      <div class="row mt-2">
+        <div class="col">
+          <strong class="text-size-strong">Valuation Date: </strong> <span class="text-theme">${formData.get('valuation_Date')}</span><br>
+          <span class="signaturePng mt-1" style="background-image: url('${principalSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 100%; height: 80px;"></span>
+          <strong class="text-size-strong">Principal Valuer Sign</strong>
+        </div>
+        <div class="col">
+          <strong class="text-size-strong">Examiner</strong> <span class="text-theme">${formData.get('examiner')}</span>
+        </div>
+        <div class="col-5">
+          <strong class="text-size-strong">Instruction Date</strong> <span class="text-theme">${gettimeOfInspection()}</span>
+          <span class="signaturePng mt-1" style="background-image: url('${directorSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 50%; height: 80px;"></span>
+          <strong class="text-size-strong">Director Sign</strong>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer text-body-secondary p-1">
+      <div class="float-end text-end">
+        <span class="d-block text-start text-size-small mb-0">
+          Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+        </span>
+      </div>
+      <div class="float-start text-start">
+        <span class="d-block text-start text-danger text-size-small mb-0">
+          NB: ${nBNotes}
+        </span>
+        <span class="d-block text-start text-size-strong mb-0">
+          <span>Valuation for</span>: <span>${footNotes}</span>
+        </span>
+        <span class="d-block text-start text-size-h6 mb-0">
+          <span class="text-size-header-small">${companyName} ${companyAddress} TEL: ${contactPhone} ${contactEmail}</span>
+        </span>
+      </div>        
+    </div>
+  </div>
+`;
+
+// Image Pages (Common Across All Types)
+reportContent += `
+  <div class="mb-1 card a4-card">
+    <div class="card-header">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          ${avatar}
+        </div>
+        <div class="col-6">
+          <span class="text-size-header-small">${headNotes}</span><br>
+          <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+        </div>
+        <div class="col">
+          <div class="qr_code qrrcode"></div>          
+        </div>
+      </div>
+    </div>
+    <div class="card-body cardBody" style="padding: 0; margin: 0;">
+      <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML}</div>
+    </div>
+    <div class="card-footer text-body-secondary p-1">
+      <div class="float-end text-end">
+        <span class="d-block text-start text-size-small mb-0">
+          Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+        </span>
+      </div>
+    </div>
+  </div>
+`;
+
+if (imagesHTML2 !== '') {
+  reportContent += `
+    <div class="mb-1 card a4-card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            ${avatar}
+          </div>
+          <div class="col-6">
+            <span class="text-size-header-small">${headNotes}</span><br>
+            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+          </div>
+          <div class="col">
+            <div class="qr_code qrrcode"></div>          
+          </div>
+        </div>
+      </div>
+      <div class="card-body cardBody" style="padding: 0; margin: 0;">
+        <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML2}</div>
+      </div>
+      <div class="card-footer text-body-secondary p-1">
+        <div class="float-end text-end">
+          <span class="d-block text-start text-size-small mb-0">
+            Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+if (imagesHTML3 !== '') {
+  reportContent += `
+    <div class="mb-1 card a4-card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            ${avatar}
+          </div>
+          <div class="col-6">
+            <span class="text-size-header-small">${headNotes}</span><br>
+            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+          </div>
+          <div class="col">
+            <div class="qr_code qrrcode"></div>          
+          </div>
+        </div>
+      </div>
+      <div class="card-body loogbookFormCardBody" style="padding: 0; margin: 0;">
+        <div class="row p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML3}</div>
+      </div>
+      <div class="card-footer text-body-secondary p-1">
+        <div class="float-end text-end">
+          <span class="d-block text-start text-size-small mb-0">
+            Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+          </span>
+        </div>
+        <div class="float-start text-start">
+          <span class="d-block text-start text-danger text-size-small mb-0">
+            NB: ${nBNotes}
+          </span>
+          <span class="d-block text-start text-size-strong mb-0">
+            <span>Valuation for</span>: <span>${footNotes}</span>
+          </span>
+          <span class="d-block text-start text-size-h6 mb-0">
+            <span class="text-size-header-small">${companyName} ${companyAddress} TEL: ${contactPhone} ${contactEmail}</span>
+          </span>
+        </div>        
+      </div>
+    </div>
+  `;
+}
+
+reportContent += `</div>`;
+
+// Set reportContent to report element
+document.getElementById('report_Content').innerHTML = reportContent;
+
+
+
+  
   //updateWatermarkImage(headLogo);
   changeBackgroundColor(localStorage.getItem('themeColor'));
 
@@ -5372,7 +5149,9 @@ function submitReport() {
 
                   uploadedVideoFiles.forEach((file, index) => {
                       // Step 1: Create a unique file name based on make, model, modelType, and registrationNo
-                      fileVideoName = `${response.Make}_${response.Model}_${response.ModelType}_${response.RegistrationNo}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+                      const maessa_up = file.maessa_up || "default";  // Fallback if maessa_up is missing
+
+                      const fileVideoName = `${response.Make}_${response.Model}_${response.ModelType}_${response.RegistrationNo}_${maessa_up.replace(/\s+/g, '_')}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
                   
                       // Step 2: Attach the video file as Blob to FormData
                       metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileVideoName);
@@ -5551,6 +5330,11 @@ function addHiddenFields(data_url,label) {
 function setupNewReport() {
   imgAddcount = 0;
   uploadedFiles = [];
+  uploadedTimeFiles = [];
+
+  uploadedVideoFiles = [];
+  uploadedTimeVideoFiles = [];
+
   action = "submitReport";
   imgAddcount = 0;
   imgAdd_count = 0;
@@ -5592,110 +5376,6 @@ function setupNewReport() {
   $("#examiner").val(localStorage.getItem('userUsername'));
 
 }
-
-/**function uploadChunkedMetadata(metadataFormData) {
-  addNetworkEventListener_count = 1;
-  document.getElementById('chuckRetryUpload').classList.add('d-none');
-  $.ajax({
-    url: server_Url +  'metadataFormData.php',
-    type: 'POST',
-    data: metadataFormData,
-    processData: false,
-    contentType: false,
-    xhr: function () {
-      var xhr = new window.XMLHttpRequest();
-      xhr.upload.addEventListener("progress", function (evt) {
-        if (evt.lengthComputable) {
-          var percentage = Math.floor((evt.loaded / evt.total) * 100);
-          var progressbar = '<div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="' + percentage + '" aria-valuemin="0" aria-valuemax="100">' +
-            '<div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ' + percentage + '%;">' + percentage + '%</div>' +
-            '</div>';
-          $("#upload_valuationReport_help").html(progressbar);
-        }
-      }, false);
-      return xhr;
-    },
-    success: function(response) {
-      // Handle the successful response
-      if (response.status) {
-        $("#upload_valuationReport_help").html(response.message);
-
-        if (uploadedVideoFiles.length == 0) {
-
-          $('#submitReport').html('Submit Report'); 
-          action = "submitReport";                  
-          document.getElementById('submitReport').disabled = false;
-          document.getElementById('newReport').disabled = false;
-          document.getElementById('downloadReport').disabled = false;
-          document.getElementById('submitReport').classList.add('d-none');
-          document.getElementById('viewReport').classList.remove('d-none');
-          addNetworkEventListener_count = 0;
-          addNetworkEventGenerateReportListener_count = 0;
-          refresh_dashboard = true; 
-          onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", "");
-          
-          const newReportModal = document.getElementById("newReportModal");
-          const modalInstance = bootstrap.Modal.getInstance(newReportModal);
-          if (modalInstance) {
-            modalInstance.hide();
-          }
-        
-          // Remove modal backdrop and reset body state
-          document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
-          document.body.classList.remove("modal-open");
-          document.body.style.overflow = "";
-  
-          document.querySelectorAll(".resumeReport").forEach(element => {
-            element.classList.add("d-none");
-          });
-          setupNewReport();
-          
-        } else {
-
-          const metadataVideoData = new FormData();
-          let fileVideoName;
-
-          uploadedVideoFiles.forEach((file, index) => {
-              // Step 1: Create a unique file name based on make, model, modelType, and registrationNo
-              fileVideoName = `${metadataFormData.get('Make')}_${metadataFormData.get('Model')}_${metadataFormData.get('ModelType')}_${metadataFormData.get('RegistrationNo')}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
-          
-              // Step 2: Attach the video file as Blob to FormData
-              metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileName);
-          });
-          
-          // Step 3: Append metadata fields
-          metadataVideoData.append('ReportID', metadataFormData.get('ReportID'));
-          metadataVideoData.append('VehicleID', metadataFormData.get('VehicleID'));
-          metadataVideoData.append('make', metadataFormData.get('Make'));
-          metadataVideoData.append('model', metadataFormData.get('Model'));
-          metadataVideoData.append('modelType', metadataFormData.get('ModelType'));
-          metadataVideoData.append('registrationNo', metadataFormData.get('RegistrationNo'));
-          metadataVideoData.append('action', metadataFormData.get('action'));
-
-          document.getElementById('submitReport').classList.remove('d-none');
-          $("#upload_valuationReport_help").html('<span class="text-success">Uploading ' + fileVideoName + '</span>');
-          $('#submitReport').html('Uploading ' + uploadedVideoFiles.length + ' Videos...<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
-
-          // Step 4: Upload the FormData
-          uploadVideo(metadataVideoData);
-          
-        }
-      } else {
-        $("#upload_valuationReport_help").html(response.messageError);
-        document.getElementById('chuckRetryUpload').classList.remove('d-none');
-        document.getElementById('submitReport').classList.add('d-none');
-        $('#submitReport').html('Submit Report'); 
-      }
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      $("#upload_valuationReport_help").html(JSON.stringify(jqXHR));
-      document.getElementById('chuckRetryUpload').classList.remove('d-none');
-      document.getElementById('submitReport').classList.add('d-none');
-
-      $('#submitReport').html('Submit Report'); 
-    }
-  });
-} */
 
 function uploadChunkedMetadata(metadataFormData) {
   addNetworkEventListener_count = 1;
@@ -5766,8 +5446,10 @@ function uploadChunkedMetadata(metadataFormData) {
 
             uploadedVideoFiles.forEach((file, index) => {
               // Step 1: Generate a unique filename
-              const fileVideoName = `${metadataFormData.get('make')}_${metadataFormData.get('model')}_${metadataFormData.get('modelType')}_${metadataFormData.get('registrationNo')}_${index}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+              const maessa_up = file.maessa_up || "default";  // Fallback if maessa_up is missing
 
+              const fileVideoName = `${metadataFormData.get('make')}_${metadataFormData.get('model')}_${metadataFormData.get('modelType')}_${metadataFormData.get('registrationNo')}_${maessa_up.replace(/\s+/g, '_')}.mp4`.replace(/[^a-z0-9_\-\.]/gi, '_').toLowerCase();
+              
               // Step 2: Attach video file to FormData
               metadataVideoData.append(`videoData_${index}`, file.blobEntry, fileVideoName);
             });
@@ -5818,9 +5500,6 @@ function uploadChunkedMetadata(metadataFormData) {
   });
 }
 
-/**
- * Uploads video to the server using FormData
- */
 function uploadVideo(formData) {
     document.getElementById('chuckRetryVideoUpload').classList.add('d-none');
     document.getElementById('submitReport').classList.remove('d-none');
@@ -5844,7 +5523,7 @@ function uploadVideo(formData) {
           return xhr;
         },
         success: function (response) {
-          //alert(JSON.stringify(response));
+          //alert(response.message);
           if (response.status) {
             $("#upload_valuationReport_help").html('<span class="text-danger">' + response.message + '</span>');
 
@@ -5875,6 +5554,14 @@ function uploadVideo(formData) {
               element.classList.add("d-none");
             });
             setupNewReport();
+
+            // Step 1: Delete videos from device (clear the uploadedVideoFiles array)
+            uploadedVideoFiles.forEach(file => {
+                if (file.blobEntry instanceof Blob) {
+                    URL.revokeObjectURL(file.blobEntry); // Revoke object URL
+                }
+            });
+            
                         
           } else {
             document.getElementById('chuckRetryVideoUpload').classList.remove('d-none');
@@ -5890,6 +5577,7 @@ function uploadVideo(formData) {
         }
     });
 }
+
 function onlineGimbo(userUsername,_email,password,action,id) {
   if (action == "dashboard" && id != 4) {
     document.querySelector(".main-spinner-container").classList.remove("d-none");
@@ -6439,7 +6127,9 @@ function getDashboard(userUsername,_email,password,action,id) {
                     localStorage.setItem('requests_aiValuePrediction', ''); // Save to localStorage
                     localStorage.setItem('requests_priorityStandard', ''); // Save to localStorage
                     localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
-          
+                    localStorage.setItem('requests_videoChecklistArray', ''); // Save to localStorage
+                    //localStorage.setItem('videoChecklistArray', ''); // Save to localStorage
+
                 });
               });
             }
@@ -6562,6 +6252,14 @@ function getDashboard(userUsername,_email,password,action,id) {
           localStorage.setItem('priorityStandard', additional_checklist.priorityStandard); // Save to localStorage
           localStorage.setItem('priorityExpress', additional_checklist.priorityExpress); // Save to localStorage
 
+          //alert(additional_checklist.videoChecklistArray);
+          let videoChecklistString  = additional_checklist.videoChecklistArray || []; // Preserve selections
+
+          if (videoChecklistString  !== null && videoChecklistString .length > 0) {
+              let videoChecklistArray = videoChecklistString .split(","); // Convert string to array
+              localStorage.setItem("videoChecklistArray", JSON.stringify(videoChecklistArray));
+          }          
+
           document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
           document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
 
@@ -6661,6 +6359,9 @@ function getDashboard(userUsername,_email,password,action,id) {
               formData.append('userCompanyID', localStorage.getItem('userCompanyID'));
               formData.append('userRole', localStorage.getItem('userRole'));
               formData.append('maessa_up_Arr', maessa_up_Arr);
+              
+              formData.append('videoChecklistArray', JSON.parse(localStorage.getItem("videoChecklistArray")));
+
               formData.append('inAppCamera', localStorage.getItem('inAppCamera'));
               formData.append('videoSection', localStorage.getItem('videoSection'));
               formData.append('themePdfColor', localStorage.getItem('themePdfColor'));
@@ -6681,6 +6382,10 @@ function getDashboard(userUsername,_email,password,action,id) {
             const sectionsDiv = document.getElementById('checklist-sections-container');
             sectionsDiv.innerHTML = ''; // Clear previous content
         
+            let savedVideoChecklist = JSON.parse(localStorage.getItem("videoChecklistArray")) || [];
+            let videoChecklistArray = [...savedVideoChecklist]; // Preserve selections
+            //alert(JSON.stringify(videoChecklistArray));
+
             sections.forEach((section, index) => {
                 const div = document.createElement('div');
                 div.className = 'checklist-section';
@@ -6688,24 +6393,59 @@ function getDashboard(userUsername,_email,password,action,id) {
                 div.innerHTML = `
                     <span id="section-text-${index}">${section.name}</span>
                     <input type="text" id="section-input-${index}" value="${section.name}" style="display: none;">
+                    
+                    <input type="checkbox" class="btn-check" id="btn-check-${index}" 
+                        ${savedVideoChecklist.includes(section.name) ? "checked" : ""} autocomplete="off">
+                    <label class="btn" for="btn-check-${index}">
+                        <span class="d-none d-sm-none d-md-inline">10-Second </span>Video <span>🎥</span>
+                    </label>
+                    
                     <button class="checklist-edit-btn">Edit</button>
                     <button class="checklist-delete-btn">Delete</button>
                 `;
         
                 sectionsDiv.appendChild(div);
         
+                // Selecting Elements
                 const span = div.querySelector(`#section-text-${index}`);
                 const input = div.querySelector(`#section-input-${index}`);
                 const editBtn = div.querySelector(".checklist-edit-btn");
                 const deleteBtn = div.querySelector(".checklist-delete-btn");
+                const videoSwitch = div.querySelector(`#btn-check-${index}`);
         
                 // Event Listeners
                 span.addEventListener("click", () => toggleEdit(index));
                 editBtn.addEventListener("click", () => toggleEdit(index));
                 deleteBtn.addEventListener("click", () => removeSection(index));
                 input.addEventListener("blur", () => saveEdit(index));
+        
+                // 🎥 Video Switch Event Listener
+                if (videoSwitch) {
+                    videoSwitch.addEventListener("change", () => {
+                        const sectionName = section.name.trim(); // Ensure consistent name
+        
+                        if (videoSwitch.checked) {
+                            showSnackbar(`🎬 10-Second Video enabled for: ${sectionName}`);
+                            
+                            // ✅ Prevent duplicates
+                            if (!videoChecklistArray.includes(sectionName)) {
+                                videoChecklistArray.push(sectionName);
+                            }
+                        } else {
+                            showSnackbar(`⏹️ 10-Second Video disabled for: ${sectionName}`);
+                            videoChecklistArray = videoChecklistArray.filter(item => item !== sectionName);
+                        }
+        
+                        // Save updated array to localStorage
+                        localStorage.setItem("videoChecklistArray", JSON.stringify(videoChecklistArray));
+                        saveSections();
+                    });
+                } else {
+                    showSnackbar(`❌ Switch button not found for section ${index}`);
+                }
             });
-          }  
+          }               
+
           // Function to toggle editing mode
           function toggleEdit(index) {
               const span = document.getElementById(`section-text-${index}`);
@@ -8368,4 +8108,294 @@ function isVideoFile(filePath) {
   const videoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.mpeg'];
   const ext = filePath.split('.').pop().toLowerCase();
   return videoExtensions.includes(`.${ext}`);
+}
+
+
+function onValuatorDeviceReady() {
+  const yearOfManfInput = document.getElementById("yearOfManfValuatorInput");
+  const makeInput = document.getElementById("makeValuatorInput");
+  const modelInput = document.getElementById("modelValuatorInput");
+  const modelTypeInput = document.getElementById("modelTypeValuatorInput");
+  const makeSuggestions = document.getElementById("vehicleMakeValuatorSuggestions");
+  const modelSuggestions = document.getElementById("vehicleModelValuatorSuggestions");
+  const modelTypeSuggestions = document.getElementById("vehicleModelTypeValuatorSuggestions");
+
+  $.ajax({
+      url: urlValuator + "/api/getCarData.php",
+      method: 'GET',
+      dataType: 'json',
+      success: function(response) {
+          if (response.status === 'success') {
+              carRData = response.data.carData;
+              setupAutocomplete();
+          } else {
+              showSnackbar(`Error: ${response.message}`);
+          }
+      },
+      error: function(xhr, status, error) {
+          showSnackbar(`AJAX Error: ${status} - ${error}`);
+      }
+  });
+
+  function setupAutocomplete() {
+      // Car Make Input Autocomplete
+      makeInput.addEventListener('input', function () {
+          if (this.disabled) return;
+          const query = this.value.toLowerCase();
+          makeSuggestions.innerHTML = '';
+          modelInput.value = '';
+          modelTypeInput.value = '';
+          modelInput.disabled = true;
+          modelTypeInput.disabled = true;
+
+          if (query) {
+              const filteredMakes = carRData.filter(make =>
+                  make.make.toLowerCase().includes(query)
+              );
+              filteredMakes.forEach(make => {
+                  const div = document.createElement('div');
+                  div.textContent = make.make;
+                  div.addEventListener('click', () => {
+                      makeInput.value = make.make;
+                      makeSuggestions.style.display = 'none';
+                      modelInput.disabled = false;
+                      modelInput.focus();
+                  });
+                  makeSuggestions.appendChild(div);
+              });
+              makeSuggestions.style.display = filteredMakes.length ? 'block' : 'none';
+          } else {
+              makeSuggestions.style.display = 'none';
+          }
+      });
+
+      // Car Model Input Autocomplete
+      modelInput.addEventListener('input', function () {
+          if (this.disabled) return;
+          const query = this.value.toLowerCase();
+          modelSuggestions.innerHTML = '';
+          modelTypeInput.value = '';
+          modelTypeInput.disabled = true;
+
+          const selectedMake = carRData.find(make => make.make === makeInput.value);
+          if (selectedMake && query) {
+              const filteredModels = selectedMake.models.filter(model =>
+                  model.name.toLowerCase().includes(query)
+              );
+              filteredModels.forEach(model => {
+                  const div = document.createElement('div');
+                  div.textContent = model.name;
+                  div.addEventListener('click', () => {
+                      modelInput.value = model.name;
+                      modelSuggestions.style.display = 'none';
+                      modelTypeInput.disabled = false;
+                      modelTypeInput.focus();
+                      submitValuation();
+
+                  });
+                  modelSuggestions.appendChild(div);
+              });
+              modelSuggestions.style.display = filteredModels.length ? 'block' : 'none';
+          } else {
+              modelSuggestions.style.display = 'none';
+              submitValuation();
+          }
+      });
+
+      // Car Model Type Input Autocomplete
+      modelTypeInput.addEventListener('input', function () {
+          if (this.disabled) return;
+          const query = this.value.toLowerCase();
+          modelTypeSuggestions.innerHTML = '';
+
+          const selectedMake = carRData.find(make => make.make === makeInput.value);
+          if (selectedMake) {
+              const selectedModel = selectedMake.models.find(model => model.name === modelInput.value);
+              if (selectedModel && query) {
+                  const filteredTypes = Array.isArray(selectedModel.type) 
+                      ? selectedModel.type.filter(type => type.toLowerCase().includes(query)) 
+                      : [];
+                  filteredTypes.forEach(type => {
+                      const div = document.createElement('div');
+                      div.textContent = type;
+                      div.addEventListener('click', () => {
+                          modelTypeInput.value = type;
+                          modelTypeSuggestions.style.display = 'none';
+                          submitValuation();
+                      });
+                      modelTypeSuggestions.appendChild(div);
+                  });
+                  modelTypeSuggestions.style.display = filteredTypes.length ? 'block' : 'none';
+              } else {
+                  modelTypeSuggestions.style.display = 'none';
+                  submitValuation();
+              }
+          }
+      });
+
+      // Hide suggestions when clicking outside
+      document.addEventListener('click', (e) => {
+          if (!makeInput.contains(e.target)) makeSuggestions.style.display = 'none';
+          if (!modelInput.contains(e.target)) modelSuggestions.style.display = 'none';
+          if (!modelTypeInput.contains(e.target)) modelTypeSuggestions.style.display = 'none';
+      });
+  }
+
+  // Submit valuation when all fields are filled
+  function submitValuation() {
+      const yearOfManf = yearOfManfInput.value;
+      const selectedMake = makeInput.value;
+      const selectedModel = modelInput.value;
+      const selectedModelType = modelTypeInput.value;
+
+      if (!selectedMake || !selectedModel) {
+          showSnackbar("Please fill in Make or Model fields.");
+          return;
+      }
+
+      $("#responseValuator").html(`
+          <div class="d-flex justify-content-center">
+              <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+              </div>
+          </div>
+      `);
+
+      localStorage.setItem('vehicleValuatorData', JSON.stringify({
+          yearOfManf, make: selectedMake, model: selectedModel, modelType: selectedModelType, url: urlValuator
+      }));
+
+      if (typeof updateMLModel === 'function') {
+          updateMLModel(urlValuator);
+      } else {
+          showSnackbar("updateMLModel function is missing!");
+      }
+  }
+
+  // Trigger submission on Enter key in modelTypeInput
+  modelTypeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitValuation();
+  });
+}
+
+function updateMLModel(urlValuator) {
+
+  fetchMLModel(localStorage.getItem('vehicleValuatorData'), urlValuator);
+  
+  retryCount++;
+  setTimeout(() => {
+    updateMLModel(urlValuator);
+  }, 15000);
+}
+
+function fetchMLModel(data, urlValuator) {
+
+  $.ajax({
+      url: urlValuator + "/api/valuator.php",
+      type: "POST",
+      data: data,
+      contentType: "application/json",
+      success: function (response) {
+          if (response.message) {
+              $("#responseValuator").text(response.message);
+          } else if (response.valuationResult && response.valuationResult.length > 0) {
+              let displayHtml = "<h3>Vehicle Valuations:</h3>";
+              /**response.vehicles.forEach(vehicle => {
+                displayHtml += `
+                    <b>🚗 Vehicle ID: ${vehicle.vehicle_id} ${vehicle.yearOfManf} ${vehicle.make} ${vehicle.model} ${vehicle.modelType}</b><br>
+                    <p style="color: #4CAF50;">
+                        <b>- Market Value:</b> ${vehicle.marketValue}<br> 
+                        <b>- Forced Value:</b> ${vehicle.forcedValue}<br>
+                        <b>- Rule Explanation:</b> ${vehicle.rule_explanation}<br> 
+                        <b>📊 Rule Based Value:</b> ${vehicle.rule_based_value}<br> 
+                        <b>🧠 ML Value:</b> ${vehicle.ml_value}<br> 
+                        <b>- Suggested Value:</b> ${vehicle.suggested_value}<br>
+                        <b>- Status:</b> ${vehicle.status}<br> 
+                        <b>💰 Final Value:</b> ${vehicle.final_value}<br>
+                        ${vehicle.serverMessage}<br>
+                    </p>`;
+              }); */
+            
+              // Append valuation results to the vehicle list
+              response.valuationResult.forEach(valuation => {
+
+                displayHtml += `
+                <div class="accordion mt-3" id="valuationAccordion${valuation.vehicle_ID}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#collapse${valuation.vehicle_ID}" aria-expanded="false">
+                                
+                                <!-- Vehicle Details -->
+                                <div style="flex: 2;">
+                                    🚗 <b>${valuation.yearOfManf} ${valuation.make} ${valuation.model} ${valuation.modelType}</b> (${valuation.vehicle_ID})
+                                </div>
+            
+                                <!-- Valuation Data -->
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end;">
+                                    <span class="badge bg-secondary">Market: ${valuation.marketValue}</span>
+                                    <span class="badge bg-secondary">Forced: ${valuation.forcedValue}</span>
+                                    <span class="badge bg-success">📊 Rule-Based: ${valuation.value}</span>
+                                    <span class="badge bg-primary">🧠 ML: ${valuation.ml_prediction}</span>
+                                    <span class="badge bg-warning text-dark">💰 Suggested: ${valuation.suggested_value}</span>
+            
+                                    <!-- ML Confidence Badge -->
+                                    <span class="badge text-white" style="background: ${valuation.explainability.ML.delta === 0 ? '#F44336' : '#4CAF50'};">
+                                        <b>ML Confidence:</b> ${valuation.explainability.ML.delta === 0 ? 'Low' : 'High'}
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+            
+                        <!-- Accordion Content -->
+                        <div id="collapse${valuation.vehicle_ID}" class="accordion-collapse collapse" data-bs-parent="#valuationAccordion${valuation.vehicle_ID}">
+                            <div class="accordion-body">
+                                <div class="d-flex flex-wrap gap-3">
+                                    
+                                    <!-- Adjustments -->
+                                    <div style="flex: 1; min-width: 180px;">
+                                        <b class="text-dark">⚙️ Adjustments</b>
+                                        <ul class="p-2 bg-dark text-light border rounded list-unstyled mt-2">
+                                            ${valuation.adjustments.map(adj => `<li>✅ ${adj}</li>`).join('')}
+                                        </ul>
+                                    </div>
+            
+                                    <!-- Market Trends -->
+                                    <div style="flex: 1; min-width: 180px;">
+                                        <b class="text-dark">📈 Market Trends</b>
+                                        <ul class="p-2 bg-warning bg-opacity-25 border rounded list-unstyled mt-2">
+                                            ${valuation.trends.map(trend => `<li>📊 ${trend}</li>`).join('')}
+                                        </ul>
+                                    </div>
+            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;            
+            
+              });
+              $("#responseValuator").html(displayHtml);
+          } else if (response.errors && response.errors.length > 0) {
+              let errorHtml = "<h3>Errors:</h3><ul>";
+              response.errors.forEach(error => {
+                  errorHtml += `<li>${error}</li>`;
+              });
+              errorHtml += "</ul>";
+              $("#responseValuator").html(errorHtml);
+          } else if (response.error) {
+              $("#responseValuator").text("Error: " + response.error);
+          } else {
+              $("#responseValuator").text("Data processed successfully.");
+          }
+      },
+      error: function (xhr, status, error) {
+          $("#responseValuator").html(
+              `<div style="color: red;">
+                  <b>Error processing request:</b> ${xhr.status} ${xhr.statusText}<br>
+                  <b>Details:</b> ${xhr.responseText}
+              </div>`
+          );
+      }
+  });
 }

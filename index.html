@@ -85,6 +85,7 @@
     }
     </script>
 </head>
+
 <body class="bg-dark text-light text-center">
     <nav class="navbar mt-0 fixed-top">
         <div class="container-fluid">
@@ -174,7 +175,7 @@
         <div id="liveToast" class="toast bg-dark text-light" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
             <div class="toast-header">
               <span class="logo"><img src="img/logo.png" class="rounded me-2 toast-logo" alt="logo"></span>          
-              <strong class="me-auto toast-name">AutoValuation Pro</strong>
+              <strong class="me-auto toast-name">Gimbo</strong>
               <small class="toast-time"></small>
               <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
@@ -997,16 +998,64 @@
     </div>
 
     <div class="container-fluid bg-dark text-light d-flex justify-content-center align-items-center vh-100 landing-page fixed-top">
-        <div class="container text-center">
-            <!-- Add your landing page content here -->
-            <div class="text-center">
-                <h1>Gimbo</h1>
-                <p>Streamlining the process of generating comprehensive valuation reports, saving time and effort for users such as valuers, car dealers, appraisers, and individuals.</p>
-                <div class="add-geofence-error mb-2 d-block"></div>                    
-                <span id="getStartedBtn" class="btn btn-bd-primary">
-                    Get Started
-                </span>
+        <div class="text-center">
+            <div class="scrollable-content" style="height: 80vh; overflow-y: auto;">
+                <!-- Initial landing page content -->
+                <div class="text-center">
+                    <h1>Gimbo</h1>
+                    <p>Streamlining the process of generating comprehensive valuation reports, saving time and effort for users such as valuers, car dealers, appraisers, and individuals.</p>
+                    <div class="add-geofence-error mb-2 d-block"></div>                    
+                    <span id="getStartedBtn" class="btn btn-bd-primary">
+                        Get Started
+                    </span>
+                </div>
                 
+                <!-- Select Car Make & Model section below -->
+                <div class="text-center mt-5">
+                    <h1 class="mb-4">Select Car Make & Model</h1>
+                    <div class="row mb-3">
+                        <!-- Year of Manufacture -->
+                        <div class="col position-relative">
+                            <div class="form-group">
+                                <label for="yearOfManfValuatorInput" class="form-label">Year of Manufacture</label>
+                                <input type="number" id="yearOfManfValuatorInput" class="form-control" placeholder="Enter Year (e.g., 2023)" min="1900" max="2025" autocomplete="off">
+                            </div>
+                        </div>
+                
+                        <!-- Car Make -->
+                        <div class="col position-relative">
+                            <div class="form-group">
+                                <label for="makeValuatorInput" class="form-label">Car Make</label>
+                                <input type="text" id="makeValuatorInput" class="form-control" placeholder="Enter Make" autocomplete="off">
+                                <div id="vehicleMakeValuatorSuggestions" class="suggestions-list bg-dark text-light position-absolute w-100"></div>
+                            </div>
+                        </div>
+                
+                        <!-- Car Model -->
+                        <div class="col position-relative">
+                            <div class="form-group">
+                                <label for="modelValuatorInput" class="form-label">Car Model</label>
+                                <input type="text" id="modelValuatorInput" class="form-control" placeholder="Enter Model" disabled autocomplete="off">
+                                <div id="vehicleModelValuatorSuggestions" class="suggestions-list bg-dark text-light position-absolute w-100"></div>
+                            </div>
+                        </div>
+                
+                        <!-- Car Model Type -->
+                        <div class="col position-relative">
+                            <div class="form-group">
+                                <label for="modelTypeValuatorInput" class="form-label">Car Model Type</label>
+                                <input type="text" id="modelTypeValuatorInput" class="form-control" placeholder="Enter Model Type" disabled autocomplete="off">
+                                <div id="vehicleModelTypeValuatorSuggestions" class="suggestions-list bg-dark text-light position-absolute w-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Response -->
+                    <div class="row justify-content-center responseValuator-group mt-3">
+                        <p id="responseValuator">Please select a car make, model, and type to see the valuation.</p>
+                    </div>
+                </div>                
+
             </div>
         </div>
     </div>
@@ -1730,14 +1779,6 @@
                             <div class="container text-center section-30SecondVideo d-flex flex-column justify-content-center align-items-center d-none">
                                 <h2>30-Second Video Section</h2>
                                 
-                                <div class="video-container position-relative w-100" style="max-height: 80vh;">
-                                    <video id="videoCapturePoints" class="w-100 rounded" style="max-height: 80vh; object-fit: cover;" autoplay playsinline></video>
-                                    <button type="button" id="playPauseBtn" class="play-pause-btn position-absolute">
-                                        <span class="play-icon">▶</span>
-                                        <span class="pause-icon d-none">❚❚</span>
-                                        <span class="retake-icon d-none">⟳</span>
-                                    </button>
-                                </div>
                                 <p id="capturePointsModalError" class="text-danger mt-3 text-center fw-semibold"></p>
                             </div>
                             
@@ -2176,6 +2217,7 @@
     
     <script src="cordova.js"></script>
     <script src="js/index.js"></script>
+
 
 </body>
 </html>
