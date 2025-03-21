@@ -1008,6 +1008,9 @@
                     <span id="getStartedBtn" class="btn btn-bd-primary">
                         Get Started
                     </span>
+                    <span id="downloadApplicationBtn">
+                        Download App
+                    </span>
                 </div>
                 
                 <!-- Select Car Make & Model section below -->
@@ -1049,12 +1052,91 @@
                             </div>
                         </div>
                     </div>
+
+                    <!--Filter -->
+                    <div class="row mb-4">
+                        <div class="col">
+                            <form>
+                                <div class="input-group">
+                                    <select class="form-select w-25">
+                                        <option>Price Range</option>
+                                        <option>$0 - $10,000</option>
+                                        <option>$10,000+</option>
+                                    </select>
+                                    <select class="form-select w-25">
+                                        <option>Status</option>
+                                        <option>Active</option>
+                                        <option>Ended</option>
+                                    </select>
+                                    <button class="btn btn-primary">Filter</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 
                     <!-- Response -->
                     <div class="row justify-content-center responseValuator-group mt-3">
                         <p id="responseValuator">Please select a car make, model, and type to see the valuation.</p>
                     </div>
-                </div>                
+                </div>
+
+                <div class="container my-4">
+            
+                    <!-- Featured Auctions -->
+                    <h2>Featured Vehicle Auctions</h2>
+                    <div class="row" id="featured-auctions">
+
+                        <!-- Add more cards as needed -->
+                    </div>
+                </div>
+
+                <div id="auctionOverlay" class="auction-overlay bg-dark text-light d-none">
+                    <div class="overlay-content container-fluid p-4">
+                      <button class="close-overlay btn btn-outline-light position-absolute top-0 end-0 m-3 fs-2">×</button>
+                      
+                      <div class="row">
+                        <!-- Vehicle Images & Details -->
+                        <div class="col-md-8 mb-3">
+                          <div class="card bg-dark text-light shadow-lg">
+                            <div id="vehicleCarousel" class="carousel slide">
+                              <div class="carousel-inner" id="overlayVehicleImages">
+                                <!-- Injected images -->
+                              </div>
+                              <button class="carousel-control-prev" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                              </button>
+                              <button class="carousel-control-next" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                              </button>
+                            </div>
+                            <div class="card-body card-body-fixed" id="overlayVehicleDetails">
+                              <!-- Vehicle details -->
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Live Bidding Panel -->
+                        <div class="col-md-4 mb-3">
+                          <div class="card bg-dark text-light shadow-lg">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                              <h5>Live Bidding</h5>
+                              <p>Current Bid: <strong id="currentBidAmount">KES 0</strong></p>
+                              <p>Time Left: <span class="badge bg-warning" id="timeLeft">--:--:--</span></p>
+                              <div class="mb-3 mt-2">
+                                <input type="number" id="bidInput" class="form-control" placeholder="Enter your bid">
+                              </div>
+                              <button class="btn btn-success w-100 mb-2">Place Bid</button>
+                              <button class="btn btn-outline-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#autoBidModal">Set Auto-Bid</button>
+
+                              <button class="close-overlay btn btn-outline-danger">Cancel</button>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                
 
             </div>
         </div>
@@ -1295,7 +1377,7 @@
                 </div>
             </div>
         </div>
-    </div> 
+    </div>
 
     <div class="modal fade" id="updatePlanModal" tabindex="-1" aria-labelledby="updatePlanModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -1315,7 +1397,7 @@
                 </div>
             </div>
         </div>
-    </div> 
+    </div>
 
     <!-- Request Valuation Modal -->
     <div class="bg-dark text-light modal fade" id="request-valuation-modal" tabindex="-1" aria-labelledby="request-valuation-modalLabel" aria-hidden="true" style="z-index: 9999;">
@@ -1483,7 +1565,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- New Report Modal -->
     <div class="bg-dark text-light modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true" style="z-index: 9999;">

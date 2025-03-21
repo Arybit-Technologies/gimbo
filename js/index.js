@@ -57,6 +57,8 @@ let response_companyUsers;
 
 let response_reports;
 let response_images;
+let valuationResult_images;
+
 let response_vehicles; 
 let companies; 
 let companyDetails; 
@@ -138,6 +140,8 @@ const carData = {
 };
 
 let carRData = []; // Will be populated from AJAX response
+let auctions = [];
+let imagesAuctions = []; 
 
 var addEventListener_count = 0;
 
@@ -186,7 +190,7 @@ function onDeviceReady() {
     } */
     
 
-    var app_version = '1.0.20';
+    var app_version = '1.1.00';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
@@ -780,6 +784,14 @@ function onDeviceReady() {
       onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, RequestID);
     
     });
+    $(document).on('click', '.auctions-valuation-requests', function() {
+      var RequestID = $(this).attr('RequestID'); 
+      var action = "featuredAuctions"; 
+      $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+      refresh_dashboard = true; 
+      onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, RequestID);
+    
+    });
     $(document).on('click', '.inspect-vehicles-requests', function() {
       var AssignmentID = $(this).attr('AssignmentID'); 
       var VehicleID = $(this).attr('VehicleID'); 
@@ -1149,7 +1161,68 @@ function onDeviceReady() {
       var ReportFileURL = $(this).attr('ReportFileURL');
       copyToClipboard(ReportFileURL);
     }); 
+
+    $(document).on('click', '.view-auction-btn', function(e) {
+      e.preventDefault();
     
+      const vehicleID = $(this).data('vehicleid');
+      const title = $(this).data('title');
+      const startingBid = $(this).data('startingbid');
+      //const timeLeft = $(this).data('timeLeft');
+      const timeLeft = $(this).attr('timeLeft');  // ✅ Get attribute value
+
+      let overlayVehicleDetails = `
+        <h3>${title}</h3>
+        <p><strong>Starting Bid:</strong> ${startingBid}</p>
+        <p><strong>Vehicle ID:</strong> ${vehicleID}</p>
+        <button class="btn btn-success mt-3">Place Bid</button>
+      `;
+    
+      // Inject Vehicle Details
+      $('#overlayVehicleDetails').html(overlayVehicleDetails);
+      $('#currentBidAmount').html(`KES ${startingBid}`);
+      $('#timeLeft').html(timeLeft);
+
+      // Inject Images/Videos from imagesAuctions array
+      let mediaHtml = '';
+      let activeSet = false;
+    
+      imagesAuctions.forEach(image => {
+        if (image.VehicleID == vehicleID) {
+          if (!activeSet) {
+            mediaHtml += `<div class="carousel-item active">`;
+            activeSet = true;
+          } else {
+            mediaHtml += `<div class="carousel-item">`;
+          }
+          if (isVideoFile(image.ImagePath)) {
+            mediaHtml += `<video src="${image.ImagePath}" class="img-fluid" controls></video>`;
+          } else {
+            mediaHtml += `<img src="${image.ImagePath}" class="img-fluid" alt="${image.Description}">`;
+          }
+          mediaHtml += `</div>`;
+        }
+      });
+    
+      if (mediaHtml === '') {
+        mediaHtml = `<div class="carousel-item active">
+          <img src="https://via.placeholder.com/800x400?text=No+Media+Available" class="img-fluid">
+        </div>`;
+      }
+    
+      $('#overlayVehicleImages').html(mediaHtml);
+      $('#auctionOverlay').fadeIn().removeClass('d-none');
+    });
+    
+    $(document).on('click', '.close-overlay', function() {
+      $('#auctionOverlay').fadeOut().addClass('d-none');
+    });    
+    /**$(document).on('click', function(event) {
+      if (!$(event.target).closest('#auctionOverlay .overlay-content').length) {
+          $('#auctionOverlay').fadeOut().addClass('d-none');
+      }
+    }); */
+  
     // Event delegation for dynamically handling clicks on vehicle images and videos    
     $(document).off('click', '.vehicle-image').on('click', '.vehicle-image', function() {
       var VehicleID = $(this).attr('VehicleID');
@@ -2436,11 +2509,10 @@ function onDeviceReady() {
           } catch(e) {
             if (response.action == "loginUser") {
               //$(".login_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
-              alert(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
-
+              //alert(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
               document.getElementById("loginUser").innerHTML=`Login`;
-              document.querySelector(".landing-page").classList.add("d-none");
-              document.querySelector(".login-page").classList.remove("d-none");          
+              //document.querySelector(".landing-page").classList.add("d-none");
+              //document.querySelector(".login-page").classList.remove("d-none");
             } else {
               $(".register_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
               document.getElementById("registerValuer").innerHTML="Submit";          
@@ -4384,374 +4456,274 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
   const avatar = `
     <div class="card" style="background-image: url('${headLogo}'); width: 250px; height: 100px; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
   `;
+  const date = new Date();
 
-const date = new Date();
-
-// Assume valuationType is provided (e.g., 'market', 'forced', 'insurance', 'custom')
-const valuationType = formData.get('valuationType') || 'market'; // Default to market
-
-var reportContent = `<div class="report_Card_Content">`;
-
-// Base A4 Card (Header and Common Details)
-reportContent += `
-  <div class="card a4-card mb-1">
-    <div class="card-header">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          ${avatar}
-        </div>
-        <div class="col-6">
-          <span class="text-size-header-small">${headNotes}</span><br>
-          <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
-        </div>
-        <div class="col">
-          <div class="qr_code qrrcode"></div>          
-        </div>
-      </div>
-    </div>
-    <div class="card-body text-start p-3">
-      <h1><b>${formData.get('make').toUpperCase()} ${formData.get('model').toUpperCase()} ${formData.get('modelType').toUpperCase()} ${formData.get('registrationNo').toUpperCase()} ${valuationType.toUpperCase()} VALUATION REPORT</b></h1>
-      <div class="row justify-content-md-center mt-2">
-        <div class="col">
-          <strong class="text-size-strong">Ref. No.</strong> <span class="text-theme">${formData.get('corporateRefNo')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">SERIAL No</strong> <span class="text-theme">${formData.get('serialNo')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">ISSUED BY</strong> <span class="text-theme">${formData.get('valuer')}</span>
-        </div>
-      </div>
-`;
-
-// Valuation-Type-Specific Header Section
-if (valuationType === 'insurance') {
+  // Assume valuationType is provided (e.g., 'market', 'forced', 'insurance', 'custom')
+  const valuationType = formData.get('valuationType') || 'market'; // Default to market
+  
+  var reportContent = `<div class="report_Card_Content">`;
+  
+  // Base A4 Card (Header and Common Details)
   reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">INSURER</strong> <span class="text-theme">${formData.get('insurer')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">EXPIRY DATE</strong> <span class="text-theme">${formData.get('expiryDate')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">POLICY NO.</strong> <span class="text-theme">${formData.get('policyNo')}</span>
-        </div>
-      </div>
-  `;
-}
-
-reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">CLIENT NAME</strong> <span class="text-theme">${formData.get('clientName')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">CONTACTS</strong> <span class="text-theme">${formData.get('contactNumber')}</span>
-        </div>
-        <div class="col-5">
-          <div class="row">
-            <div class="col-5">
-              <strong class="text-size-strong">KRA PIN</strong> <span class="text-theme">${formData.get('contactKRA')}</span>
-            </div>
-            <div class="col-7">
-              <strong class="text-size-strong">Email</strong> <span class="text-theme">${formData.get('emaill')}</span>
-            </div>          
+    <div class="card a4-card mb-1">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            ${avatar}
+          </div>
+          <div class="col-6">
+            <span class="text-size-header-small">${headNotes}</span><br>
+            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+          </div>
+          <div class="col">
+            <div class="qr_code qrrcode"></div>          
           </div>
         </div>
       </div>
-      <div class="float-start">
-        <span class="text-size-strong">${bodyNotes}</span>
-      </div><br> 
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">REGISTRATION NO</strong> <span class="text-theme">${formData.get('registrationNo')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">MAKE</strong> <span class="text-theme">${formData.get('make')}</span>
-        </div>
-        <div class="col-5">
-          <div class="row">
-            <div class="col-5">
-              <strong class="text-size-strong">Model</strong> <span class="text-theme">${formData.get('model')}</span>
-            </div>
-            <div class="col-7">
-              <strong class="text-size-strong">Model TYPE</strong> <span class="text-theme">${formData.get('modelType')}</span>
-            </div>          
+      <div class="card-body text-start p-3">
+        <h1><b>${formData.get('make').toUpperCase()} ${formData.get('model').toUpperCase()} ${formData.get('modelType').toUpperCase()} ${formData.get('registrationNo').toUpperCase()} ${valuationType.toUpperCase()} VALUATION REPORT</b></h1>
+        <div class="row justify-content-md-center mt-2">
+          <div class="col">
+            <strong class="text-size-strong">Ref. No.</strong> <span class="text-theme">${formData.get('corporateRefNo')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">SERIAL No</strong> <span class="text-theme">${formData.get('serialNo')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">ISSUED BY</strong> <span class="text-theme">${formData.get('valuer')}</span>
           </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">Body Type</strong> <span class="text-theme">${formData.get('bodyType')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">FUEL TYPE</strong> <span class="text-theme">${formData.get('fuelType')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">GEAR BOX</strong> <span class="text-theme">${formData.get('gearBox')}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">CHASSIS NO</strong> <span class="text-theme">${formData.get('chassisNo')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">ENGINE NO</strong> <span class="text-theme">${formData.get('engineNo')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">ENGINE RATING</strong> <span class="text-theme">${formData.get('engineRating')}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">YEAR OF MANF.</strong> <span class="text-theme">${formData.get('yearOfManf')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">DATE OF REG.</strong> <span class="text-theme">${formData.get('dateOfReg')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">ODOMETER-CURRENT READING</strong> <span class="text-theme">${addCommasToNumber(formData.get('odometerReading'))} ${formData.get('unitSelection')}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">Country of Origin</strong> <span class="text-theme">${formData.get('countryOfOrigin')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">COLOUR</strong> <span class="text-theme">${formData.get('colour')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">Tyres</strong> <span class="text-theme">${formData.get('tyres')}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">NO OF AIRBAGS</strong> <span class="text-theme">${formData.get('noOfAirbags')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">Anti Theft</strong> <span class="text-theme">${formData.get('antiTheft')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">TYPES OF LIGHTS</strong> <span class="text-theme">${formData.get('typesOfLights')}</span>
-        </div>
-      </div>
-`;
-
-// Valuation-Type-Specific Body Section
-reportContent += `
-      <div class="row">
-        <h6 class="text-size-strong">Coachwork Notes</h6>
-        <p class="text-theme">${formData.get('coachworkNotes')}</p>
-        <h6 class="text-size-strong">Extras</h6>
-        <p class="text-theme">${formData.get('extras')}</p>
-        <h6 class="text-size-strong">Electrical Notes</h6>
-        <p class="text-theme">${formData.get('electricalNotes')}</p>
-        <h6 class="text-size-strong">Mechanical Notes</h6>
-        <p class="text-theme">${formData.get('mechanicalNotes')}</p><br>
-        <strong class="text-size-strong">General Condition</strong> <span class="text-theme">${formData.get('generalCondition')}</span>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">Location of Inspection</strong> <span class="text-theme">${formData.get('locationOfInspection')}</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">Destination</strong> <span class="text-theme">${formData.get('destination')}</span>
-        </div>
-      </div>
-`;
-
-// Valuation Results Section
-if (valuationType === 'market' || valuationType === 'insurance') {
-  reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-Value">Market Value: </strong> 
-          <span class="text-Value">${addCommasToNumber(formData.get('marketValue'))} /=</span> 
-          <span class="text-danger">${convertNumberToWords(formData.get('marketValue'))}, Kenya Shillings Only</span>
-        </div>
-      </div>
   `;
-}
-
-if (valuationType === 'forced' || valuationType === 'custom') {
-  reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-Value">Forced Value: </strong> 
-          <span class="text-Value">${addCommasToNumber(formData.get('forcedValue'))} /=</span> 
-          <span class="text-danger">${convertNumberToWords(formData.get('forcedValue'))}, Kenya Shillings Only</span>
-        </div>
-      </div>
-  `;
-}
-
-if (valuationType === 'custom') {
-  reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-Value">Radio Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('radioEstimate'))} /=</span>
-        </div>
-        <div class="col">
-          <strong class="text-size-Value">Windscreen Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('windscreenEstimate'))} /=</span>
-        </div>
-      </div>
-  `;
-}
-
-// Trends (Market Valuation Specific)
-if (valuationType === 'market') {
-  // Assume trends come from valuation algorithm (e.g., stored in formData or fetched separately)
-  const trends = JSON.parse(formData.get('trends') || '[]');
-  if (trends.length > 0) {
+  
+  // Valuation-Type-Specific Header Section
+  //alert(valuationType);
+  //if (valuationType === 'insurance') {
+  if (valuationType === 'market') {
+  
     reportContent += `
-      <div class="row mt-2">
-        <h6 class="text-size-strong">Market Trends</h6>
-        <ul class="text-theme">
-    `;
-    trends.forEach(trend => {
-      reportContent += `<li>${trend}</li>`;
-    });
-    reportContent += `
-        </ul>
-      </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">INSURER</strong> <span class="text-theme">${formData.get('insurer')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">EXPIRY DATE</strong> <span class="text-theme">${formData.get('expiryDate')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">POLICY NO.</strong> <span class="text-theme">${formData.get('policyNo')}</span>
+          </div>
+        </div>
     `;
   }
-}
-
-// Remarks and NB
-reportContent += `
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">Remarks</strong> <span class="text-danger">${formData.get('remarks')}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <strong class="text-size-strong">NB</strong> <span class="text-danger">${formData.get('remedy')}</span>
-        </div>
-      </div>
-`;
-
-// Footer Section
-reportContent += `
-      <div class="row mt-2">
-        <div class="col">
-          <strong class="text-size-strong">Valuation Date: </strong> <span class="text-theme">${formData.get('valuation_Date')}</span><br>
-          <span class="signaturePng mt-1" style="background-image: url('${principalSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 100%; height: 80px;"></span>
-          <strong class="text-size-strong">Principal Valuer Sign</strong>
-        </div>
-        <div class="col">
-          <strong class="text-size-strong">Examiner</strong> <span class="text-theme">${formData.get('examiner')}</span>
-        </div>
-        <div class="col-5">
-          <strong class="text-size-strong">Instruction Date</strong> <span class="text-theme">${gettimeOfInspection()}</span>
-          <span class="signaturePng mt-1" style="background-image: url('${directorSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 50%; height: 80px;"></span>
-          <strong class="text-size-strong">Director Sign</strong>
-        </div>
-      </div>
-    </div>
-    <div class="card-footer text-body-secondary p-1">
-      <div class="float-end text-end">
-        <span class="d-block text-start text-size-small mb-0">
-          Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
-        </span>
-      </div>
-      <div class="float-start text-start">
-        <span class="d-block text-start text-danger text-size-small mb-0">
-          NB: ${nBNotes}
-        </span>
-        <span class="d-block text-start text-size-strong mb-0">
-          <span>Valuation for</span>: <span>${footNotes}</span>
-        </span>
-        <span class="d-block text-start text-size-h6 mb-0">
-          <span class="text-size-header-small">${companyName} ${companyAddress} TEL: ${contactPhone} ${contactEmail}</span>
-        </span>
-      </div>        
-    </div>
-  </div>
-`;
-
-// Image Pages (Common Across All Types)
-reportContent += `
-  <div class="mb-1 card a4-card">
-    <div class="card-header">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          ${avatar}
-        </div>
-        <div class="col-6">
-          <span class="text-size-header-small">${headNotes}</span><br>
-          <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
-        </div>
-        <div class="col">
-          <div class="qr_code qrrcode"></div>          
-        </div>
-      </div>
-    </div>
-    <div class="card-body cardBody" style="padding: 0; margin: 0;">
-      <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML}</div>
-    </div>
-    <div class="card-footer text-body-secondary p-1">
-      <div class="float-end text-end">
-        <span class="d-block text-start text-size-small mb-0">
-          Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
-        </span>
-      </div>
-    </div>
-  </div>
-`;
-
-if (imagesHTML2 !== '') {
+  
   reportContent += `
-    <div class="mb-1 card a4-card">
-      <div class="card-header">
-        <div class="row align-items-center">
-          <div class="col-auto">
-            ${avatar}
-          </div>
-          <div class="col-6">
-            <span class="text-size-header-small">${headNotes}</span><br>
-            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">CLIENT NAME</strong> <span class="text-theme">${formData.get('clientName')}</span>
           </div>
           <div class="col">
-            <div class="qr_code qrrcode"></div>          
+            <strong class="text-size-strong">CONTACTS</strong> <span class="text-theme">${formData.get('contactNumber')}</span>
+          </div>
+          <div class="col-5">
+            <div class="row">
+              <div class="col-5">
+                <strong class="text-size-strong">KRA PIN</strong> <span class="text-theme">${formData.get('contactKRA')}</span>
+              </div>
+              <div class="col-7">
+                <strong class="text-size-strong">Email</strong> <span class="text-theme">${formData.get('emaill')}</span>
+              </div>          
+            </div>
           </div>
         </div>
-      </div>
-      <div class="card-body cardBody" style="padding: 0; margin: 0;">
-        <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML2}</div>
-      </div>
-      <div class="card-footer text-body-secondary p-1">
-        <div class="float-end text-end">
-          <span class="d-block text-start text-size-small mb-0">
-            Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
-          </span>
+        <div class="float-start">
+          <span class="text-size-strong">${bodyNotes}</span>
+        </div><br> 
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">REGISTRATION NO</strong> <span class="text-theme">${formData.get('registrationNo')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">MAKE</strong> <span class="text-theme">${formData.get('make')}</span>
+          </div>
+          <div class="col-5">
+            <div class="row">
+              <div class="col-5">
+                <strong class="text-size-strong">Model</strong> <span class="text-theme">${formData.get('model')}</span>
+              </div>
+              <div class="col-7">
+                <strong class="text-size-strong">Model TYPE</strong> <span class="text-theme">${formData.get('modelType')}</span>
+              </div>          
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">Body Type</strong> <span class="text-theme">${formData.get('bodyType')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">FUEL TYPE</strong> <span class="text-theme">${formData.get('fuelType')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">GEAR BOX</strong> <span class="text-theme">${formData.get('gearBox')}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">CHASSIS NO</strong> <span class="text-theme">${formData.get('chassisNo')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">ENGINE NO</strong> <span class="text-theme">${formData.get('engineNo')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">ENGINE RATING</strong> <span class="text-theme">${formData.get('engineRating')}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">YEAR OF MANF.</strong> <span class="text-theme">${formData.get('yearOfManf')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">DATE OF REG.</strong> <span class="text-theme">${formData.get('dateOfReg')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">ODOMETER-CURRENT READING</strong> <span class="text-theme">${addCommasToNumber(formData.get('odometerReading'))} ${formData.get('unitSelection')}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">Country of Origin</strong> <span class="text-theme">${formData.get('countryOfOrigin')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">COLOUR</strong> <span class="text-theme">${formData.get('colour')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">Tyres</strong> <span class="text-theme">${formData.get('tyres')}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">NO OF AIRBAGS</strong> <span class="text-theme">${formData.get('noOfAirbags')}</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">Anti Theft</strong> <span class="text-theme">${formData.get('antiTheft')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">TYPES OF LIGHTS</strong> <span class="text-theme">${formData.get('typesOfLights')}</span>
+          </div>
+        </div>
   `;
-}
-
-if (imagesHTML3 !== '') {
+  
+  // Valuation-Type-Specific Body Section
   reportContent += `
-    <div class="mb-1 card a4-card">
-      <div class="card-header">
-        <div class="row align-items-center">
-          <div class="col-auto">
-            ${avatar}
-          </div>
-          <div class="col-6">
-            <span class="text-size-header-small">${headNotes}</span><br>
-            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+        <div class="row">
+          <h6 class="text-size-strong">Coachwork Notes</h6>
+          <p class="text-theme">${formData.get('coachworkNotes')}</p>
+          <h6 class="text-size-strong">Extras</h6>
+          <p class="text-theme">${formData.get('extras')}</p>
+          <h6 class="text-size-strong">Electrical Notes</h6>
+          <p class="text-theme">${formData.get('electricalNotes')}</p>
+          <h6 class="text-size-strong">Mechanical Notes</h6>
+          <p class="text-theme">${formData.get('mechanicalNotes')}</p><br>
+          <strong class="text-size-strong">General Condition</strong> <span class="text-theme">${formData.get('generalCondition')}</span>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">Location of Inspection</strong> <span class="text-theme">${formData.get('locationOfInspection')}</span>
           </div>
           <div class="col">
-            <div class="qr_code qrrcode"></div>          
+            <strong class="text-size-strong">Destination</strong> <span class="text-theme">${formData.get('destination')}</span>
           </div>
         </div>
-      </div>
-      <div class="card-body loogbookFormCardBody" style="padding: 0; margin: 0;">
-        <div class="row p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML3}</div>
+  `;
+  
+  // Valuation Results Section
+  if (valuationType === 'market' || valuationType === 'insurance') {
+    reportContent += `
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-Value">Market Value: </strong> 
+            <span class="text-Value">${addCommasToNumber(formData.get('marketValue'))} /=</span> 
+            <span class="text-danger">${convertNumberToWords(formData.get('marketValue'))}, Kenya Shillings Only</span>
+          </div>
+        </div>
+    `;
+  }
+  
+  if (valuationType === 'market' || valuationType === 'forced' || valuationType === 'custom') {
+    reportContent += `
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-Value">Forced Value: </strong> 
+            <span class="text-Value">${addCommasToNumber(formData.get('forcedValue'))} /=</span> 
+            <span class="text-danger">${convertNumberToWords(formData.get('forcedValue'))}, Kenya Shillings Only</span>
+          </div>
+        </div>
+    `;
+  }
+  
+  if (valuationType === 'market' || valuationType === 'custom') {
+    reportContent += `
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-Value">Radio Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('radioEstimate'))} /=</span>
+          </div>
+          <div class="col">
+            <strong class="text-size-Value">Windscreen Estimate: </strong> <span class="text-Value">${addCommasToNumber(formData.get('windscreenEstimate'))} /=</span>
+          </div>
+        </div>
+    `;
+  }
+  
+  // Trends (Market Valuation Specific)
+  if (valuationType === 'market') {
+    // Assume trends come from valuation algorithm (e.g., stored in formData or fetched separately)
+    const trends = JSON.parse(formData.get('trends') || '[]');
+    if (trends.length > 0) {
+      reportContent += `
+        <div class="row mt-2">
+          <h6 class="text-size-strong">Market Trends</h6>
+          <ul class="text-theme">
+      `;
+      trends.forEach(trend => {
+        reportContent += `<li>${trend}</li>`;
+      });
+      reportContent += `
+          </ul>
+        </div>
+      `;
+    }
+  }
+  
+  // Remarks and NB
+  reportContent += `
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">Remarks</strong> <span class="text-danger">${formData.get('remarks')}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <strong class="text-size-strong">NB</strong> <span class="text-danger">${formData.get('remedy')}</span>
+          </div>
+        </div>
+  `;
+  
+  // Footer Section
+  reportContent += `
+        <div class="row mt-2">
+          <div class="col">
+            <strong class="text-size-strong">Valuation Date: </strong> <span class="text-theme">${formData.get('valuation_Date')}</span><br>
+            <span class="signaturePng mt-1" style="background-image: url('${principalSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 100%; height: 80px;"></span>
+            <strong class="text-size-strong">Principal Valuer Sign</strong>
+          </div>
+          <div class="col">
+            <strong class="text-size-strong">Examiner</strong> <span class="text-theme">${formData.get('examiner')}</span>
+          </div>
+          <div class="col-5">
+            <strong class="text-size-strong">Instruction Date</strong> <span class="text-theme">${gettimeOfInspection()}</span>
+            <span class="signaturePng mt-1" style="background-image: url('${directorSign}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center; display: block; width: 50%; height: 80px;"></span>
+            <strong class="text-size-strong">Director Sign</strong>
+          </div>
+        </div>
       </div>
       <div class="card-footer text-body-secondary p-1">
         <div class="float-end text-end">
@@ -4773,15 +4745,114 @@ if (imagesHTML3 !== '') {
       </div>
     </div>
   `;
-}
-
-reportContent += `</div>`;
-
-// Set reportContent to report element
-document.getElementById('report_Content').innerHTML = reportContent;
-
-
-
+  
+  // Image Pages (Common Across All Types)
+  reportContent += `
+    <div class="mb-1 card a4-card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            ${avatar}
+          </div>
+          <div class="col-6">
+            <span class="text-size-header-small">${headNotes}</span><br>
+            <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+          </div>
+          <div class="col">
+            <div class="qr_code qrrcode"></div>          
+          </div>
+        </div>
+      </div>
+      <div class="card-body cardBody" style="padding: 0; margin: 0;">
+        <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML}</div>
+      </div>
+      <div class="card-footer text-body-secondary p-1">
+        <div class="float-end text-end">
+          <span class="d-block text-start text-size-small mb-0">
+            Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  if (imagesHTML2 !== '') {
+    reportContent += `
+      <div class="mb-1 card a4-card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-auto">
+              ${avatar}
+            </div>
+            <div class="col-6">
+              <span class="text-size-header-small">${headNotes}</span><br>
+              <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+            </div>
+            <div class="col">
+              <div class="qr_code qrrcode"></div>          
+            </div>
+          </div>
+        </div>
+        <div class="card-body cardBody" style="padding: 0; margin: 0;">
+          <div class="row imagesRow p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML2}</div>
+        </div>
+        <div class="card-footer text-body-secondary p-1">
+          <div class="float-end text-end">
+            <span class="d-block text-start text-size-small mb-0">
+              Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  if (imagesHTML3 !== '') {
+    reportContent += `
+      <div class="mb-1 card a4-card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-auto">
+              ${avatar}
+            </div>
+            <div class="col-6">
+              <span class="text-size-header-small">${headNotes}</span><br>
+              <span class="text-size-header-small">${companyName} ${companyAddress}<br>TEL: ${contactPhone} ${contactEmail}</span>
+            </div>
+            <div class="col">
+              <div class="qr_code qrrcode"></div>          
+            </div>
+          </div>
+        </div>
+        <div class="card-body loogbookFormCardBody" style="padding: 0; margin: 0;">
+          <div class="row p-0 m-0 g-2" style="margin: 0; padding: 0;">${imagesHTML3}</div>
+        </div>
+        <div class="card-footer text-body-secondary p-1">
+          <div class="float-end text-end">
+            <span class="d-block text-start text-size-small mb-0">
+              Receipt No. GB${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}
+            </span>
+          </div>
+          <div class="float-start text-start">
+            <span class="d-block text-start text-danger text-size-small mb-0">
+              NB: ${nBNotes}
+            </span>
+            <span class="d-block text-start text-size-strong mb-0">
+              <span>Valuation for</span>: <span>${footNotes}</span>
+            </span>
+            <span class="d-block text-start text-size-h6 mb-0">
+              <span class="text-size-header-small">${companyName} ${companyAddress} TEL: ${contactPhone} ${contactEmail}</span>
+            </span>
+          </div>        
+        </div>
+      </div>
+    `;
+  }
+  
+  reportContent += `</div>`;
+  
+  // Set reportContent to report element
+  document.getElementById('report_Content').innerHTML = reportContent;
   
   //updateWatermarkImage(headLogo);
   changeBackgroundColor(localStorage.getItem('themeColor'));
@@ -5646,7 +5717,10 @@ function getDashboard(userUsername,_email,password,action,id) {
     dataType: 'json', // Change the dataType to the expected response type
     success: function(response) {
       var response_offset = Number(Number(localStorage.getItem('offset')) + Number(response.reports.length));     
-      //alert(response.message.messageError);
+      
+      if (action == 'featuredAuctions') {
+        showSnackbar(response.message.messageError);
+      }
 
       if (response.limit > response.reports.length) {
         localStorage.setItem('offset', 0);
@@ -6777,6 +6851,8 @@ function displayValuationForms(valuation_Forms, _reports, role) {
     <span class="btn-group btn-group-sm" role="group" aria-label="Small button group">
       <button type="button" class="btn btn-bd-primary edit-valuation-requests" RequestID="${requests.RequestID}" VehicleID="${requests.VehicleID}" ValuationTypeID="${requests.ValuationTypeID}" data-bs-toggle="modal" data-bs-target="#request-valuation-modal"><i class="fa-solid fa-pen-to-square"></i> <span class="d-none d-sm-none d-md-inline">Edit</span></button>
       <button type="button" class="btn btn-bd-primary delete-valuation-requests" RequestID="${requests.RequestID}" ValuationTypeID="${requests.ValuationTypeID}"><i class="fa-solid fa-trash-can"></i> <span class="d-none d-sm-none d-md-inline">Delete</span></button>
+      <button type="button" class="btn btn-bd-primary auctions-valuation-requests" RequestID="${requests.RequestID}" ValuationTypeID="${requests.ValuationTypeID}"><i class="fa-solid fa-gavel"></i> <span class="d-none d-sm-none d-md-inline">Auction</span></button>
+
     </span>`;
   
     var small_button_group = `
@@ -7097,6 +7173,8 @@ function displayValuationForms(valuation_Forms, _reports, role) {
           <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button d-none d-sm-none d-md-inline" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
           <button type="button" class="btn btn-bd-primary approve-button" FormID="${valuation.FormID}"><i class="fa-solid fa-thumbs-up"></i> <span class="d-none d-sm-none d-md-inline">Approve</span></button>
           <button type="button" class="btn btn-bd-primary dispatch-button" FormID="${valuation.FormID}"><i class="fa-solid fa-paper-plane"></i> <span class="d-none d-sm-none d-md-inline">Dispatch</span></button>
+          <button type="button" class="btn btn-bd-primary auctions-valuation-requests" RequestID="${valuation.FormID}"><i class="fa-solid fa-gavel"></i> <span class="d-none d-sm-none d-md-inline">Auction</span></button>
+
         `;
       }
       if (approvalStatus == "Dispatched") {
@@ -7104,6 +7182,8 @@ function displayValuationForms(valuation_Forms, _reports, role) {
           <button type="button" class="btn btn-bd-primary view-button" FormID="${valuation.FormID}" ReportFileURL="${reportFileURL}" data-bs-toggle="modal" data-bs-target="#example_Modal"><i class="fa-solid fa-eye"></i> <span class="d-none d-sm-none d-md-inline">View</span></button>
           <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
           <button type="button" class="btn btn-bd-primary copy-button" FormID="" ReportFileURL="${reportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy</span></button>
+          <button type="button" class="btn btn-bd-primary auctions-valuation-requests" RequestID="${valuation.FormID}"><i class="fa-solid fa-gavel"></i> <span class="d-none d-sm-none d-md-inline">Auction</span></button>
+
         `;
         if (role === "Director") {
           button_group = `
@@ -7111,6 +7191,8 @@ function displayValuationForms(valuation_Forms, _reports, role) {
             <button type="button" class="btn btn-bd-primary view-button" FormID="${valuation.FormID}" ReportFileURL="${reportFileURL}" data-bs-toggle="modal" data-bs-target="#example_Modal"><i class="fa-solid fa-eye"></i> <span class="d-none d-sm-none d-md-inline">View</span></button>
             <button type="button" class="btn btn-bd-primary edit-button" FormID="${valuation.FormID}" data-bs-toggle="modal" data-bs-target="#newReportModal"><i class="fa-solid fa-pen-to-square"></i> <span class="d-none d-sm-none d-md-inline">Edit</span></button>
             <a href="${reportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button d-none d-sm-none d-md-inline" FormID="${valuation.FormID}"><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download</span></a>
+            <button type="button" class="btn btn-bd-primary auctions-valuation-requests" RequestID="${valuation.FormID}"><i class="fa-solid fa-gavel"></i> <span class="d-none d-sm-none d-md-inline">Auction</span></button>
+
           `;
         }
       }
@@ -8127,6 +8209,95 @@ function onValuatorDeviceReady() {
       success: function(response) {
           if (response.status === 'success') {
               carRData = response.data.carData;
+              timestamp = response.timestamp;
+
+              let featuredAuctions = '';
+              
+              auctions = response.data.auctions;
+              imagesAuctions = response.data.imagesAuctions;
+              var vehicleImagePath = '';
+              var poster = '';
+
+              auctions.forEach(auction => {
+
+                imagesAuctions.forEach(image => {
+                  if (auction.VehicleID == image.VehicleID) {
+                    if (image.Description == "Right front") {
+                      poster = image.ImagePath;
+                    }
+        
+                    if (image.Description == "Right front") {
+                      vehicleImagePath = ` 
+                        <img src="${image.ImagePath}" alt="${image.Description}" class="vehicle-image img-fluid" VehicleID="${auction.VehicleID}">
+                      `;
+                    } else if (isVideoFile(image.ImagePath)) {
+                      vehicleImagePath = ` 
+                        <video src="${image.ImagePath}" poster="${poster}" class="vehicle-image img-fluid request_video_${image.VehicleID}" VehicleID="${auction.VehicleID}" style="object-fit: cover;" playsinline></video>
+                      `;
+                      
+                      setTimeout(() => {
+                        // Get all video elements matching the class
+                        const videos = document.getElementsByClassName(`request_video_${image.VehicleID}`);
+                    
+                        if (videos.length > 0) {
+                            Array.from(videos).forEach((video) => {
+                                // Play on hover
+                                video.addEventListener("mouseenter", () => {
+                                    video.play();
+                                });
+                    
+                                // Pause when mouse leaves
+                                video.addEventListener("mouseleave", () => {
+                                    video.pause();
+                                });
+                    
+                                // Toggle play/pause on click
+                                video.addEventListener("click", () => {
+                                    if (video.paused) {
+                                        video.play();
+                                    } else {
+                                        video.pause();
+                                    }
+                                });
+                    
+                                // Ensure video restarts when it ends
+                                video.addEventListener("ended", () => {
+                                    video.currentTime = 0;
+                                });
+                            });
+                        }
+                      }, 100);
+                  
+                    }
+                  }
+                });
+                const endTime = new Date(auction.EndTime.replace(' ', 'T')).getTime();
+                const currentTime = new Date(timestamp.replace(' ', 'T')).getTime();
+                const timeLeft = endTime - currentTime;
+
+                const timeLeftWords = convertMillisecondsToWords(timeLeft);
+
+                if (timeLeftWords !="Auction Ended") {
+                  featuredAuctions += `
+                  <div class="col-md-4 mb-4">
+                    <div class="card bg-dark text-light">
+                      ${vehicleImagePath}
+                      <div class="card-body card-body-fixed">
+                        <h5 class="card-title">🚗 <b>${auction.Year} ${auction.Make} ${auction.Model} ${auction.ModelType}</b></h5>
+                        <p class="card-text">Starting Bid: ${addCommasToNumber(auction.ForcedValue)}</p>
+                        <p class="card-text mb-3">Time Left: <span class="badge bg-warning">${timeLeftWords}</span></p>
+                        <a href="#" class="btn btn-primary view-auction-btn" data-vehicleid="${auction.VehicleID}" timeLeft="${timeLeftWords}" data-startingbid="${addCommasToNumber(auction.ForcedValue)}" data-title="${auction.Year} ${auction.Make} ${auction.Model} ${auction.ModelType}">View Auction</a>
+                      </div>
+                    </div>
+                  </div>`;                  
+                }            
+
+              });
+              
+              $("#featured-auctions").html(featuredAuctions);              
+              
+              $("#downloadApplicationBtn").html(`${response.donwloadUrl}`);
+
               setupAutocomplete();
           } else {
               showSnackbar(`Error: ${response.message}`);
@@ -8136,6 +8307,22 @@ function onValuatorDeviceReady() {
           showSnackbar(`AJAX Error: ${status} - ${error}`);
       }
   });
+  
+  function convertMillisecondsToWords(ms) {
+    if (ms <= 0) return "Auction Ended";
+  
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+  
+    let result = '';
+    if (days > 0) result += `${days}d `;
+    if (hours > 0) result += `${hours}h `;
+    if (minutes > 0) result += `${minutes}m`;
+  
+    return result || "Less than 1m";
+  }  
 
   function setupAutocomplete() {
       // Car Make Input Autocomplete
@@ -8296,10 +8483,12 @@ function fetchMLModel(data, urlValuator) {
       data: data,
       contentType: "application/json",
       success: function (response) {
+
           if (response.message) {
               $("#responseValuator").text(response.message);
           } else if (response.valuationResult && response.valuationResult.length > 0) {
               let displayHtml = "<h3>Vehicle Valuations:</h3>";
+
               /**response.vehicles.forEach(vehicle => {
                 displayHtml += `
                     <b>🚗 Vehicle ID: ${vehicle.vehicle_id} ${vehicle.yearOfManf} ${vehicle.make} ${vehicle.model} ${vehicle.modelType}</b><br>
@@ -8318,7 +8507,6 @@ function fetchMLModel(data, urlValuator) {
             
               // Append valuation results to the vehicle list
               response.valuationResult.forEach(valuation => {
-
                 displayHtml += `
                 <div class="accordion mt-3" id="valuationAccordion${valuation.vehicle_ID}">
                     <div class="accordion-item">
@@ -8376,6 +8564,7 @@ function fetchMLModel(data, urlValuator) {
             
               });
               $("#responseValuator").html(displayHtml);
+
           } else if (response.errors && response.errors.length > 0) {
               let errorHtml = "<h3>Errors:</h3><ul>";
               response.errors.forEach(error => {
