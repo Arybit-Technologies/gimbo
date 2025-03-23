@@ -167,29 +167,6 @@ if(window.location.hostname == "localhost"){
 //const request = indexedDB.open("imageStorageDB", 1);
 
 function onDeviceReady() {
-    //alert(window.location.hostname);
-    // Cordova is now initialized. Have fun!
-    // Enable background mode
-    //cordova.plugins.backgroundMode.setEnabled(true);
-    //localStorage.setItem('themeColor','#32062e');
-
-
-    /**if(window.location.hostname == "localhost"){
-      if (cordova.platformId == "android") {   
-        //server_Url = 'https://autovaluationpro.arybit.co.ke/api/';        
-      } else {
-        //alert(cordova.platformId);
-      }
-    } else{  
-      //alert(window.location.hostname);  
-      if (cordova.platformId == "android") {   
-        //server_Url = 'https://autovaluationpro.arybit.co.ke/api/';      
-      } else {
-        //alert(cordova.platformId);
-      }
-    } */
-    
-
     var app_version = '1.1.00';
     localStorage.setItem('version',app_version);
 
@@ -457,8 +434,6 @@ function onDeviceReady() {
           showSnackbar($('.register_error').text());
         }
     });
-
-    //alert(localStorage.getItem('version'));
 
     document.getElementById("registerValuer").addEventListener("click", function() {
       const form = document.querySelector('.clientRegistrationForm');
@@ -741,7 +716,7 @@ function onDeviceReady() {
 
       document.querySelector("#report").style.display = "none";
 
-    }); 
+    });
     $(document).on('click', '.edit-valuation-requests', function() {
       var RequestID = $(this).attr('RequestID'); 
       var VehicleID = $(this).attr('VehicleID');
@@ -1217,11 +1192,6 @@ function onDeviceReady() {
     $(document).on('click', '.close-overlay', function() {
       $('#auctionOverlay').fadeOut().addClass('d-none');
     });    
-    /**$(document).on('click', function(event) {
-      if (!$(event.target).closest('#auctionOverlay .overlay-content').length) {
-          $('#auctionOverlay').fadeOut().addClass('d-none');
-      }
-    }); */
   
     // Event delegation for dynamically handling clicks on vehicle images and videos    
     $(document).off('click', '.vehicle-image').on('click', '.vehicle-image', function() {
@@ -1434,6 +1404,7 @@ function onDeviceReady() {
               $('.suggestions-list').hide();
           }
       });
+
     });
     $(document).on('click', '.request-valuation-btn', function(event) {
       event.preventDefault();
@@ -2239,7 +2210,6 @@ function onDeviceReady() {
 
     });
     //alert("localStorage");
-
 
     //alert("checkNotificationsPermission");
 
