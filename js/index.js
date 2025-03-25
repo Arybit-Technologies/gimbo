@@ -167,7 +167,7 @@ if(window.location.hostname == "localhost"){
 //const request = indexedDB.open("imageStorageDB", 1);
 
 function onDeviceReady() {
-    var app_version = '1.1.00';
+    var app_version = '1.1.0';
     localStorage.setItem('version',app_version);
 
     if (localStorage.getItem('themeColor') ==null) {
@@ -2771,6 +2771,42 @@ function onDeviceReady() {
       //alert("savedData");
 
     }
+
+    const reportButtons = document.querySelectorAll(".newReport, .resumeReport, .inspect-vehicles-requests");
+    const storageAlert = document.querySelector(".storage-alert");
+    reportButtons.forEach(button => {
+      button.addEventListener("click", function () {
+
+        if (localStorage.getItem('totalMaxValuations') <= localStorage.getItem('totalValuations') && localStorage.getItem('totalValuations') !==0) {
+          // Show the message
+          storageAlert.classList.remove("d-none");
+          //
+          showSnackbar(`You are using <strong class="using-storage">${localStorage.getItem('totalValuations')}</strong> of the <strong class="available-storage">${localStorage.getItem('totalMaxValuations')}</strong> of valuations available to you.</span>`);
+  
+          // Hide the message after 3 seconds
+          setTimeout(() => {
+              storageAlert.classList.add("d-none");
+          }, 5000);
+          
+        } else {
+          // Open the modal properly
+          const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+          newReportModal.show();
+          localStorage.setItem('requests_themePdfColor', ''); // Save to localStorage
+          localStorage.setItem('requests_themePdfFontSize', ''); // Save to localStorage
+          localStorage.setItem('requests_inAppCamera', ''); // Save to localStorage
+          localStorage.setItem('requests_videoSection', ''); // Save to localStorage
+          localStorage.setItem('requests_aiObjectsDetection', ''); // Save to localStorage
+          localStorage.setItem('requests_aiDamageDetection', ''); // Save to localStorage
+          localStorage.setItem('requests_aiValuePrediction', ''); // Save to localStorage
+          localStorage.setItem('requests_priorityStandard', ''); // Save to localStorage
+          localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
+          localStorage.setItem('requests_videoChecklistArray', ''); // Save to localStorage
+          //localStorage.setItem('videoChecklistArray', ''); // Save to localStorage
+          
+        }
+      });
+    });
 
     onValuatorDeviceReady();
 }
@@ -6139,6 +6175,46 @@ function getDashboard(userUsername,_email,password,action,id) {
             storageVal2Label.textContent = totalValuations + ' valuations';
 
             //alert(totalMaxValuations + '==' + totalValuations);
+            localStorage.setItem('totalValuations', totalValuations); // Save to localStorage
+            localStorage.setItem('totalMaxValuations', totalMaxValuations); // Save to localStorage
+
+            /**reportButtons.forEach(button => {
+              button.addEventListener("click", function () {
+
+                alert("maxStorage " + maxStorage + " totalUsed " + totalUsed);
+
+                if (totalMaxValuations <= totalValuations && totalValuations !==0) {
+                  // Show the message
+                  storageAlert.classList.remove("d-none");
+                  //
+                  showSnackbar(`You are using <strong class="using-storage">${calculateStorageLabelValue(totalUsed)}</strong> of the <strong class="available-storage">${calculateStorageLabelValue(maxStorage)}</strong> of storage available to you.</span>`);
+          
+                  // Hide the message after 3 seconds
+                  setTimeout(() => {
+                      storageAlert.classList.add("d-none");
+                  }, 5000);
+                  
+                } else {
+                  // Open the modal properly
+                  //const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+                  //newReportModal.show();
+                  localStorage.setItem('requests_themePdfColor', ''); // Save to localStorage
+                  localStorage.setItem('requests_themePdfFontSize', ''); // Save to localStorage
+                  localStorage.setItem('requests_inAppCamera', ''); // Save to localStorage
+                  localStorage.setItem('requests_videoSection', ''); // Save to localStorage
+                  localStorage.setItem('requests_aiObjectsDetection', ''); // Save to localStorage
+                  localStorage.setItem('requests_aiDamageDetection', ''); // Save to localStorage
+                  localStorage.setItem('requests_aiValuePrediction', ''); // Save to localStorage
+                  localStorage.setItem('requests_priorityStandard', ''); // Save to localStorage
+                  localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
+                  localStorage.setItem('requests_videoChecklistArray', ''); // Save to localStorage
+                  //localStorage.setItem('videoChecklistArray', ''); // Save to localStorage
+                  
+                }
+              });
+            }); */
+            
+            /**
 
             if (totalMaxValuations <= totalValuations && totalValuations !==0) {
 
@@ -6176,7 +6252,7 @@ function getDashboard(userUsername,_email,password,action,id) {
 
                 });
               });
-            }
+            } */
 
             const initialSliderValue = calculateSliderValue(maxStorage);
             slider.value = initialSliderValue;
@@ -8162,7 +8238,6 @@ function isVideoFile(filePath) {
   return videoExtensions.includes(`.${ext}`);
 }
 
-
 function onValuatorDeviceReady() {
   const yearOfManfInput = document.getElementById("yearOfManfValuatorInput");
   const makeInput = document.getElementById("makeValuatorInput");
@@ -8434,7 +8509,6 @@ function onValuatorDeviceReady() {
       if (e.key === 'Enter') submitValuation();
   });
 }
-
 function updateMLModel(urlValuator) {
 
   fetchMLModel(localStorage.getItem('vehicleValuatorData'), urlValuator);
@@ -8444,7 +8518,6 @@ function updateMLModel(urlValuator) {
     updateMLModel(urlValuator);
   }, 15000);
 }
-
 function fetchMLModel(data, urlValuator) {
 
   $.ajax({
