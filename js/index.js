@@ -4487,7 +4487,7 @@ function generateReport(formData, imagesHTML = '', imagesHTML2 = '', imagesHTML3
         </div>
       </div>
       <div class="card-body text-start p-3">
-        <h1><b>${formData.get('make').toUpperCase()} ${formData.get('model').toUpperCase()} ${formData.get('modelType').toUpperCase()} ${formData.get('registrationNo').toUpperCase()} ${valuationType.toUpperCase()} VALUATION REPORT</b></h1>
+        <h1><b>${formData.get('make').toUpperCase()} ${formData.get('model').toUpperCase()} ${formData.get('modelType').toUpperCase()} ${formData.get('registrationNo').toUpperCase()} VALUATION REPORT</b></h1>
         <div class="row justify-content-md-center mt-2">
           <div class="col">
             <strong class="text-size-strong">Ref. No.</strong> <span class="text-theme">${formData.get('corporateRefNo')}</span>
