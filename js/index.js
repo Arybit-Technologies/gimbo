@@ -768,6 +768,15 @@ function onDeviceReady() {
     
     });
     $(document).on('click', '.inspect-vehicles-requests', function() {
+      if (localStorage.getItem('totalMaxValuations') <= localStorage.getItem('totalValuations') && localStorage.getItem('totalValuations') !==0) {
+        showSnackbar(`You are using <strong class="using-storage">${localStorage.getItem('totalValuations')}</strong> of the <strong class="available-storage">${localStorage.getItem('totalMaxValuations')}</strong> of valuations available to you.</span>`);
+
+      } else {
+        // Open the modal properly
+        const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+        newReportModal.show();
+        
+      }
       var AssignmentID = $(this).attr('AssignmentID'); 
       var VehicleID = $(this).attr('VehicleID'); 
       inspect_action = "submitReport";
@@ -3967,7 +3976,7 @@ function positionGenerateReport() {
         if (fileObj.maessa_up == 'Logbook photo') {
           label_name = label_name + ',' + label;
           fileImagesHTML3Array.push({ [label]: imageHTML });
-          fileImagesHTML3 += imageHTML;   
+          fileImagesHTML3 += imageHTML;
         } else {
           if (uploadedFilesfilesProcessed >= 8 && uploadedFilesfilesProcessed < 16) {
             label_name = label_name + ',' + label;
