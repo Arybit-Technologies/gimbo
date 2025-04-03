@@ -2785,9 +2785,14 @@ function onDeviceReady() {
     const storageAlert = document.querySelector(".storage-alert");
     reportButtons.forEach(button => {
       button.addEventListener("click", function () {
+        
+        const totalMaxValuations = Number(localStorage.getItem('totalMaxValuations')) || 0;
+        const totalValuations = Number(localStorage.getItem('totalValuations')) || 0;
+        
+        if (totalMaxValuations <= totalValuations && totalValuations !== 0) {
+        
+        //if (localStorage.getItem('totalValuations') <= localStorage.getItem('totalMaxValuations') && localStorage.getItem('totalValuations') !==0) {
 
-        if (localStorage.getItem('totalMaxValuations') <= localStorage.getItem('totalValuations') && localStorage.getItem('totalValuations') !==0) {
-          // Show the message
           storageAlert.classList.remove("d-none");
           //
           showSnackbar(`You are using <strong class="using-storage">${localStorage.getItem('totalValuations')}</strong> of the <strong class="available-storage">${localStorage.getItem('totalMaxValuations')}</strong> of valuations available to you.</span>`);
@@ -2812,7 +2817,6 @@ function onDeviceReady() {
           localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
           localStorage.setItem('requests_videoChecklistArray', ''); // Save to localStorage
           //localStorage.setItem('videoChecklistArray', ''); // Save to localStorage
-          
         }
       });
     });
@@ -6184,8 +6188,8 @@ function getDashboard(userUsername,_email,password,action,id) {
             storageVal2Label.textContent = totalValuations + ' valuations';
 
             //alert(totalMaxValuations + '==' + totalValuations);
-            localStorage.setItem('totalValuations', totalValuations); // Save to localStorage
-            localStorage.setItem('totalMaxValuations', totalMaxValuations); // Save to localStorage
+            localStorage.setItem('totalValuations', Number(totalValuations)); // Save to localStorage
+            localStorage.setItem('totalMaxValuations', Number(totalMaxValuations)); // Save to localStorage
 
             /**reportButtons.forEach(button => {
               button.addEventListener("click", function () {
