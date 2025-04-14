@@ -166,7 +166,7 @@ if(window.location.hostname == "localhost"){
 }
 //const request = indexedDB.open("imageStorageDB", 1);
 
-function onDeviceReady() {
+function onnDeviceReady() {
     var app_version = '1.1.0';
     localStorage.setItem('version',app_version);
 
@@ -2785,7 +2785,6 @@ function onDeviceReady() {
     const storageAlert = document.querySelector(".storage-alert");
     reportButtons.forEach(button => {
       button.addEventListener("click", function () {
-        
         const totalMaxValuations = Number(localStorage.getItem('totalMaxValuations')) || 0;
         const totalValuations = Number(localStorage.getItem('totalValuations')) || 0;
         
@@ -2822,6 +2821,2669 @@ function onDeviceReady() {
     });
 
     onValuatorDeviceReady();
+}
+function onDeviceReady() {
+  var app_version = '1.1.0';
+  localStorage.setItem('version',app_version);
+  if (localStorage.getItem('themeColor') ==null) {
+    localStorage.setItem('themeColor','#32062e');
+  } 
+  
+  if (localStorage.getItem('deviceID') ==null || localStorage.getItem('userUsername') ==null) {
+    localStorage.setItem('deviceID',generateDeviceId());
+    user_ID = localStorage.getItem('deviceID');
+    document.querySelector(".landing-page").classList.add("d-none");
+    document.querySelector(".login-page").classList.remove("d-none");
+  }
+
+  document.getElementById('getStartedBtn').addEventListener('click', function() {
+
+    if (localStorage.getItem('deviceID') ==null || localStorage.getItem('userUsername') ==null) {
+      localStorage.setItem('deviceID',generateDeviceId());
+      user_ID = localStorage.getItem('deviceID');
+      document.querySelector(".landing-page").classList.add("d-none");
+      document.querySelector(".login-page").classList.remove("d-none");
+
+    } else { 
+
+      $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+      const formData = new FormData();
+      formData.append('deviceID', localStorage.getItem('deviceID'));
+      formData.append('version', localStorage.getItem('version')); 
+      formData.append('login_email_phonenumber', localStorage.getItem('userEmail'));
+      formData.append('login_Password', localStorage.getItem('userPasswordHash'));
+      formData.append('action', 'loginUser');
+      addNetworkEventListener_count = 1;
+      clientBasicAuthenticationForm(formData);
+    }
+  }); 
+
+  $('.loginUser').click(function() {
+    //localStorage.setItem('version',app_version);
+
+    const form = document.querySelector('.clientLoginForm');
+    const formData = new FormData(form);  
+    if (formData.get('login_email_phonenumber') != "" && formData.get('login_Password') != "") {
+      document.querySelector(".login_error").innerHTML = ``;
+      $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+
+      //alert(localStorage.getItem('version'));
+
+      formData.append('deviceID', localStorage.getItem('deviceID'));
+      formData.append('version', localStorage.getItem('version')); 
+
+      formData.append('action', 'loginUser');
+      clientBasicAuthenticationForm(formData);
+      
+      //online(localStorage.getItem('user_ID'),localStorage.getItem('Email'),`${formData.get('login_email_phonenumber')}`,`${formData.get('login_Password')}`,"loginUser");
+    } else {
+      if (formData.get('login_email_phonenumber') == ""){
+        document.querySelector(".login_error").innerHTML = `<span class=" text-danger text-center">Email/Phone number required</span>`;
+      } else if (formData.get('login_Password') == "") {
+        document.querySelector(".login_error").innerHTML = `<span class=" text-danger text-center">Password required</span>`;
+      } else {
+        document.querySelector(".login_error").innerHTML = `<span class=" text-danger text-center">Email/Phone Number and Password required</span>`;
+      }
+    }
+  });
+  
+  $('.sendVerification_Code').click(function() {
+      //localStorage.setItem('version',app_version);
+
+      const form = document.querySelector('.client_psd_recovery_Form');
+      const formData = new FormData(form);
+      if (formData.get('psd_recovery_email_phonenumber') != "" ) {
+          document.querySelector(".psd_recovery_error").innerHTML = '';
+          $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+          formData.append('deviceID', localStorage.getItem('deviceID'));
+          formData.append('version', localStorage.getItem('version')); 
+
+          formData.append('action', 'sendVerificationCode');
+          addNetworkEventListener_count = 1;
+          clientBasicAuthenticationForm(formData);
+          
+      } else {
+          document.querySelector(".psd_recovery_error").innerHTML = `<span class=" text-danger text-center">Email/Phone number required</span>`;
+      }
+      
+  });
+  $('.verify_Code').click(function() {
+      //localStorage.setItem('version',app_version);
+
+      const form = document.querySelector('.client_psd_recovery_Form');
+      const formData = new FormData(form);
+      if (formData.get('psd_recovery_code') != "" ) {
+          document.querySelector(".psd_recovery_error").innerHTML = '';
+          $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+          formData.append('deviceID', localStorage.getItem('deviceID'));
+          formData.append('version', localStorage.getItem('version')); 
+
+          formData.append('action', 'verifyCode');
+          addNetworkEventListener_count = 1;
+          clientBasicAuthenticationForm(formData);            
+      } else {
+          document.querySelector(".psd_recovery_error").innerHTML = `<span class=" text-danger text-center">Verification code required</span>`;
+      }
+  });
+  $('.submit_new_password').click(function() {
+      //localStorage.setItem('version',app_version);
+
+      const form = document.querySelector('.client_psd_recovery_Form');
+      const formData = new FormData(form);
+      if (formData.get('confirm_new_password') != "" && formData.get('new_password') != "") {
+          if (formData.get('confirm_new_password') == formData.get('new_password')) {
+              document.querySelector(".psd_recovery_error").innerHTML = ``;
+              $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+              formData.append('deviceID', localStorage.getItem('deviceID'));
+              formData.append('version', localStorage.getItem('version')); 
+
+              formData.append('action', 'submitPassword');
+              addNetworkEventListener_count = 1;
+              clientBasicAuthenticationForm(formData);
+            } else {
+              document.querySelector(".psd_recovery_error").innerHTML = `<span class=" text-danger text-center">Password does not match</span>`;
+          }
+      } else {
+        document.querySelector(".psd_recovery_error").innerHTML = `<span class=" text-danger text-center">Password required</span>`;
+      }
+  });
+  $('.dropdown-item').click(function() {
+    // Get the text of the clicked dropdown item
+    var selectedRole = $(this).text();
+    
+    // Set the text of the .user-role span with the selected role
+    $('.user-role').text(selectedRole);
+  });
+  $('.valuer-dropdown-item').click(function() {
+    // Get the text of the clicked dropdown item
+    var selectedRole = $(this).text();
+    $('#select-company-list').html('Select Company');
+    if (selectedRole == "Director") {
+      document.querySelector(".select-company").classList.add("d-none");
+      document.querySelector(".company-details").classList.remove("d-none");
+      document.querySelector("#select-company-list").classList.remove("d-none");
+    } else {
+      document.querySelector(".select-company").classList.remove("d-none");
+      document.querySelector(".company-details").classList.add("d-none");
+      document.querySelector("#select-company-list").classList.add("d-none");
+      $('#select-company-list').text("");
+
+    }
+    // Set the text of the .user-role span with the selected role
+    $('.valuer-user-role').text(selectedRole);
+    $('#valuer-companyRegistrationNumber').val("");
+    $('#valuer-companyname').val("");
+
+  });  
+  $('#select-company-list').click(function() {
+    // Toggle the visibility of the company selection and company details sections
+    $('.select-company').toggleClass('d-none');
+    $('.company-details').toggleClass('d-none');
+
+    // Check if the select-company is currently visible and update the button text accordingly
+    if ($('.select-company').hasClass('d-none')) {
+        $('#select-company-list').html('Select Company');
+        $('#valuer-companyRegistrationNumber').val("");
+        $('#valuer-companyname').val("");
+        $('#companyEmployeeNumber').val("");
+    } else {
+        $('#select-company-list').html('New Company');
+        $('#provider_companyname').val("");
+        $('#companyRegistrationNumber').val("");
+        $('#contactEmail').val("");
+        $('#contactPhone').val("");
+        $('#provider_address').val("");
+        $('#provider_city').val("");
+        $('#provider_postalcode').val("");
+        $('#provider_country').val("");
+        $('#upload_uploadCompanyLogo_help').html("");
+    }
+  });  
+  $('.next-register-button').click(function() {
+      const form = document.querySelector('.clientRegistrationForm');
+      const formData = new FormData(form);
+      if (formData.get('provider_firstname') != "" || formData.get('provider_lastname') != "") {
+        if (formData.get('provider_email_phonenumber') != "") {
+          if (formData.get('Password') != "") {
+            if (formData.get('Password') == formData.get('confirm_password')) {
+
+              if ($('.user-role').text() == "Individual") {
+                document.querySelector(".register_error").innerHTML = ` `;
+                const mainRole = $('.user-role').text();
+                const userRole = $('.valuer-user-role').text();
+                const carDealerUserRole = $('.car-dealer-user-role').text();
+                // Append additional form data
+                formData.append('mainRole', mainRole);
+                formData.append('userRole', userRole);
+                formData.append('carDealerRole', carDealerUserRole);
+                formData.append('deviceID', localStorage.getItem('deviceID'));
+                formData.append('version', localStorage.getItem('version')); 
+
+                formData.append('action', 'registerUser');
+
+                $(this).html('<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> <span class="visually-hidden">Loading...</span>');
+                clientBasicAuthenticationForm(formData);
+
+                //online(localStorage.getItem('user_ID'),formData.get('provider_firstname') + " " + formData.get('provider_lastname'),`${formData.get('provider_email_phonenumber')}`,`${formData.get('Password')}`,"registerValuer");
+              } else {
+
+                $(this).html('<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> <span class="visually-hidden">Loading...</span>');
+                $.ajax({
+                  url: server_Url +  'checkuser.php',
+                  method: 'POST', // Keep the HTTP method as POST
+                  data: {
+                    email_phonenumber: formData.get('provider_email_phonenumber')
+                  },
+                  dataType: 'json', // Expecting a JSON response
+                  success: function(response) {
+                    //alert(JSON.stringify(response));
+                    if (response.success) {
+                      $('.next-register-button').html('Next');
+                      $('.register_error').html('');
+                      document.querySelector(".client_info").classList.add("d-none");
+                      document.querySelector(".password_info").classList.remove("d-none");
+                      document.querySelector(".next-register-button").classList.add("d-none");
+
+                      document.querySelector(".user-role-btn-group").classList.add("d-none");
+                      if ($('.user-role').text() == "Car Dealer") {
+                        $('.valuer-user-role').text("");
+                        //document.querySelector(".select-company").classList.add("d-none");
+                        //document.querySelector(".company-details").classList.remove("d-none");
+                        $('#select-company-list').html('New Company');
+                        document.querySelector("#select-company-list").classList.remove("d-none");
+                        document.querySelector(".car-dealer-user-role-btn-group").classList.remove("d-none");
+                      } else if ($('.user-role').text() == "Car Valuer"){
+                        
+                        $('#select-company-list').text("");
+                        $('#valuer-companyRegistrationNumber').val("");
+                        document.querySelector(".valuer-user-role-btn-group").classList.remove("d-none");
+                      }
+
+                      document.querySelector("#registerValuer").classList.remove("d-none");
+                    } else {
+                      $('.next-register-button').html('Next');
+                      $('.register_error').html('<span class="text-danger">' + response.info + '</span>');
+                    }
+                  },
+                  error: function(xhr, status, error) {
+                    showSnackbar(JSON.stringify(xhr));
+                  }
+                });
+              }
+              
+            } else {
+              document.querySelector(".register_error").innerHTML = `<span class=" text-danger text-center">Password does not match</span>`;
+              showSnackbar($('.register_error').text());
+            }
+          } else {
+            document.querySelector(".register_error").innerHTML = `<span class=" text-danger text-center">Password required</span>`;
+            scrollAndFocusElement('Password');
+            showSnackbar($('.register_error').text());
+          }
+        } else {
+          document.querySelector(".register_error").innerHTML = `<span class=" text-danger text-center">Email required</span>`;
+          scrollAndFocusElement('provider_email_phonenumber');
+          showSnackbar($('.register_error').text());
+        }
+      } else {
+        document.querySelector(".register_error").innerHTML = `<span class=" text-danger text-center">First Name Or Last Name required</span>`;
+        scrollAndFocusElement('provider_firstname');
+        showSnackbar($('.register_error').text());
+      }
+  });
+
+  document.getElementById("registerValuer").addEventListener("click", function() {
+    const form = document.querySelector('.clientRegistrationForm');
+    localStorage.setItem('version',app_version);
+
+    const formData = new FormData(form);
+    const mainRole = $('.user-role').text();
+    const userRole = $('.valuer-user-role').text();
+    const carDealerUserRole = $('.car-dealer-user-role').text();
+
+    const selectedCompany = $('#select-company-list').text();
+
+    const checkRequiredFields = (fields) => {
+        return fields.every(field => formData.get(field) !== "");
+    };
+
+    const handleFormErrors = (message, elementId) => {
+        document.querySelector(".register_error").innerHTML = `<span class="text-danger text-center">${message}</span>`;
+        scrollAndFocusElement(elementId);
+        showSnackbar(message);
+    };
+
+    let hasError = false;
+
+    if ((mainRole != "Appraiser") && (
+        (userRole === "Director" && selectedCompany === "Select Company") || 
+        (carDealerUserRole === "Micro Finance" && selectedCompany === "Select Company") || 
+        (carDealerUserRole === "Bank" && selectedCompany === "Select Company") || 
+        (carDealerUserRole === "Insurance" && selectedCompany === "Select Company"))) {
+        
+        if (checkRequiredFields(['provider_companyname', 'companyRegistrationNumber', 'contactEmail', 'contactPhone'])) {
+            if (!checkRequiredFields(['provider_address', 'provider_city', 'provider_postalcode', 'provider_country'])) {
+              const missingField = formData.get('provider_address') === "" ? 'Company Address' : 
+                                   formData.get('provider_city') === "" ? 'City' : 
+                                   formData.get('provider_postalcode') === "" ? 'Postal Code' :
+                                   'Country';
+              var elementId = '';
+              if (missingField.toLowerCase().replace(' ', '') == "companyaddress") {
+                elementId = 'provider_address';
+              } else if (missingField.toLowerCase().replace(' ', '') == "city") {
+                elementId = 'provider_city';
+              } else if (missingField.toLowerCase().replace(' ', '') == "postalcode") {
+                elementId = 'provider_postalcode';
+              } else if (missingField.toLowerCase().replace(' ', '') == "country") {
+                elementId = 'provider_country';
+              }
+              handleFormErrors(`${missingField} required`, elementId);
+              hasError = true;
+            }
+        } else {
+            const missingField = formData.get('provider_companyname') === "" ? 'Company Name' : 
+                                 formData.get('companyRegistrationNumber') === "" ? 'Company Registration Number' : 
+                                 formData.get('contactEmail') === "" ? 'Contact Email' :
+                                 'Contact Phone';
+            var elementId = '';
+            // File input element
+            const fileToUpload = document.querySelector('input[name="companyLogoFileToUpload[]"]');      
+            // Validation check
+            if (fileToUpload.files.length == 0) { // Check if file is attached
+              handleFormErrors("Company Logo Required", fileToUpload);
+              hasError = true;
+            } else if (missingField.toLowerCase().replace(' ', '') == "companyname") {
+              elementId = 'provider_companyname';
+            } else if (missingField.toLowerCase().replace(' ', '') == "companyregistration number") {
+              elementId = 'companyRegistrationNumber';
+            } else if (missingField.toLowerCase().replace(' ', '') == "contactemail") {
+              elementId = 'contactEmail';
+            } else if (missingField.toLowerCase().replace(' ', '') == "contactphone") {
+              elementId = 'contactPhone';
+            }
+            if (elementId !='') {             
+              handleFormErrors(`${missingField} required`, elementId);
+              hasError = true;
+            } 
+        }
+    } else {
+        if (!checkRequiredFields(['valuer-companyname', 'valuer-companyRegistrationNumber', 'companyEmployeeNumber'])) {
+            const missingField = formData.get('valuer-companyname') === "" ? 'Company Name' : 
+                                 formData.get('valuer-companyRegistrationNumber') === "" ? 'Company Registration Number' : 'Company Employee Number';
+            
+            var elementId = missingField.toLowerCase().replace(' ', '');
+            if (missingField.toLowerCase().replace(' ', '') == "companyname") {
+              elementId = 'valuer-companyname';
+            } else if (missingField.toLowerCase().replace(' ', '') == "companyregistration number") {
+              elementId = 'valuer-companyRegistrationNumber';
+            } else if (missingField.toLowerCase().replace(' ', '') == "companyemployee number") {
+              elementId = 'companyEmployeeNumber';
+            }
+            handleFormErrors(`${missingField} required`, elementId);
+            hasError = true;
+        }
+    }
+
+    if (!hasError) {
+        // Clear previous error
+        document.querySelector(".register_error").innerHTML = '';
+        // Show loading spinner
+        document.getElementById("registerValuer").innerHTML = `<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`;
+        // Call upload function
+        formData.append('mainRole', mainRole);
+        formData.append('userRole', userRole);
+        formData.append('carDealerRole', carDealerUserRole);
+        formData.append('deviceID', localStorage.getItem('deviceID'));
+        formData.append('version', localStorage.getItem('version')); 
+        //alert(localStorage.getItem('version'));
+        formData.append('action', 'registerUser');
+        clientBasicAuthenticationForm(formData);
+
+    }
+  });  
+  $('.car-dealer-dropdown-item').click(function() {
+    // Get the text of the clicked dropdown item
+    var selectedRole = $(this).text();
+    if (selectedRole == "Micro Finance" || selectedRole == "Bank" || selectedRole == "Insurance" || selectedRole == "Lease") {
+      document.querySelector(".select-company").classList.add("d-none");
+      document.querySelector(".company-details").classList.remove("d-none");
+      document.querySelector("#select-company-list").classList.remove("d-none");
+    } else {
+      document.querySelector(".select-company").classList.remove("d-none");
+      document.querySelector(".company-details").classList.add("d-none");
+      document.querySelector("#select-company-list").classList.add("d-none");
+    }
+    $('#select-company-list').html('Select Company');
+    // Set the text of the .user-role span with the selected role
+    $('.car-dealer-user-role').text(selectedRole);
+    $('.valuer-user-role').text("");
+    $('#valuer-companyRegistrationNumber').val("");
+    $('#valuer-companyname').val("");
+  });    
+  $('.login-button').click(function() {
+      if (localStorage.getItem('user_ID') ==null || localStorage.getItem('username') ==null) {
+          localStorage.setItem('user_ID',generateDeviceId());
+          user_ID = localStorage.getItem('user_ID');
+          username = Math.random().toString(36).substring(2, 8);
+          email = username + "@arybit.com";
+          password_hash = Math.random().toString(36).substring(2, 6);
+          localStorage.setItem('username',username);
+          localStorage.setItem('email',email);
+          localStorage.setItem('password_hash',password_hash);
+
+          document.querySelector(".landing-page").classList.add("d-none");
+          document.querySelector(".login-page").classList.remove("d-none");
+      }
+      document.querySelector(".login-page").classList.remove("d-none");
+      document.querySelector(".register-page").classList.add("d-none");
+      document.querySelector(".landing-page").classList.add("d-none");
+      document.querySelector(".client_info").classList.remove("d-none");
+      document.querySelector(".password_info").classList.add("d-none");
+      document.querySelector(".forgot-password-page").classList.add("d-none");
+      document.querySelector("#next-register-button").classList.remove("d-none");
+      document.querySelector("#registerValuer").classList.add("d-none");
+
+      document.querySelector(".recovery_email").classList.remove("d-none");
+      document.querySelector(".sendVerification_Code").classList.remove("d-none");
+      document.querySelector(".verify_Code").classList.add("d-none");
+      document.querySelector(".submit_new_password").classList.add("d-none");
+      document.querySelector(".recovery_code").classList.add("d-none");
+      document.querySelector(".recovery_new_password").classList.add("d-none");
+
+  });
+  $('.register-button').click(function() {
+      if (localStorage.getItem('user_ID') ==null || localStorage.getItem('username') ==null) {
+          localStorage.setItem('user_ID',generateDeviceId());
+          user_ID = localStorage.getItem('user_ID');
+          username = Math.random().toString(36).substring(2, 8);
+          email = username + "@arybit.com";
+          password_hash = Math.random().toString(36).substring(2, 6);
+          localStorage.setItem('username',username);
+          localStorage.setItem('email',email);
+          localStorage.setItem('password_hash',password_hash);
+
+          document.querySelector(".landing-page").classList.add("d-none");
+          document.querySelector(".login-page").classList.remove("d-none");
+      }
+      document.querySelector(".register-page").classList.remove("d-none");
+      document.querySelector(".login-page").classList.add("d-none");
+      document.querySelector(".landing-page").classList.add("d-none");
+      document.querySelector(".client_info").classList.remove("d-none");
+      document.querySelector(".password_info").classList.add("d-none");
+      document.querySelector(".forgot-password-page").classList.add("d-none");
+      document.querySelector("#next-register-button").classList.remove("d-none");
+      document.querySelector("#registerValuer").classList.add("d-none");
+
+      document.querySelector(".recovery_email").classList.remove("d-none");
+      document.querySelector(".sendVerification_Code").classList.remove("d-none");
+      document.querySelector(".verify_Code").classList.add("d-none");
+      document.querySelector(".submit_new_password").classList.add("d-none");
+      document.querySelector(".recovery_code").classList.add("d-none");
+      document.querySelector(".recovery_new_password").classList.add("d-none");
+
+  });   
+  $('.forgot-password-button').click(function() {
+      document.querySelector(".forgot-password-page").classList.remove("d-none");
+      document.querySelector(".client_info").classList.remove("d-none");
+      document.querySelector(".login-page").classList.add("d-none");
+      document.querySelector(".register-page").classList.add("d-none");
+      document.querySelector(".password_info").classList.add("d-none");
+      document.querySelector("#next-register-button").classList.remove("d-none");
+      document.querySelector("#registerValuer").classList.add("d-none");
+
+      document.querySelector(".settings-page").classList.add("d-none");
+      document.querySelectorAll(".login_buttons").forEach(element => {
+        element.classList.remove("d-none");                
+      });
+      document.querySelectorAll(".nav-settings").forEach(element => {
+        element.classList.add("d-none");                
+      });
+
+  });
+  $('.logout-button').click(function() {
+      localStorage.clear();
+      document.querySelector(".landing-page").classList.remove("d-none");
+      document.querySelector(".login-page").classList.remove("d-none");
+      document.querySelector(".register-page").classList.add("d-none");
+      document.querySelector(".client_info").classList.remove("d-none");
+      document.querySelector(".password_info").classList.add("d-none");
+      document.querySelector(".forgot-password-page").classList.add("d-none");
+      document.querySelector("#next-register-button").classList.remove("d-none");
+      document.querySelector("#registerValuer").classList.add("d-none");
+      //alert('client_info');
+      //document.querySelector(".settings-page").classList.add("d-none");
+      document.querySelector(".report-information").classList.add("d-none");
+      document.querySelector(".recovery_email").classList.remove("d-none");
+      document.querySelector(".sendVerification_Code").classList.remove("d-none");
+      document.querySelector(".verify_Code").classList.add("d-none");
+      document.querySelector(".submit_new_password").classList.add("d-none");
+      document.querySelector(".recovery_code").classList.add("d-none");
+      document.querySelector(".recovery_new_password").classList.add("d-none");
+      localStorage.setItem('version',app_version);
+      localStorage.setItem('themeColor','#32062e');
+      //alert('themeColor');
+      var corporateRefNo = generateCorporateRefNo();
+      var serialNo = generateSerialNo();
+      localStorage.setItem('corporateRefNo',corporateRefNo);
+      localStorage.setItem('FormID',0);
+      localStorage.setItem('userCompanyName',"");
+      localStorage.setItem('inspectVehicleID',0);
+      localStorage.setItem('serialNo',serialNo);
+      document.getElementById('corporateRefNo').value = corporateRefNo;
+      document.getElementById('serialNo').value = serialNo;
+      localStorage.setItem('offset', 0);
+      localStorage.setItem('limit', 10);
+      // Hide the modal
+      //alert();
+      const accountSettingsModal = document.getElementById('accountSettingsModal');
+      const qrCodeModal = bootstrap.Modal.getInstance(accountSettingsModal);        
+      if (qrCodeModal) {
+          qrCodeModal.hide(); // Properly hides the modal
+      } else {
+         alert('Modal instance not found!');
+      }        
+      toggleDashboardVisibility('.login-page', ['.valuer-dashboard', '.individual-dashboard', '.approver-dashboard', '.directorPrincipal-dashboard', '.appraiser-dashboard', '.carDealer-dashboard']);
+      document.querySelectorAll(".login_buttons").forEach(element => {
+          element.classList.remove("d-none");
+      });
+      document.querySelectorAll(".nav-settings").forEach(element => {
+        element.classList.add("d-none");
+      });
+      //$('#settingsModalLabel').modal('hide');
+  }); 
+  $('.settings-button').click(function() {
+    document.querySelector(".settings-page").classList.remove("d-none");
+    document.querySelector(".report-information").classList.add("d-none");
+  });
+  $('.home-button').click(function() {
+    document.querySelector(".report-information").classList.remove("d-none");
+    document.querySelector(".settings-page").classList.add("d-none");
+
+    document.querySelector(".ApproverForms").classList.add("d-none");
+    document.querySelector(".valuation_Form").classList.remove("d-none");
+  });
+  $('.valuation-reports-button').click(function() {
+    document.querySelector(".settings-page").classList.add("d-none");
+
+    document.querySelector(".valuation_Form").classList.add("d-none");
+    document.querySelector(".ApproverForms").classList.remove("d-none");
+
+    document.querySelector("#valuationForm").style.display = "block";
+    document.querySelector(".report-information").classList.remove("d-none");
+
+    document.querySelector("#report").style.display = "none";
+
+  });
+  $(document).on('click', '.edit-valuation-requests', function() {
+    var RequestID = $(this).attr('RequestID'); 
+    var VehicleID = $(this).attr('VehicleID');
+    response_requests.forEach(requests => {
+      if (requests.RequestID == RequestID) {
+        $("#client-request-id").val(requests.RequestID);
+        if (requests.ClientName !='') {
+          $("#client-name-request").val(requests.ClientName);
+          $("#client-contact-request").val(requests.Contact);
+          $("#client-email-request").val(requests.Email);
+          $("#client-kra-request").val(requests.KRA);
+        }
+      }
+    });
+    response_requestsVehicles.forEach(vehicles => {
+      if (vehicles.VehicleID == VehicleID) {
+        $("#individual-vehicle-make").val(vehicles.Make);
+        $("#individual-vehicle-model").val(vehicles.Model);
+        $("#individual-vehicle-year").val(vehicles.Year);
+        $("#individual-vehicle-mileage").val(vehicles.Mileage);
+        $("#individual-vehicle-color").val(vehicles.Color);
+        $("#individual-vehicle-transmission").val(vehicles.Transmission);
+        $("#individual-vehicle-fuelType").val(vehicles.FuelType);
+        $("#individual-vehicle-bodyType").val(vehicles.BodyType);
+        $("#logbookPhotoId").html(`
+          <div class="card imgUp_logbookPhoto imgUp position-relative" style="background-image: url('${vehicles.LogbookFileURL}');">
+              <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_logbookPhoto del_logbookPhoto"><i class="fa-solid fa-xmark"></i></i>
+              <label class="choose_logbookPhoto">Logbook Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="logbookPhotoToUpload[]" class="form-control-file uploadlogbookPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+          </div>
+        `);
+        $("#additionalInfo").val(vehicles.VehicleCondition);
+      }
+    });
+  });
+  $(document).on('click', '.delete-valuation-requests', function() {
+    var RequestID = $(this).attr('RequestID'); 
+    var action = "deleteValuationRequests"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, RequestID);
+  
+  });
+  $(document).on('click', '.auctions-valuation-requests', function() {
+    var RequestID = $(this).attr('RequestID'); 
+    var action = "featuredAuctions"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, RequestID);
+  
+  });
+  $(document).on('click', '.inspect-vehicles-requests', function() {
+    if (localStorage.getItem('totalMaxValuations') <= localStorage.getItem('totalValuations') && localStorage.getItem('totalValuations') !==0) {
+      showSnackbar(`You are using <strong class="using-storage">${localStorage.getItem('totalValuations')}</strong> of the <strong class="available-storage">${localStorage.getItem('totalMaxValuations')}</strong> of valuations available to you.</span>`);
+
+    } else {
+      // Open the modal properly
+      const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+      newReportModal.show();
+      
+    }
+    var AssignmentID = $(this).attr('AssignmentID'); 
+    var VehicleID = $(this).attr('VehicleID'); 
+    inspect_action = "submitReport";
+    if ($(this).text() == 'Continue') {
+      //action = "editReport";
+    }
+    //alert(inspect_action);
+    document.querySelector("#valuationForm").style.display = "block";
+    document.querySelector("#report").style.display = "none";
+    document.querySelector(".camera-toggle").classList.remove("d-none");
+    document.querySelectorAll(".resumeReport").forEach(element => {
+      element.classList.remove("d-none");
+    });
+
+    response_requestsVehicles.forEach(vehicle => {    
+      if (vehicle.VehicleID == VehicleID) {
+        var clientName = '';
+        var emaill = '';
+        response_valuerUsers.forEach(user => {    
+          if (user.UserID == vehicle.UserID) {
+            clientName = user.Username;
+            emaill = user.Email;
+          }
+        });
+        $("#clientName").val(clientName);
+        $("#emaill").val(emaill); 
+        $("#vehicle-assignment-id").val(AssignmentID);
+        $("#vehicle-id").val(VehicleID);
+
+        $("#valuer").val(localStorage.getItem('userCompanyName'));
+        $("#examiner").val(localStorage.getItem('userUsername'));
+
+        $("#make").val(vehicle.Make);
+  
+        // Create a dictionary for reports based on FormID
+        const reportsByFormID = {};
+        response_reports.forEach(report => {
+            reportsByFormID[report.FormID] = report;
+        });
+        
+        $("#corporateRefNo").val('');
+        $("#serialNo").val(''); 
+
+        $("#model").val(vehicle.Model);
+        $("#yearOfManf").val(vehicle.Year);
+        $("#odometerReading").val(vehicle.Mileage);
+        $("#colour").val(vehicle.Color);
+        $("#gearBox").val(vehicle.Transmission);
+        $("#fuelType").val(vehicle.FuelType);
+        $("#generalCondition").val(vehicle.VehicleCondition);
+
+        response_requests.forEach(requests => {
+
+          if (requests.VehicleID == VehicleID) {
+
+            if (requests.ClientName !='') {
+              $("#clientName").val(requests.ClientName);
+              $("#contactNumber").val(requests.Contact);
+              $("#emaill").val(requests.Email);
+              $("#contactKRA").val(requests.KRA);
+            }
+
+            response_valuationForms.forEach(valuation => {                
+              const report = reportsByFormID[valuation.FormID];
+              if (report) {
+                  if (report.FormID == valuation.FormID) {
+                    if (report.VehicleID == VehicleID) {
+                      $("#corporateRefNo").val(valuation.CorporateRefNo);
+                      $("#serialNo").val(valuation.SerialNo);  
+                      $("#contactKRA").val(report.KRAPin);
+
+                      $("#valuer").val(valuation.Valuer);
+                      //if (valuation.Valuer == '') {
+                        $("#valuer").val(localStorage.getItem('userCompanyName'));
+                      //}
+                      $("#valuation_Date").val(valuation.ValuationDate);
+                      $("#clientName").val(valuation.ClientName);
+                      $("#contactNumber").val(valuation.ContactNumber);
+                      $("#emaill").val(valuation.Email);  // Correct the ID from emaill to email
+                      $("#insurer").val(valuation.Insurer);
+                      $("#policyNo").val(valuation.PolicyNo);
+                      $("#expiryDate").val(valuation.ExpiryDate);
+                      $("#registrationNo").val(valuation.RegistrationNo);
+                      $("#chassisNo").val(valuation.ChassisNo);
+                      $("#make").val(valuation.Make);
+                      $("#model").val(valuation.Model);
+                      $("#modelType").val(valuation.ModelType);
+                      $("#engineNo").val(valuation.EngineNo);
+                      $("#engineRating").val(valuation.EngineRating);
+                      $("#colour").val(valuation.Colour);
+                      $("#dateOfReg").val(valuation.DateOfReg);
+                      $("#yearOfManf").val(valuation.YearOfManf);
+                      $("#odometerReading").val(valuation.OdometerReading);
+                      $("#fuelType").val(valuation.FuelType);
+                      $("#countryOfOrigin").val(valuation.CountryOfOrigin);
+                      $("#noOfAirbags").val(valuation.NoOfAirbags);
+                      $("#typesOfLights").val(valuation.TypesOfLights);
+                      $("#antiTheft").val(valuation.AntiTheft);
+                      $("#tyres").val(valuation.Tyres);
+                      $("#coachworkNotes").val(valuation.CoachworkNotes);
+                      $("#electricalNotes").val(valuation.ElectricalNotes);
+                      $("#mechanicalNotes").val(valuation.MechanicalNotes);
+                      $("#extras").val(valuation.Extras);
+                      $("#windscreenEstimate").val(valuation.WindscreenEstimate);
+                      $("#radioEstimate").val(valuation.RadioEstimate);
+                      $("#marketValue").val(valuation.MarketValue);
+                      $("#forcedValue").val(valuation.ForcedValue);
+                      $("#generalCondition").val(valuation.GeneralCondition);
+                      $("#remarks").val(valuation.Remarks);
+                      $("#remedy").val(valuation.Remedy);
+                      $("#locationOfInspection").val(valuation.LocationOfInspection);
+                      $("#destination").val(valuation.Destination);
+                      $("#examiner").val(valuation.Examiner);
+                      if (valuation.Examiner == '') {
+                        $("#examiner").val(localStorage.getItem('userUsername'));                
+                      }
+                      $("#dateOfInspection").val(valuation.DateOfInspection);  
+
+                    }
+                  }
+              }  
+            });
+
+            if ($("#corporateRefNo").val() =='') {
+              var corporateRefNo = generateCorporateRefNo();
+              var serialNo = generateSerialNo();
+              localStorage.setItem('serialNo', serialNo);
+              document.getElementById('corporateRefNo').value = localStorage.getItem('corporateRefNo');
+              document.getElementById('serialNo').value = serialNo;
+            }
+
+          }
+        });
+        
+        $('#vehiclePhotos').html(``);
+        localStorage.setItem('inspectVehicleID',VehicleID);     
+        
+        let additional_requests_checklist = {};
+        let inspections_requests_valuations = response_inspections_requests_valuations || []; // Ensure it's an array          
+        if (Array.isArray(inspections_requests_valuations)) {
+            var selectedInspectionsValuations = inspections_requests_valuations.find(function(details) {
+                return details.vehicle_id == localStorage.getItem('inspectVehicleID');
+            });          
+            if (selectedInspectionsValuations && selectedInspectionsValuations.additional_checklist) {
+                try {
+                    additional_requests_checklist = JSON.parse(selectedInspectionsValuations.additional_checklist); // ✅ Convert string to object
+                    maessa_up_Arr = selectedInspectionsValuations.maessa_up_Arr;
+
+                } catch (error) {
+                    showSnackbar("Error parsing additional_requests_checklist JSON:", error);
+                }
+            }
+        }          
+
+        localStorage.setItem('requests_themePdfColor', additional_requests_checklist.themePdfColor); // Save to localStorage
+        localStorage.setItem('requests_themePdfFontSize', additional_requests_checklist.themePdfFontSize); // Save to localStorage
+        localStorage.setItem('requests_inAppCamera', additional_requests_checklist.inAppCamera); // Save to localStorage
+        localStorage.setItem('requests_videoSection', additional_requests_checklist.videoSection); // Save to localStorage
+        localStorage.setItem('requests_aiObjectsDetection', additional_requests_checklist.aiObjectsDetection); // Save to localStorage
+        localStorage.setItem('requests_aiDamageDetection', additional_requests_checklist.aiDamageDetection); // Save to localStorage
+        localStorage.setItem('requests_aiValuePrediction', additional_requests_checklist.aiValuePrediction); // Save to localStorage
+        localStorage.setItem('requests_priorityStandard', additional_requests_checklist.priorityStandard); // Save to localStorage
+        localStorage.setItem('requests_priorityExpress', additional_requests_checklist.priorityExpress); // Save to localStorage
+
+        //alert(additional_requests_checklist.videoChecklistArray);
+        let videoChecklistString  = additional_requests_checklist.videoChecklistArray || []; // Preserve selections
+        //alert(additional_requests_checklist.videoChecklistArray);
+
+        if (videoChecklistString  !== null && videoChecklistString .length > 0) {
+            let videoChecklistArray = videoChecklistString .split(","); // Convert string to array
+            localStorage.setItem("requests_videoChecklistArray", JSON.stringify(videoChecklistArray));
+        }          
+        //alert(localStorage.getItem('requests_inAppCamera'));
+
+        inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
+
+      }
+    });
+
+    var thisAction = "inspectVehiclesRequests"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    var IDS = AssignmentID + ',' + VehicleID;
+    // Call the API function
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), thisAction, IDS);
+
+  });
+  $(document).on('click', '.edit-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    localStorage.setItem('FormID',FormID);
+    
+    action = "editReport"; 
+    inspect_action = "";
+
+    uploadedFiles = [];
+
+    uploadedTimeFiles = [];
+
+    uploadedVideoFiles = [];
+    uploadedTimeVideoFiles = [];
+
+    document.querySelector(".camera-toggle").classList.remove("d-none");
+    document.querySelectorAll(".resumeReport").forEach(element => {
+      element.classList.remove("d-none");
+    });
+  
+    // Create a dictionary for reports based on FormID
+    const reportsByFormID = {};
+    response_reports.forEach(report => {
+        reportsByFormID[report.FormID] = report;
+    });
+    
+    response_valuationForms.forEach(valuation => {
+        if (valuation.FormID == FormID) {
+            // Set form values using jQuery
+            
+            const report = reportsByFormID[valuation.FormID];
+            if (report) {
+                $("#contactKRA").val(report.KRAPin);
+            }
+
+            $("#corporateRefNo").val(valuation.CorporateRefNo);
+            $("#serialNo").val(valuation.SerialNo);
+            $("#valuer").val(valuation.Valuer);
+            //if (valuation.Valuer == '') {
+              $("#valuer").val(localStorage.getItem('userCompanyName'));
+            //}
+            $("#valuation_Date").val(valuation.ValuationDate);
+            $("#clientName").val(valuation.ClientName);
+            $("#contactNumber").val(valuation.ContactNumber);
+            $("#emaill").val(valuation.Email);  // Correct the ID from emaill to email
+            $("#insurer").val(valuation.Insurer);
+            $("#policyNo").val(valuation.PolicyNo);
+            $("#expiryDate").val(valuation.ExpiryDate);
+            $("#registrationNo").val(valuation.RegistrationNo);
+            $("#chassisNo").val(valuation.ChassisNo);
+            $("#make").val(valuation.Make);
+            $("#model").val(valuation.Model);
+            $("#modelType").val(valuation.ModelType);
+            $("#engineNo").val(valuation.EngineNo);
+            $("#engineRating").val(valuation.EngineRating);
+            $("#colour").val(valuation.Colour);
+            $("#dateOfReg").val(valuation.DateOfReg);
+            $("#yearOfManf").val(valuation.YearOfManf);
+            $("#odometerReading").val(valuation.OdometerReading);
+            $("#fuelType").val(valuation.FuelType);
+            $("#countryOfOrigin").val(valuation.CountryOfOrigin);
+            $("#noOfAirbags").val(valuation.NoOfAirbags);
+            $("#typesOfLights").val(valuation.TypesOfLights);
+            $("#antiTheft").val(valuation.AntiTheft);
+            $("#tyres").val(valuation.Tyres);
+            $("#coachworkNotes").val(valuation.CoachworkNotes);
+            $("#electricalNotes").val(valuation.ElectricalNotes);
+            $("#mechanicalNotes").val(valuation.MechanicalNotes);
+            $("#extras").val(valuation.Extras);
+            $("#windscreenEstimate").val(valuation.WindscreenEstimate);
+            $("#radioEstimate").val(valuation.RadioEstimate);
+            $("#marketValue").val(valuation.MarketValue);
+            $("#forcedValue").val(valuation.ForcedValue);
+            $("#generalCondition").val(valuation.GeneralCondition);
+            $("#remarks").val(valuation.Remarks);
+            $("#remedy").val(valuation.Remedy);
+            $("#locationOfInspection").val(valuation.LocationOfInspection);
+            $("#destination").val(valuation.Destination);
+            $("#examiner").val(valuation.Examiner);
+            if (valuation.Examiner == '') {
+              $("#examiner").val(localStorage.getItem('userUsername'));                
+            }
+            $("#dateOfInspection").val(valuation.DateOfInspection);  
+            // Toggle visibility
+            $(".ApproverForms").addClass("d-none");
+            $(".valuation_Form").removeClass("d-none");
+            document.querySelector(".report-information").classList.remove("d-none");
+            document.querySelector("#valuationForm").style.display = "block";
+
+            $('#vehiclePhotos').html(``);
+            vehiclePhotosInput(localStorage.getItem('FormID'));             
+        }
+    });
+  });
+  $(document).on('click', '.reject-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    var action = "rejectReport"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    //onlineGimbo(localStorage.getItem('onlineGimboUsername'), localStorage.getItem('response_arybittrack_email'), localStorage.getItem('response_arybittrack_password'), action, FormID);
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, FormID);
+  });
+  $(document).on('click', '.response-notifications', function () {
+    var action = $(this).attr('data-action'); // Get action type (mark/delete)
+    if (action == 'mark') {
+      action = "markNotifications"; 
+    } else {
+      action = "deleteNotifications"; 
+    }
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, '');
+
+  }); 
+  $(document).on('click', '.approve-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    var action = "approveReport"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    //onlineGimbo(localStorage.getItem('onlineGimboUsername'), localStorage.getItem('response_arybittrack_email'), localStorage.getItem('response_arybittrack_password'), action, FormID);
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, FormID);
+  });
+  $(document).on('click', '.delete-valuation-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    var action = "deleteReport"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    //onlineGimbo(localStorage.getItem('onlineGimboUsername'), localStorage.getItem('response_arybittrack_email'), localStorage.getItem('response_arybittrack_password'), action, FormID);
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, FormID);
+  });
+  $(document).on('click', '.dispatch-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    var action = "dispatchReport"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    //onlineGimbo(localStorage.getItem('onlineGimboUsername'), localStorage.getItem('response_arybittrack_email'), localStorage.getItem('response_arybittrack_password'), action, FormID);
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, FormID);
+  });
+  $(document).on('click', '.accept-valuation-requests', function() {
+    const RequestID = $(this).attr('data-request-id'); 
+    const ValuationTypeID = $(this).attr('data-valuation-type-id'); 
+    const ValuerID = $(this).attr('data-valuer-id');
+    const action = "acceptValuationRequests";  
+    // Update the spinner in the clicked element
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');    
+    var IDS = RequestID + ',' + ValuerID;  
+    // Call the API function
+    refresh_dashboard = true;
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, IDS);
+  });      
+  $(document).on('click', '.reject-valuation-requests', function() {
+    var RequestID = $(this).attr('RequestID'); 
+    var ValuationTypeID = $(this).attr('ValuationTypeID');
+    var action = "rejectValuationRequests"; 
+    $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+    //onlineGimbo(localStorage.getItem('onlineGimboUsername'), localStorage.getItem('response_arybittrack_email'), localStorage.getItem('response_arybittrack_password'), action, RequestID);
+    refresh_dashboard = true; 
+    onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, RequestID);
+  });
+  $(document).on('click', '.view-button', function() {
+    var FormID = $(this).attr('FormID'); 
+    var action = "viewReport";
+    var ReportFileURL = $(this).attr('ReportFileURL');
+    const pdfContainer = document.getElementById('pdf-container');
+    $('.view_inspection_report_err').html('');
+    var button_group = `
+        <a href="${ReportFileURL}" target="_blank" type="button" class="btn btn-bd-primary download-button btn-outline-primary" FormID=""><i class="fa-solid fa-download"></i> <span class="d-none d-sm-none d-md-inline">Download Pdf</span></a>
+        <button type="button" class="btn btn-bd-primary copy-button" FormID="" ReportFileURL="${ReportFileURL}"><i class="fa-solid fa-clipboard"></i> <span class="d-none d-sm-none d-md-inline">Copy Link</span></button>
+    `;
+    if (role != "Elite Technician") {
+      $('.view-button-modal-footer').html(button_group);
+    }
+
+
+    //alert(ReportFileURL);
+
+    displayPdf(ReportFileURL,pdfContainer);
+  });
+  $(document).on('click', '.copy-button', function() {      
+    var ReportFileURL = $(this).attr('ReportFileURL');
+    copyToClipboard(ReportFileURL);
+  }); 
+
+  $(document).on('click', '.view-auction-btn', function(e) {
+    e.preventDefault();
+  
+    const vehicleID = $(this).data('vehicleid');
+    const title = $(this).data('title');
+    const startingBid = $(this).data('startingbid');
+    //const timeLeft = $(this).data('timeLeft');
+    const timeLeft = $(this).attr('timeLeft');  // ✅ Get attribute value
+
+    let overlayVehicleDetails = `
+      <h3>${title}</h3>
+      <p><strong>Starting Bid:</strong> ${startingBid}</p>
+      <p><strong>Vehicle ID:</strong> ${vehicleID}</p>
+      <button class="btn btn-success mt-3">Place Bid</button>
+    `;
+  
+    // Inject Vehicle Details
+    $('#overlayVehicleDetails').html(overlayVehicleDetails);
+    $('#currentBidAmount').html(`KES ${startingBid}`);
+    $('#timeLeft').html(timeLeft);
+
+    // Inject Images/Videos from imagesAuctions array
+    let mediaHtml = '';
+    let activeSet = false;
+  
+    imagesAuctions.forEach(image => {
+      if (image.VehicleID == vehicleID) {
+        if (!activeSet) {
+          mediaHtml += `<div class="carousel-item active">`;
+          activeSet = true;
+        } else {
+          mediaHtml += `<div class="carousel-item">`;
+        }
+        if (isVideoFile(image.ImagePath)) {
+          mediaHtml += `<video src="${image.ImagePath}" class="img-fluid" controls></video>`;
+        } else {
+          mediaHtml += `<img src="${image.ImagePath}" class="img-fluid" alt="${image.Description}">`;
+        }
+        mediaHtml += `</div>`;
+      }
+    });
+  
+    if (mediaHtml === '') {
+      mediaHtml = `<div class="carousel-item active">
+        <img src="https://via.placeholder.com/800x400?text=No+Media+Available" class="img-fluid">
+      </div>`;
+    }
+  
+    $('#overlayVehicleImages').html(mediaHtml);
+    $('#auctionOverlay').fadeIn().removeClass('d-none');
+  });
+  
+  $(document).on('click', '.close-overlay', function() {
+    $('#auctionOverlay').fadeOut().addClass('d-none');
+  });    
+
+  // Event delegation for dynamically handling clicks on vehicle images and videos    
+  $(document).off('click', '.vehicle-image').on('click', '.vehicle-image', function() {
+    var VehicleID = $(this).attr('VehicleID');
+    let vehicleImagePath = "";
+    let fancyboxImages = []; // Store Fancybox-compatible image/video objects
+
+    response_images.forEach(image => {
+        if (VehicleID === String(image.VehicleID)) {
+            const isVideo = image.ImagePath.endsWith(".mp4") || 
+                            image.ImagePath.includes("youtube.com") || 
+                            image.ImagePath.includes("vimeo.com");
+
+            // Avoid duplicate entries
+            const exists = fancyboxImages.some(fancyboxImage => fancyboxImage.src === image.ImagePath);
+            if (!exists) {
+                if (isVideo) {
+                    fancyboxImages.push({
+                        src: `<video controls autoplay muted loop playsinline>
+                                <source src="${image.ImagePath}" type="video/mp4">
+                                Your browser does not support the video tag.
+                              </video>`,
+                        type: "html",
+                        caption: image.Description,
+                        customDownloadUrl: image.ImagePath // Custom property for download
+                    });
+
+                    //alert(image.Description);
+
+                    if (vehicleImagePath === "") {
+                        vehicleImagePath = `
+                            <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                                <video src="${image.ImagePath}" poster="${image.Thumbnail || ''}" class="vehicle-thumb" autoplay muted loop playsinline></video>
+                            </a>
+                        `;
+                    } else {
+                      vehicleImagePath = `
+                          <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                              <video src="${image.ImagePath}" poster="${image.Thumbnail || ''}" class="vehicle-thumb" autoplay muted loop playsinline></video>
+                          </a>
+                      `;
+                    }
+
+                } else {
+                    fancyboxImages.push({
+                        src: image.ImagePath,
+                        type: "image",
+                        caption: image.Description,
+                        customDownloadUrl: image.ImagePath
+                    });
+
+                    vehicleImagePath += `
+                        <a href="${image.ImagePath}" data-fancybox="gallery" data-caption="${image.Description}">
+                            <img src="${image.ImagePath}" alt="${image.Description}" class="${image.Description === 'Right front' ? '' : 'd-none'}">
+                        </a>
+                    `;
+                }
+            }
+        }
+    });
+
+    // Handle Logbook image if no images/videos were found
+    if (fancyboxImages.length === 0) {
+        response_requestsVehicles.forEach(vehicle => {
+            if (VehicleID === String(vehicle.VehicleID) && vehicle.LogbookFileURL) {
+                fancyboxImages.push({
+                    src: vehicle.LogbookFileURL,
+                    type: "image",
+                    caption: "Logbook photo",
+                    customDownloadUrl: vehicle.LogbookFileURL
+                });
+
+                vehicleImagePath = ` 
+                    <a href="${vehicle.LogbookFileURL}" data-fancybox="gallery" data-caption="Logbook photo">
+                        <img src="${vehicle.LogbookFileURL}" alt="Logbook photo">
+                    </a>
+                `;
+            }
+        });
+    }
+
+    // **Sort Fancybox images to show videos first**
+    fancyboxImages.sort((a, b) => (a.type === "html" ? -1 : 1));
+
+    // Update the specific .vehicleImageLogo for the clicked vehicle
+    $(`.vehicleImageLogo[VehicleID="${VehicleID}"]`).html(vehicleImagePath);
+
+    // Initialize Fancybox v5 with a custom download button
+    if (fancyboxImages.length > 0) {
+        Fancybox.show(fancyboxImages, {
+            Toolbar: {
+                display: {
+                    left: [],
+                    middle: [],
+                    right: ["download", "zoom", "slideshow", "fullscreen", "close"]
+                }
+            },
+            callbacks: {
+                ready: (fancybox) => {
+                    let downloadButton = document.createElement("button");
+                    downloadButton.classList.add("fancybox-button", "fancybox-button--download");
+                    downloadButton.innerHTML = "⬇️";
+                    downloadButton.title = "Download";
+                    downloadButton.onclick = () => {
+                        let currentSlide = fancybox.getSlide();
+                        let downloadUrl = currentSlide.customDownloadUrl || currentSlide.src;
+                        let link = document.createElement("a");
+                        link.href = downloadUrl;
+                        link.setAttribute("download", downloadUrl.split('/').pop());
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    };
+
+                    // Add the download button to Fancybox toolbar
+                    fancybox.container.querySelector(".fancybox__toolbar").appendChild(downloadButton);
+                }
+            }
+        });
+    } else {
+        showSnackbar("No images or videos found for this vehicle.");
+    }
+  });  
+  
+  // Bind the function to both the class and the ID
+  $(document).on('click', '.newReport', function(){
+    document.querySelectorAll(".resumeReport").forEach(element => {
+      element.classList.remove("d-none");
+    });
+    setupNewReport();
+  
+  });
+  document.getElementById('newReport').addEventListener('click', function(){
+    document.querySelectorAll(".resumeReport").forEach(element => {
+      element.classList.remove("d-none");
+    });
+    setupNewReport();
+  
+  });
+  document.getElementById('downloadReport').addEventListener('click', () => {   
+    downloadReport(localStorage.getItem('valuationReportUrl'));
+  });
+  $(document).on('click', '#generateReport', function() {
+    $("#generateReport").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...');
+
+    const coordinates = 0.00 + ', ' + 0.00;
+    addNetworkEventGenerateReportListener_count = 1;
+    document.getElementById('submitReport').disabled = true;
+    document.getElementById('newReport').disabled = true;
+    document.getElementById('downloadReport').disabled = true;
+    document.getElementById('viewReport').classList.add('d-none');
+    document.getElementById('submitReport').classList.remove('d-none');
+    document.querySelector("#valuationForm").style.display = "none";
+    document.querySelector("#report").style.display = "block";
+    document.getElementById('report_Content').innerHTML = `<div class="modal-body text-center"> <div class="spinner-border" role="status"> <span class="visually-hidden">Loading...</span> </div> </div>`;
+    $('#submitReport').html('Generating Report...<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+    
+    setTimeout(() => {
+      positionGenerateReport();
+    }, 10);
+  });
+  document.getElementById('submitReport').addEventListener('click', () => {   
+    submitReport();
+  });
+  $('#percentageSlider').on('input', function () {
+    var value = $(this).val();
+    image_quality = value;
+    $('#sliderValue').text(value);
+  });
+  $(document).ready(() => {
+    const inputs = [
+        {
+            makeInput: $('#individual-vehicle-make'),
+            modelInput: $('#individual-vehicle-model'),
+            makeSuggestions: $('#makeSuggestions'),
+            modelSuggestions: $('#modelSuggestions')
+        },
+        {
+            makeInput: $('#make'),
+            modelInput: $('#model'),
+            makeSuggestions: $('#vehicleMakeSuggestions'),
+            modelSuggestions: $('#vehicleModelSuggestions')
+        }
+    ];
+
+    inputs.forEach(({ makeInput, modelInput, makeSuggestions, modelSuggestions }) => {
+        makeInput.on('input', () => {
+            showSuggestions(makeInput, makeSuggestions, Object.keys(carData));
+        });
+
+        modelInput.on('input', () => {
+            const selectedMake = makeInput.val();
+            if (carData[selectedMake]) {
+                showSuggestions(modelInput, modelSuggestions, carData[selectedMake]);
+            }
+        });
+
+        makeSuggestions.on('click', (e) => {
+            e.stopPropagation();
+        });
+
+        modelSuggestions.on('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    // Hide suggestions when clicking outside any input or suggestion list
+    $(document).on('click', (e) => {
+        if (!$(e.target).closest('.form-control, .suggestions-list').length) {
+            $('.suggestions-list').hide();
+        }
+    });
+
+  });
+  $(document).on('click', '.request-valuation-btn', function(event) {
+    event.preventDefault();
+    const action = "requestValuation"; 
+    const form = document.getElementById('submit-valuation-request');
+    const formData = new FormData(form);
+     
+    // File input element
+    const logbookPhotoInput = document.querySelector('input[name="logbookPhotoToUpload[]"]');      
+    // Validation check
+    if (!logbookPhotoInput.files.length) { // Check if file is attached
+      showSnackbar("Logbook Photo Required");
+      logbookPhotoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      logbookPhotoInput.focus();
+    } else if (!formData.get('client-name-request')) {
+      showSnackbar("Client Name Required");
+      document.getElementById('client-name-request').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('client-name-request').focus();
+    } else if (!formData.get('client-contact-request')) {
+      showSnackbar("Client Contact Required");
+      document.getElementById('client-contact-request').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('client-contact-request').focus();
+    } else if (!formData.get('client-contact-request')) {
+      showSnackbar("Client Email Required");
+      document.getElementById('client-email-request').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('client-email-request').focus();
+    } else if (!formData.get('client-kra-request')) {
+      showSnackbar("Client KRA Required");
+      document.getElementById('client-kra-request').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('client-kra-request').focus();
+    } else {
+      $(this).html('<div class="spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>');
+      // Adding additional data to formData
+      formData.append('deviceID', localStorage.getItem('deviceID'));
+      formData.append('userEmail', localStorage.getItem('userEmail'));
+      formData.append('userPasswordHash', localStorage.getItem('userPasswordHash'));
+      formData.append('CompanyID', localStorage.getItem('userCompanyInputID'));
+      //alert(localStorage.getItem('userCompanyInputID'));
+      //formData.append('CompanyID', 4);        
+      formData.append('maessa_up_Arr', maessa_up_Arr);
+            
+      formData.append('videoChecklistArray', JSON.parse(localStorage.getItem("videoChecklistArray")));
+
+      formData.append('inAppCamera', localStorage.getItem('inAppCamera'));
+      formData.append('videoSection', localStorage.getItem('videoSection'));
+      formData.append('themePdfColor', localStorage.getItem('themePdfColor'));
+      formData.append('themePdfFontSize', localStorage.getItem('themePdfFontSize'));
+
+      formData.append('aiObjectsDetection', localStorage.getItem('aiObjectsDetection'));
+      formData.append('aiDamageDetection', localStorage.getItem('aiDamageDetection'));
+      formData.append('aiValuePrediction', localStorage.getItem('aiValuePrediction'));
+      formData.append('priorityStandard', localStorage.getItem('priorityStandard'));
+      formData.append('priorityExpress', localStorage.getItem('priorityExpress'));
+
+      formData.append('action', action);
+      addNetworkEventListener_count = 1;
+      requestValuation(formData);
+    }  
+
+    if (!formData.get('individual-vehicle-make')) {
+      //showSnackbar("Vehicle Make Required");
+      //document.getElementById('individual-vehicle-make').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('individual-vehicle-make').focus();
+      formData.set('individual-vehicle-make', ' ');  // Set default value
+    } else if (!formData.get('individual-vehicle-model')) {
+      //showSnackbar("Vehicle Model Required");
+      //document.getElementById('individual-vehicle-model').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('individual-vehicle-model').focus();
+      formData.set('individual-vehicle-model', ' ');  // Set default value
+    } else if (!formData.get('individual-vehicle-year')) {
+      //showSnackbar("Vehicle Year Required");
+      //document.getElementById('individual-vehicle-year').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('individual-vehicle-year').focus();
+      formData.set('individual-vehicle-year', '2020');  // Set default value
+    } else if (!formData.get('individual-vehicle-mileage')) {
+      //showSnackbar("Vehicle Mileage Required");
+      //document.getElementById('individual-vehicle-mileage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('individual-vehicle-mileage').focus();
+      formData.set('individual-vehicle-mileage', '0');  // Set default value
+    } else if (!formData.get('valuationType')) {
+      //showSnackbar("Valuation Type Required");
+      //document.getElementById('valuationType').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('valuationType').focus();
+      formData.set('valuationType', 'Standard');  // Set default value
+    } else if (!formData.get('industryType')) {
+      //showSnackbar("Industry Type Required");
+      //document.getElementById('industryType').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      //document.getElementById('industryType').focus();
+      formData.set('industryType', 'Insurance');  // Set default value
+    }  
+    
+
+  }); 
+  $(document).on("click", ".Captured_Photos", function() {
+
+    const imgAdd = $(this);
+    if (compression_complete == 0) {
+      captureImage(); 
+    } else {
+      showSnackbar(inHouseMessage);
+    }
+    
+
+    function captureImage() {
+      var permissions = cordova.plugins.permissions;
+      var permissionsToRequest = [
+        permissions.CAMERA,
+        permissions.READ_EXTERNAL_STORAGE, // Read existing files
+        permissions.WRITE_EXTERNAL_STORAGE // Write new files
+      ];
+      permissions.requestPermissions(permissionsToRequest, function(status) {
+        if (status[permissions.CAMERA] === permissions.GRANTED) {
+          navigator.camera.getPicture(onCameraSuccess, onCameraFail, {
+            quality: Number(image_quality),
+            destinationType: Camera.DestinationType.DATA_URL,
+            correctOrientation: true // Automatically corrects the orientation of the image
+          });
+          imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+        } else {
+          showSnackbar('Permissions denied');
+        }
+      }, function(err) {
+        showSnackbar('Permission request failed: ' + JSON.stringify(err));
+      });// Function to resize the image to specified dimensions
+      
+    }
+
+    // Function triggered after capturing an image from the camera
+    function onCameraSuccess(imageData) {
+      const resizedImageData = imageData.replace(/^data:image\/(jpeg|png);base64,/, '');
+
+      showSnackbar(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
+      $("#upload_from_file_container_help").html(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
+         
+      //imgAdd.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+      if (localStorage.getItem("aiObjectsDetection") === "true" || localStorage.getItem("requests_aiObjectsDetection") === "true") {
+
+        $.ajax({
+          //url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize',
+          url: 'https://detect.roboflow.com/infer/workflows/autovaluation/detect-count-and-visualize-3',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+              api_key: 'cifxp0cktEBBv8XjLg9l',
+              inputs: {
+                  "image": { "type": "base64", "value": imageData }
+              }
+          }),
+          success: function(result) {
+            if (result && result.outputs && result.outputs[0]) {
+                const outputImage = result.outputs[0].output_image;
+                const countObjects = result.outputs[0].count_objects;
+                const predictions = result.outputs[0].predictions.predictions; // Get the predictions
+                imgAdd.closest(".col").find('.points-spinner-grow').remove();
+
+                // Create a list of predictions
+                const predictionsHTML = predictions.map(prediction => `
+                    <li>
+                        <strong>Class:</strong> ${prediction.class} <br>
+                        <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(2)}% <br>
+                        <strong>Position:</strong> (${prediction.x}, ${prediction.y}) <br>
+                        <strong>Size:</strong> ${prediction.width}x${prediction.height}
+                    </li>
+                `).join('');  
+
+                // Modal content
+                const modalContent = `
+                <div id="capturePointsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true" style="z-index: 99999;">
+                  <div class="modal-dialog modal-fullscreen modal-dialog-centered mt-2">
+                    <div class="modal-content bg-dark text-light rounded-4 shadow">
+                      <div class="modal-header border-bottom border-secondary">
+                        <h5 class="modal-title fw-bold" id="modalTitle">Scanning ${imgAdd.attr('maessa_up')}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body d-flex flex-column justify-content-center align-items-center">
+                        <img id="responseImage" src="" alt="Result" class="img-fluid" />
+                        <p id="capturePointsModalError" class="text-primary mt-3 text-center fw-semibold">${countObjects} Objects</p>
+                        <!-- Removed JSON.stringify for security -->
+                        <div>
+                          <h6>Predictions:</h6>
+                          <ul>${predictionsHTML || '<li>No predictions available.</li>'}</ul>
+                        </div>
+                      </div>
+                      <div class="modal-footer d-flex justify-content-between align-items-center border-top border-secondary">
+                        <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success btn-lg px-4" id="captureButton">Capture</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+        
+                // Append modal to body
+                $("body").append(modalContent);
+                
+                predictions.forEach(prediction => {
+                  if (prediction.class === imgAdd.attr('maessa_up')) {                    
+                    showSnackbar(`Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%`);
+                    $("#upload_from_file_container_help").html(`<span class="text-success">Match found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+        
+                    const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === imgAdd.attr('maessa_up'));
+
+                    // Update or add the resized image data to the uploadedFiles array
+                    if (maessaUpIndex !== -1) {
+                        uploadedFiles[maessaUpIndex].imageData = resizedImageData;
+                        uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+                    } else {
+                        uploadedFiles.push({ maessa_up: imgAdd.attr('maessa_up'), imageData: resizedImageData });
+                        uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
+                    }
+
+                    var duration = 10;
+                    //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + imgAdd.attr('maessa_up') + ' video</span>');
+                    setTimeout(() => {
+                      videoSection(imgAdd,imgAdd.attr('maessa_up'),duration);
+                    }, 100);
+
+                  } else {
+                    //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
+
+                    $("#upload_from_file_container_help").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+
+                    $("#capturePointsModalError").html(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+                    showSnackbar(`<span class="text-danger">${imgAdd.attr('maessa_up')} match not found: ${prediction.class} with confidence ${(prediction.confidence * 100).toFixed(2)}%</span>`);
+
+                    // Show modal
+                    const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
+                    modalInstance.show();
+            
+                    // Set image source
+                    $('#responseImage').attr('src', `data:image/png;base64,${outputImage.value}`);
+
+                  }
+
+                  // Update the background image of the corresponding element
+                  const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+                  imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });
+                });
+
+                if (predictions.length < 1) {
+                  //imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url()" });
+
+                  $("#upload_from_file_container_help").html(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
+                  showSnackbar(`<span class="text-danger">No ${imgAdd.attr('maessa_up')} predictions available.</span>`);
+
+                  // Show modal
+                  const modalInstance = new bootstrap.Modal(document.getElementById('capturePointsModal'));
+                  modalInstance.show();
+          
+                  // Set image source
+                  $('#responseImage').attr('src', `data:image/png;base64,${outputImage.value}`);
+
+                  // Update the background image of the corresponding element
+                  const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+                  imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });                  
+                }
+
+                document.getElementById("captureButton").addEventListener("click", () => {
+                  const modalElement = document.getElementById('capturePointsModal');
+                  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                  modalInstance.hide();
+                  captureImage();
+                });
+        
+            }
+          },
+          error: function(xhr, status, error) {
+              showSnackbar("Error occurred: " + JSON.stringify(xhr));
+          }
+        });
+        
+      } else {
+
+        const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === imgAdd.attr('maessa_up'));
+
+        // Update or add the resized image data to the uploadedFiles array
+        if (maessaUpIndex !== -1) {
+            uploadedFiles[maessaUpIndex].imageData = resizedImageData;
+            uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+        } else {
+            uploadedFiles.push({ maessa_up: imgAdd.attr('maessa_up'), imageData: resizedImageData });
+            uploadedTimeFiles.push({ maessa_up: imgAdd.attr('maessa_up'), timestamp: gettimeOfInspection() });
+        }
+
+        // Update the background image of the corresponding element
+        const imageSrc = "data:image/jpeg;base64," + resizedImageData;
+        imgAdd.closest(".col").find('.imgUp').css({ "background-image": "url(" + imageSrc + ")" });       
+        //imgAdd.closest(".col").find('.points-spinner-grow').remove();
+
+          var duration = 10;
+          //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + imgAdd.attr('maessa_up') + ' video</span>');
+          setTimeout(() => {
+            videoSection(imgAdd,imgAdd.attr('maessa_up'),duration);
+          }, 100);
+ 
+      }
+
+      
+      // Display messages indicating image analysis status
+      //$("#upload_from_file_container_help").html(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
+      //showSnackbar(`<span class="text-success">Analysing ${imgAdd.attr('maessa_up')} image...</span>`);
+      //$("#upload_from_file_container_help").html(`<span class="text-success">${imgAdd.attr('maessa_up')}</span>`);
+      
+    }
+    
+    function onCameraFail(message) {
+      $("#upload_from_file_container_help").html('Failed because: ' + message);
+    }
+  });
+  $(document).on("click", ".imgAdd", function() {
+    //alert('imgAdd');
+    var maessaArray = maessa_up_Arr.split(',');
+    if (imgAddcount <= maessaArray.length - 1) {
+      var maessa_up = maessaArray[imgAddcount].trim();
+      //camera-toggle
+      var input_file = `<input type="file" name="fileToUpload[]" class="form-control-file uploadFile img d-none" data-maessa_up="${maessa_up}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;" disabled>`;    
+      var labelText = `<label class="choose_photo Captured_Photos" maessa_up="${maessa_up}"> ${maessa_up} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;    
+      if (camera_toggle == 1) {
+        input_file = `<input type="file" name="fileToUpload[]" class="form-control-file uploadFile img d-none" data-maessa_up="${maessa_up}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;">`;    
+        labelText = `<label class="choose_photo" maessa_up="${maessa_up}"> ${maessa_up} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;
+      }
+      if (maessa_up === 'Logbook photo') {
+        input_file = `<input type="file" name="logbookfileToUpload[]" class="form-control-file uploadFile img" data-maessa_up="${maessa_up}" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;">`;
+        labelText = `<label class="choose_photo" maessa_up="${maessa_up}"> ${maessa_up} <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> ${input_file}</label>`;
+      }
+      $(this).closest(".row").find('.add-img-imgAdd').before(`
+        <div class="col mt-2 add-img-bt-center-container position-relative imgAdd-container-col">
+          <div class="card imgUp position-relative">
+            <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg del"><i class="fa-solid fa-xmark"></i></i>
+            ${labelText}
+          </div>
+        </div>
+      `);
+  
+      if (imgAddcount === maessaArray.length - 1) {
+        $(".imgAdd").parent().hide();
+      }
+      imgAddcount++;
+    } else {
+      $(".imgAdd").parent().hide();
+    }
+  });
+  $(document).on("click", "i.del", function() {
+    $(this).closest(".col").find('.imgUp').css('background-image', 'none');
+    $("#upload_from_file_container_help").html('');
+  });
+  $(document).on("change",".uploadFile", function(event) {
+    var uploadFile = $(this);
+
+    if (compression_complete == 0) {
+      uploadFile.closest(".col").find('.imgUp').append(`<div class="points-spinner-grow" role="status"><span class="visually-hidden">Loading...</span></div>`);
+
+      var maessa_up = uploadFile.attr('data-maessa_up');
+      var files = !!this.files ? this.files : [];
+      if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+      if (/^image/.test( files[0].type)){ // only image file  
+        const imageFile = event.target.files[0];
+        if (imageFile.size > 10000000) {
+          $("#upload_from_file_container_help").html('<span class="text-danger">Image file size exceeds the limit (10 MB).</span>');
+        } else{
+          uploadFile.closest(".col").find('.imgUp').removeClass('d-none');  
+          //uploadFile.closest(".col").find('.delimg').removeClass('d-none'); 
+          var reader = new FileReader(); // instance of the FileReader
+          reader.readAsDataURL(files[0]); // read the local file
+          reader.onloadend = function(){ // set image data as background of div
+            // The result will be a base64-encoded string 
+            var imageData = reader.result.split(',')[1]; // Extract base64 part
+            var image_src = "data:image/jpeg;base64," + imageData; // Construct the image src URL
+            uploadFile.closest(".col").find('.imgUp').css("background-image", "url("+image_src+")"); 
+            const fileName = imageFile.name;
+            const specialCharactersRegex = /[^\w\d]+/g;
+            const newFileName = fileName.replace(specialCharactersRegex, "");
+            uploadFile.closest(".col").find('.delimg').addClass('' + newFileName + '');
+            imgAdd_count = imgAdd_count + 1;
+    
+            // Find if maessa_up exists in the 
+            const maessaUpIndex = uploadedFiles.findIndex(file => file.maessa_up === maessa_up);
+        
+            if (maessaUpIndex !== -1) {
+              // If maessa_up exists, update imageData
+              uploadedFiles[maessaUpIndex].imageData = imageData;
+              uploadedTimeFiles[maessaUpIndex].timestamp = gettimeOfInspection();
+              
+            } else {
+              // If maessa_up doesn't exist, push a new object
+              uploadedFiles.push({ maessa_up: maessa_up, imageData: imageData });
+              uploadedTimeFiles.push({ maessa_up: maessa_up, timestamp: gettimeOfInspection() });
+            }
+            
+            $("#upload_from_file_container_help").html('<span class="text-success">Analysing ' + maessa_up + ' image...</span>'); 
+            showSnackbar('<span class="text-success">Analysing ' + maessa_up + ' image...</span>');
+            $("#upload_from_file_container_help").html('<span class="text-success">' + maessa_up + '</span>');
+
+            var duration = 10;
+            //showSnackbar('<span class="text-info">Initializing a ' + duration + ' seconds ' + maessa_up + ' video</span>');
+            setTimeout(() => {
+              videoSection(uploadFile,maessa_up,duration);
+            }, 100);
+            
+          }
+        }    
+      } else {
+        $("#upload_from_file_container_help").html('<span class= "text-danger" >only Image files</span>');
+      }
+    } else {
+      showSnackbar(inHouseMessage);
+    }
+    
+  });
+  $(document).on("change",".companyLogoFile", function(event) {
+    var uploadFile = $(this);
+    var files = !!this.files ? this.files : [];
+    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+    if (/^image/.test( files[0].type)){ // only image file  
+      const imageFile = event.target.files[0];
+      if (imageFile.size > 5000000) {
+        $("#upload_uploadCompanyLogo_help").html('<span class="text-danger">Image file size exceeds the limit (5 MB).</span>');
+      } else{
+        uploadFile.closest(".col").find('.imgUp_logo').removeClass('d-none');  
+        uploadFile.closest(".col").find('.delimg_logo').removeClass('d-none'); 
+        var reader = new FileReader(); // instance of the FileReader
+        reader.readAsDataURL(files[0]); // read the local file
+        reader.onloadend = function(){ // set image data as background of div
+          uploadFile.closest(".col").find('.imgUp_logo').css("background-image", "url("+this.result+")"); 
+          uploadFile.closest(".card").find('.choose_logo').hide();
+          const fileName = imageFile.name;
+          const specialCharactersRegex = /[^\w\d]+/g;
+          const newFileName = fileName.replace(specialCharactersRegex, "");
+          uploadFile.closest(".col").find('.delimg_logo').addClass('' + newFileName + '');
+          imgAdd_count = imgAdd_count + 1;
+          $("#upload_uploadCompanyLogo_help").html('<span class="text-success">' + imageFile.name + ' Selected</span>');            
+        }
+      }    
+    } else {
+      $("#upload_uploadCompanyLogo_help").html('<span class= "text-danger" >only Image files</span>');
+    }
+  });
+  $(document).on("change",".uploadlogbookPhoto", function(event) {
+    var uploadFile = $(this);
+    var files = !!this.files ? this.files : [];
+    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+    if (/^image/.test( files[0].type)){ // only image file  
+      const imageFile = event.target.files[0];
+      if (imageFile.size > 5000000) {
+        $("#upload_uploadlogbookPhoto_help").html('<span class="text-danger">Image file size exceeds the limit (5 MB).</span>');
+      } else{
+        uploadFile.closest(".col").find('.imgUp_logbookPhoto').removeClass('d-none');  
+        uploadFile.closest(".col").find('.delimg_logbookPhoto').removeClass('d-none'); 
+        var reader = new FileReader(); // instance of the FileReader
+        reader.readAsDataURL(files[0]); // read the local file
+        reader.onloadend = function(){ // set image data as background of div
+          uploadFile.closest(".col").find('.imgUp_logbookPhoto').css("background-image", "url("+this.result+")"); 
+          uploadFile.closest(".card").find('.choose_logbookPhoto').hide();
+          const fileName = imageFile.name;
+          const specialCharactersRegex = /[^\w\d]+/g;
+          const newFileName = fileName.replace(specialCharactersRegex, "");
+          uploadFile.closest(".col").find('.delimg_logbookPhoto').addClass('' + newFileName + '');
+          imgAdd_count = imgAdd_count + 1;
+          $("#upload_uploadlogbookPhoto_help").html('<span class="text-success">' + imageFile.name + ' Selected</span>');            
+        }
+      }    
+    } else {
+      $("#upload_uploadlogbookPhoto_help").html('<span class= "text-danger" >only Image files</span>');
+    }
+  });
+  $(document).on("change",".uploadHeadLogoPhoto", function(event) {
+    var uploadFile = $(this);
+    var files = !!this.files ? this.files : [];
+    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+    if (/^image/.test( files[0].type)){ // only image file  
+      const imageFile = event.target.files[0];
+      if (imageFile.size > 5000000) {
+        $("#uploadSignaturePhotoHelp").html('<span class="text-danger">Image file size exceeds the limit (5 MB).</span>');
+      } else{
+        uploadFile.closest(".col").find('.imgUp_headLogo').removeClass('d-none');  
+        uploadFile.closest(".col").find('.delimg_headLogo').removeClass('d-none'); 
+        var reader = new FileReader(); // instance of the FileReader
+        reader.readAsDataURL(files[0]); // read the local file
+        reader.onloadend = function(){ // set image data as background of div
+          // The result will be a base64-encoded string 
+          var imageData = reader.result.split(',')[1]; // Extract base64 part
+          var image_src = "data:image/jpeg;base64," + imageData; // Construct the image src URL
+  
+          uploadFile.closest(".col").find('.imgUp_headLogo').css("background-image", "url("+image_src+")"); 
+          uploadFile.closest(".card").find('.choose_headLogo').hide();
+          const fileName = imageFile.name;
+          const specialCharactersRegex = /[^\w\d]+/g;
+          const newFileName = fileName.replace(specialCharactersRegex, "");
+          uploadFile.closest(".col").find('.delimg_headLogo').addClass('' + newFileName + '');
+          imgAdd_count = imgAdd_count + 1;
+          $("#uploadSignaturePhotoHelp").html('<span class="text-success">' + imageFile.name + ' Selected</span>');
+  
+          const formData = new FormData();
+          var selectedCompanyID = localStorage.getItem('userCompanyID');
+      
+          // Find the selected company in the companies array
+          var selectedCompany = companies.find(function(company) {
+            return company.CompanyID == selectedCompanyID;
+          });
+      
+          var CompanyName = "";
+          if (selectedCompany) {
+            CompanyName = selectedCompany.CompanyName;
+          }
+      
+          // Generate the file name
+          let file_Name = CompanyName + '_headlogo';
+          file_Name = file_Name.replace(/\s+/g, '_').toLowerCase() + ".jpg";
+      
+          // Create a JSON object with the base64 data
+          const metadata = {
+            imageData: imageData  // Only take the base64 part
+          };
+          $("#uploadSignaturePhotoHelp").html('<span class="text-success">' + file_Name + ' Selected</span>');
+  
+          // Convert to a JSON string and create a Blob
+          const jsonString = JSON.stringify(metadata);
+          const jsonBlob = new Blob([jsonString], { type: 'application/json' });
+          formData.append('signature[]', jsonBlob, file_Name);
+          formData.append('deviceID', localStorage.getItem('deviceID'));
+          formData.append('userCompanyID', localStorage.getItem('userCompanyID'));
+          formData.append('userRole', localStorage.getItem('userRole'));
+          formData.append('action', "newHeadLogo");
+          savePdfSettings(formData);//maessa_up_Arr
+          
+        }
+      }    
+    } else {
+      $("#uploadSignaturePhotoHelp").html('<span class= "text-danger" >only Image files</span>');
+    }
+  });
+  $(document).on("click", "i.del_company_logo" , function() {
+    $(this).parent().remove();
+    $("#companyLogoId").html(` 
+    <div class="card imgUp_logo imgUp position-relative">
+      <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_logo del_company_logo d-none"><svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-x-lg"></use></svg></i>
+      <label class="choose_logo">Company Logo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="fileToUpload[]" class="form-control-file uploadCompanyLogo img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+    </div>`);
+    $("#upload_uploadCompanyLogo_help").html('');
+  });
+  $(document).on("click", "i.delimg_headLogo" , function() {
+    $(this).parent().remove();
+    $("#headLogoPhotoId").html(`
+      <div class="card imgUp_headLogo imgUp position-relative">
+        <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_headLogo del_headLogo"><i class="fa-solid fa-xmark"></i></i>
+        <label class="choose_headLogo">Head Logo Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="headLogoPhotoToUpload[]" class="form-control-file uploadHeadLogoPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+      </div>
+    `);
+    $("#uploadSignaturePhotoHelp").html('');
+  });
+  $(document).on("click", "i.del_logbookPhoto" , function() {
+    $(this).parent().remove();
+    $("#logbookPhotoId").html(` 
+    <div class="card imgUp_logbookPhoto imgUp position-relative">
+      <i class="position-absolute top-0 start-100 translate-middle badge rounded-pill btn btn-bd-primary delimg_logbookPhoto del_logbookPhoto"><i class="fa-solid fa-xmark"></i></i>
+      <label class="choose_logbookPhoto">Logbook Photo <br> <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#bi bi-image-alt"></use></svg> <input type="file" name="logbookPhotoToUpload[]" class="form-control-file uploadlogbookPhoto img" value="Upload Photo" style="width: 0px;height: 0px;overflow: hidden;"></label>
+    </div>`);
+    $("#upload_uploadlogbookPhoto_help").html('');
+  });
+  
+  getCompanies(localStorage.getItem('deviceID', '' , ''));
+  // Delegate click event to dynamically added .selected-company elements
+  function handleCompanyInput(inputSelector, listGroupSelector) {
+    $(inputSelector).on('input', function() {
+        var input = $(this).val().toLowerCase();
+        var companyListGroup = $(listGroupSelector);
+  
+        if (input.length > 2) {
+            // Filter companies based on user input
+            var filteredCompanies = companies.filter(function(company) {
+                return company.CompanyName.toLowerCase().includes(input);
+            });
+  
+            // Clear existing list items
+            companyListGroup.empty();
+  
+            if (filteredCompanies.length > 0) {
+                // Populate the list with filtered companies
+                filteredCompanies.forEach(function(company) {
+                    var listItem = $('<li class="list-group-item d-flex justify-content-between align-items-start selected-company" CompanyID="' + company.CompanyID + '"></li>');
+  
+                    var logoContainer = $('<span class="logo CompanyLogo me-3"></span>');
+                    var logoImg = $('<img>').attr('src', company.CompanyLogo || 'img/default-logo.png').attr('alt', 'Logo').css({width: '40px', height: '40px'});
+                    logoContainer.append(logoImg);
+  
+                    var itemContent = $('<div class="ms-2 me-auto"></div>');
+                    var subheading = $('<div class="fw-bold"></div>').text(company.CompanyName);
+                    var contentText = 'Address: ' + company.CompanyAddress;
+  
+                    itemContent.append(subheading);
+                    itemContent.append(contentText);
+  
+                    var badge = $('<span class="badge text-bg-primary rounded-pill"></span>').text(company.Rating);
+  
+                    listItem.append(logoContainer);
+                    listItem.append(itemContent);
+                    listItem.append(badge);
+  
+                    companyListGroup.append(listItem);
+                });
+  
+                // Add click event to each list item
+                companyListGroup.find('.selected-company').on('click', function() {
+                    // Add custom logic when a company is selected
+                    var selectedCompanyID = $(this).attr('CompanyID');                
+                    localStorage.setItem('userCompanyInputID', selectedCompanyID);
+                
+                    // Find the selected company in the companies array
+                    var selectedCompany = companies.find(function(company) {
+                        return company.CompanyID == selectedCompanyID;
+                    });
+
+                    // If a matching company is found, set the input values
+                    if (selectedCompany) {
+                        $('#valuer-companyname').val(selectedCompany.CompanyName);
+                        $('#valuation-companyname').val(selectedCompany.CompanyName);
+                        $('#valuer-companyRegistrationNumber').val(selectedCompany.CompanyRegistrationNumber);
+                        $('.select-company-list-group').empty(); // Clear suggestions after selection
+                        document.querySelector(".employee-number").classList.remove("d-none");
+                    }
+                    companyListGroup.empty(); // Clear suggestions after selection
+                });
+            } else {
+                // No companies found, show a message
+                companyListGroup.append('<li class="list-group-item text-muted">No matching companies found.</li>');
+            }
+        } else {
+            companyListGroup.empty(); // Clear suggestions if input is short
+        }
+    });
+  }
+  
+  // Call the function for both inputs
+  handleCompanyInput('#valuer-companyname', '.select-company-list-group');
+  handleCompanyInput('#valuation-companyname', '.select-valuation-company-list-group');
+
+  var corporateRefNo = generateCorporateRefNo();
+  var serialNo = generateSerialNo();
+  localStorage.setItem('corporateRefNo',corporateRefNo);
+  localStorage.setItem('FormID',0);
+  localStorage.setItem('userCompanyName',"");
+  localStorage.setItem('inspectVehicleID',0);
+  localStorage.setItem('serialNo',serialNo);
+  document.getElementById('corporateRefNo').value = corporateRefNo;
+  document.getElementById('serialNo').value = serialNo;
+
+  const switchCheckbox = document.getElementById("flexSwitchCheckChecked");
+  const cameraFlexSwitchCheckChecked = document.getElementById("cameraFlexSwitchCheckChecked");
+  const cameraLabel = document.querySelector(".camera-form-check-label");
+  // Initial mode
+  if (cameraFlexSwitchCheckChecked.checked) {
+    switchToCameraMode();
+  } else {
+    switchToFileMode();
+  }
+
+  // Event listener for the switch
+  cameraFlexSwitchCheckChecked.addEventListener("change", function() {
+    if (this.checked) {
+      switchToCameraMode();
+    } else {
+      switchToFileMode();
+    }
+  });
+
+  const label = document.querySelector(".form-check-label");
+  // Function to switch all classes from dark to light mode
+  function switchToLightMode() {
+      document.querySelectorAll(".bg-dark").forEach(element => {
+          element.classList.remove("bg-dark");
+          element.classList.add("bg-light");
+      });
+      document.querySelectorAll(".text-light").forEach(element => {
+          element.classList.remove("text-light");
+          element.classList.add("text-dark");
+      });
+      label.textContent = "Dark mode";
+  }
+  // Function to switch all classes from light to dark mode
+  function switchToDarkMode() {
+      document.querySelectorAll(".bg-light").forEach(element => {
+          element.classList.remove("bg-light");
+          element.classList.add("bg-dark");
+      });
+      document.querySelectorAll(".text-dark").forEach(element => {
+          element.classList.remove("text-dark");
+          element.classList.add("text-light");
+      });
+      label.textContent = "Light mode";
+  }
+  function switchToCameraMode() {
+    camera_toggle = 0;
+    cameraLabel.textContent = "Camera Mode";
+    $('#vehiclePhotos').html(``);
+  
+    if (inspect_action != "") {
+      inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
+    } else {
+  
+  
+      vehiclePhotosInput(localStorage.getItem('FormID'));
+    }
+  }
+  function switchToFileMode() {
+    if (localStorage.getItem("inAppCamera") === "true" || localStorage.getItem("requests_inAppCamera") === "true") {
+      cameraFlexSwitchCheckChecked.checked = true; // Use boolean `true` instead of string `'true'`
+      showSnackbar('Only in App Camera allowed');
+    } else {
+      camera_toggle = 1;
+      cameraLabel.textContent = "File Mode";
+    }
+
+    $('#vehiclePhotos').html(``);
+    if (inspect_action != "") {
+      inspecVehiclePhotosInput(localStorage.getItem('inspectVehicleID'));
+    } else {
+      vehiclePhotosInput(localStorage.getItem('FormID'));
+    }        
+  }
+  // Initial mode
+  if (switchCheckbox.checked) {
+      switchToLightMode();
+  } else {
+      switchToDarkMode();
+  }
+  // Event listener for the switch
+  switchCheckbox.addEventListener("change", function() {
+      if (this.checked) {
+          switchToLightMode();
+      } else {
+          switchToDarkMode();
+      }
+  }); 
+  
+  // Event listener for color picker
+  document.getElementById('colorPicker').addEventListener('input', function() {
+    const newColor = this.value;
+    localStorage.setItem('themeColor',newColor);
+    changeBackgroundColor(localStorage.getItem('themeColor'));
+    getCompanies(localStorage.getItem('deviceID'),localStorage.getItem('userCompanyID'),localStorage.getItem('themeColor'));
+  });
+
+  /** 
+  // Use a MutationObserver to detect dynamically added elements
+  const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+          if (mutation.addedNodes.length > 0) {
+              // Apply the color changes to any newly added elements
+              //changeBackgroundColor(localStorage.getItem('themeColor'));
+              if (switchCheckbox.checked) {
+                switchToLightMode();
+              } else {
+                switchToDarkMode();
+              }
+            }
+      });
+  });
+
+  // Observe the body for any DOM changes
+  observer.observe(document.body, {
+      childList: true, // Detect new child elements
+      subtree: true    // Detect changes in all descendant nodes
+  });
+  */
+ 
+  changeBackgroundColor(localStorage.getItem('themeColor'));
+  
+  drawSignatureCanvas();
+
+  let isScrolling;
+  
+  $(window).on('scroll', function() {
+      // Detect scrolling start
+      //showSnackbar('User is scrolling...');
+      refresh_dashboard = false;
+  
+      // Clear the timeout on every scroll event to reset the detection of scroll stop
+      clearTimeout(isScrolling);
+  
+      // Set a timeout to detect when the user stops scrolling (200ms after the last scroll event)
+      isScrolling = setTimeout(function() {
+        refresh_dashboard = true;
+  
+          //showSnackbar('User stopped scrolling.');
+      }, 2000);  // Adjust the delay time to your preference
+  });
+  //alert("valuationForm");
+
+  const valuationForm = document.getElementById("valuationForm");
+
+  // Save form data to local storage
+  valuationForm.addEventListener("input", () => {
+    const formData = {};
+    const elements = valuationForm.elements;
+
+    for (let i = 0; i < elements.length; i++) {
+      if (elements[i].name) {
+        formData[elements[i].name] = elements[i].value;
+      }
+    }
+
+    localStorage.setItem("valuationFormData", JSON.stringify(formData));
+    localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+
+  });
+  //alert("localStorage");
+
+  //alert("checkNotificationsPermission");
+
+   
+  
+
+  
+  const notificationsSwitchCheckbox = document.getElementById("notificationsSwitch");
+  const notificationsLabel = document.querySelector(".notifications-check-label");
+  // Function to check for notifications permission and toggle the switch
+  function checkNotificationsPermission() {
+      enableNotifications();
+  }
+  // Function to enable notifications (e.g., Firebase or any other service)
+  function enableNotifications() {
+      // Call Firebase or another service to enable notifications
+      FirebasePlugin.grantPermission(function(hasPermission){   
+          // Update the UI based on the permission status
+          if (hasPermission) {
+              notificationsSwitchCheckbox.checked = true;
+              notificationsLabel.textContent = "Notifications (Enabled)";
+              notificationsLabel.classList.add("text-success");
+              notificationsLabel.classList.remove("text-danger");
+          } else {
+              notificationsSwitchCheckbox.checked = false;
+              notificationsLabel.textContent = "Notifications (Disabled)";
+              notificationsLabel.classList.add("text-danger");
+              notificationsLabel.classList.remove("text-success");
+          }                                
+      });
+  }
+  //alert("disableNotifications");
+
+  // Function to disable notifications
+  function disableNotifications() {
+      notificationsSwitchCheckbox.checked = false;
+      notificationsLabel.textContent = "Notifications (Disabled)";
+      notificationsLabel.classList.add("text-danger");
+      notificationsLabel.classList.remove("text-success");
+      // Call Firebase or another service to disable notifications
+  }
+  // Event listener to toggle notifications on checkbox change
+  document.getElementById("notificationsSwitch").addEventListener("change", function () {
+      if (notificationsSwitchCheckbox.checked) {
+          // Enable notifications
+          enableNotifications();
+      } else {
+          // Disable notifications
+          disableNotifications();
+      }
+  });    
+
+  function clientBasicAuthenticationForm(formData) { 
+    addNetworkEventListener_count = 1; 
+    //alert(server_Url +  'authenticate.php');
+    $.ajax({
+      url: server_Url +  'authenticate.php',
+      type: 'POST',
+      data: formData,    
+      contentType: false,
+      processData: false,
+      xhr: function () {
+        var xhr = new window.XMLHttpRequest();
+        xhr.upload.addEventListener("progress", function (evt) {
+            if (evt.lengthComputable) {
+                var percentage = Math.floor((evt.loaded / evt.total) * 100);
+                var progressbar = '<div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="' + percentage + '" aria-valuemin="0" aria-valuemax="100">' +
+                    '<div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ' + percentage + '%;">' + percentage + '%</div>' +
+                    '</div>';
+                $("#upload_uploadCompanyLogo_help").html(progressbar);
+            }
+        }, false);
+        return xhr;
+      },
+      success: function (response) {
+        $(".login_error").html(JSON.stringify(response));
+        $("#upload_uploadCompanyLogo_help").html("");
+        addNetworkEventListener_count = 0;
+        try {
+          timestamp = response.timestamp;
+          var deviceType = response.deviceType;
+          //alert(deviceType);
+  
+          if (response.action == "loginUser") {
+            document.getElementById("loginUser").innerHTML=`Login`;
+            //alert(response.message.success);
+            if (response.message.success) {
+              $(".login_error").html(`<span class="text-success text-center">${response.messageError}</span>`);
+            } else {
+              document.querySelector(".landing-page").classList.add("d-none");
+              document.querySelector(".login-page").classList.remove("d-none");            
+              $(".login_error").html(`<span class="text-danger text-center">${response.messageError}</span>`);
+            }            
+          } else if (response.action == "registerUser") {
+            $('.next-register-button').html('Next');
+            document.getElementById("registerValuer").innerHTML="Submit";
+            if (response.message.success) {
+              $(".register_error").html(`<span class="text-success text-center">${response.messageError}</span>`);
+            } else {
+              $(".register_error").html(`<span class="text-danger text-center">${response.messageError}</span>`);
+            }            
+          }
+          //alert(response.status);                                         
+
+          if (response.status) {
+            var dateObj = new Date(timestamp);
+            // Format the date as yyyy-mm-dd
+            var formattedDate = dateObj.toISOString().split('T')[0];
+            // Format the time as hh:mm
+            var formattedTime = dateObj.toTimeString().split(' ')[0].substring(0, 5);      
+            // Set the values of the date input fields
+            document.getElementById('valuation_Date').value = formattedDate;
+            document.getElementById('dateOfInspection').value = formattedDate;
+            // Set the value of the time input field
+            document.getElementById('inspectionTime').value = formattedTime;
+  
+            $("#getStartedBtn").html('Get Started');
+  
+            addNetworkEventListener_count = 1;
+            //alert(window.location.hostname == "localhost");
+
+            if(window.location.hostname == "localhost"){
+              //alert(window.location.hostname);
+
+                if (cordova.platformId == "android") {   
+                  //alert(window.location.hostname);
+                           
+                    FirebasePlugin.getToken(
+                        function (fcmToken) {
+                            localStorage.setItem('fcmToken',fcmToken);
+  
+                            // On fcmToken load, check the current notification permission status   
+                            checkNotificationsPermission();
+                        },
+                        function (error) {
+                            localStorage.setItem('fcmToken','fcmToken');
+                        }
+                    );                                
+                } else {
+                    localStorage.setItem('fcmToken','fcmToken');
+                }
+
+            } else{  
+                localStorage.setItem('fcmToken','fcmToken');
+            }
+            
+            updateDashboard();
+            displayChart([12, 19, 9], [5, 3, 2, 6]);
+  
+            document.querySelector(".landing-page").classList.add("d-none");
+            document.querySelector(".report-information").classList.remove("d-none");
+            document.querySelector(".landing-page").classList.add("d-none");
+            document.querySelector(".login-page").classList.add("d-none");
+            document.querySelector(".register-page").classList.add("d-none");
+            document.querySelector(".forgot-password-page").classList.add("d-none");
+  
+            document.querySelectorAll(".login_buttons").forEach(element => {
+              element.classList.add("d-none");                
+            });
+            document.querySelectorAll(".nav-settings").forEach(element => {
+              element.classList.remove("d-none");
+            });
+  
+            if (response.message.Role == "Individual") {
+              document.getElementById('client-name-request').value = response.message.Username;
+              document.getElementById('client-email-request').value = response.message.Email;
+            }
+
+            localStorage.setItem('userUsername',response.message.Username);
+            localStorage.setItem('userEmail',response.message.Email);
+            localStorage.setItem('userPasswordHash',response.message.PasswordHash);
+            localStorage.setItem('userPhoneNumber',response.message.PhoneNumber);
+            localStorage.setItem('userRole',response.message.Role);
+            localStorage.setItem('userCompanyID',response.message.CompanyID);
+            localStorage.setItem('userCompanyName',response.CompanyName);
+  
+            localStorage.setItem('companyEmployeeNumber',response.message.CompanyEmployeeNumber);
+          
+            document.querySelector(".profileUsername").innerHTML = response.message.Username;
+            document.querySelector(".profileEmail").innerHTML = response.message.Email;
+  
+            $(".profileRole").html(response.message.Role);
+  
+            if (response.message.Role == "Principal Valuer" || response.message.Role == "Director") {
+              document.querySelector(".color-selector").classList.remove("d-none");
+            } else {
+              document.querySelector(".color-selector").classList.add("d-none");
+            }
+                    
+            // Find the selected company in the companies array
+            var selectedCompany = companies.find(function(company) {
+                return company.CompanyID == response.message.CompanyID;
+            });
+            if (selectedCompany) {
+              if (selectedCompany.ThemeColor != null) {
+                localStorage.setItem('themeColor',selectedCompany.ThemeColor);
+                document.getElementById('colorPicker').value = localStorage.getItem('themeColor');
+                changeBackgroundColor(localStorage.getItem('themeColor'));
+  
+              }            
+              var selectedDetails = companyDetails.find(function(details) {
+                return details.CompanyID == response.message.CompanyID;
+              });
+              if (selectedDetails) {
+                document.getElementById('additionalHeaderInfo').value = selectedDetails.HeadNotes;
+                document.getElementById('additionalBodyInfo').value = selectedDetails.BodyNotes;
+                document.getElementById('additionalFooterInfo').value = selectedDetails.FootNotes;
+                document.getElementById('additionalNotationInfo').value = selectedDetails.NBNotes;
+
+                maessa_up_Arr = selectedDetails.maessa_up_Arr;
+
+                localStorage.setItem( 'vehicleSections', JSON.stringify(maessa_up_Arr.split(',').map(name => ({ name: name.trim() }))) );
+                // Load saved settings
+                //document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
+                //document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
+
+                
+                //alert(selectedDetails.maessa_up_Arr);
+              }            
+            } 
+            
+            const logoElement = document.querySelector(".toast-logo");
+  
+            if (response.CompanyLogo != '') {
+              logoElement.src = response.CompanyLogo;
+              document.querySelector(".profile_CompanyLogo").innerHTML = `<img src="${response.CompanyLogo}" alt="Logo">`;
+            } else {
+              document.querySelector(".profile_CompanyLogo").innerHTML = `<img src="img/logo.png" alt="Logo">`;
+            }
+            if (response.message.PhoneNumber != '') {
+              document.querySelector(".profilePhoneNumber").innerHTML = `Phone Number: <span>${response.message.PhoneNumber}</span>`;//response.message.PhoneNumber;
+            }
+                               
+            
+            if (response.message.CompanyName != '') {
+              $(".toast-name").html(response.CompanyName);
+              document.querySelector(".profileCompanyName").innerHTML = `Company Name: <span>${response.CompanyName}</span>`;
+              //document.querySelector(".companyNameInfo").innerHTML = `${response.CompanyName}`;
+
+              const companyName = response.CompanyName;
+              document.getElementById('companyNameInfo').textContent = companyName; 
+
+              // Team Performance Donut Chart
+              //teamPerformanceDonutChart('params');
+
+            }
+            if (response.message.CompanyEmployeeNumber != '') {
+              document.querySelector(".profileCompanyEmployeeNumber").innerHTML = `Company Employee Number: <span>${response.message.CompanyEmployeeNumber}</span>`;
+            }
+            if (response.message.ApiKey != '') {
+              document.querySelector(".profileApiKey").innerHTML = `Api Key: <span>${response.message.ApiKey}</span>`;
+            }
+  
+            refresh_dashboard = true;
+            //alert(refresh_dashboard);
+            
+            onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), "dashboard", ""); 
+  
+          } else {
+            if (response.action == "loginUser") {
+              $(".login_error").html(`<span class="text-danger text-center">${response.messageError}</span>`);
+              document.getElementById("loginUser").innerHTML=`Login`;
+              document.querySelector(".landing-page").classList.add("d-none");
+              document.querySelector(".login-page").classList.remove("d-none");            
+            } else {
+              $(".register_error").html(`<span class="text-danger text-center">${response.messageError}</span>`);
+              document.getElementById("registerValuer").innerHTML="Submit";            
+            }
+          }
+        
+        } catch(e) {
+          if (response.action == "loginUser") {
+            //$(".login_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
+            //alert(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
+            document.getElementById("loginUser").innerHTML=`Login`;
+            //document.querySelector(".landing-page").classList.add("d-none");
+            //document.querySelector(".login-page").classList.remove("d-none");
+          } else {
+            $(".register_error").html(`<span class="text-danger text-center">${response.action} JSON parsing error</span>`);
+            document.getElementById("registerValuer").innerHTML="Submit";          
+          }
+        }     
+      },
+      error: function searchError(xhr, err) {
+        addNetworkEventListener_count = 0;
+        $(".login_error").html(`<span class="text-danger text-center">${JSON.stringify(xhr)}</span>`);
+        document.getElementById("loginUser").innerHTML=`Login`;
+        document.querySelector(".landing-page").classList.add("d-none");
+        document.querySelector(".login-page").classList.remove("d-none");
+        $(".register_error").html(`<span class="text-danger text-center">${JSON.stringify(xhr)}</span>`);
+        document.getElementById("registerValuer").innerHTML="Submit";
+      }
+    });
+  }
+  
+  const slider = document.getElementById('storageSlider');
+  const storageLabel = document.getElementById('storageAllocLabel');
+  const planLabel = document.getElementById('planLabel');
+  const priceLabel = document.getElementById('priceLabel');
+  const updatePlanButton = document.getElementById('updatePlanButton');
+  const storageValLabel = document.getElementById('storageValLabel');
+
+  // Generate the exponential mapping from slider value to storage value
+  function calculateStorageValue(sliderValue) {
+      // Map the slider value (0-100) to an exponential range between 300 MB and 100 GB
+      const minStorage = 500 * 1024 * 1024; // 500 MB in bytes
+      const maxStorage = 2 * 1024 * 1024 * 1024; // 100 GB in bytes
+      const storageInBytes = minStorage * Math.pow((maxStorage / minStorage), sliderValue / 100);
+
+      const storageInMbs =(storageInBytes / (1024 * 1024)).toFixed(2);
+
+      // Update the button's attributes
+      updatePlanButton.setAttribute('storageValue', `${Math.round(storageInMbs)}`);  
+      storageData.forEach(record => {
+        var totalUsed = parseInt(record.total_storage_used, 10); // Convert to integer
+        var maxStorage = storageInMbs;//parseInt(record.maximum_storage, 10); // Convert to integer
+        var totalValuations = parseInt(record.total_valuations, 10); // Convert to integer
+        
+        var totalMaxValuations = Math.round((maxStorage / totalUsed) * totalValuations);
+        storageValLabel.textContent = totalMaxValuations + ' valuations';
+        
+      });  
+
+      //document.querySelector(".loogg").innerHTML = `sliderValue ${sliderValue}  : ${storageInMbs} MB`;       
+
+      // Convert storageInBytes to a human-readable format
+      if (storageInBytes >= 1024 * 1024 * 1024) {
+          return (storageInBytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+      } else if (storageInBytes >= 1024 * 1024) {
+          return (storageInBytes / (1024 * 1024)).toFixed(2) + ' MB';
+      } else {
+          return (storageInBytes / 1024).toFixed(2) + ' KB';
+      }
+  }
+
+  // Function to calculate payment based on storage
+  function calculatePayment(sliderValue) {
+      const storageInBytes = 300 * Math.pow(1024 * 1024, 1) * Math.pow((100 * Math.pow(1024, 3)) / (300 * Math.pow(1024, 2)), sliderValue / 100);
+  
+      // Map storage ranges to pricing tiers
+      if (storageInBytes <= 500 * 1024 * 1024) { // Up to 500 MB
+          updatePlanButton.setAttribute('price', 4500);
+
+          return {
+              plan: "Bronze",
+              price: "Ksh.4,500"
+          };
+      } else if (storageInBytes <= 2 * 1024 * 1024 * 1024) { // Up to 2 GB
+          updatePlanButton.setAttribute('price', 5500);
+
+          return {
+              plan: "Silver",
+              price: "Ksh.5,500"
+          };
+      } else if (storageInBytes <= 10 * 1024 * 1024 * 1024) { // Up to 10 GB
+          updatePlanButton.setAttribute('price', 7000);
+
+          return {
+              plan: "Gold",
+              price: "Ksh.7,000"
+          };
+      } else if (storageInBytes <= 20 * 1024 * 1024 * 1024) { // Up to 20 GB
+          updatePlanButton.setAttribute('price', 8000);
+
+          return {
+              plan: "Premium",
+              price: "Ksh.8,000"
+          };
+      } else if (storageInBytes <= 50 * 1024 * 1024 * 1024) { // Up to 50 GB
+          updatePlanButton.setAttribute('price', 10100);
+
+          return {
+              plan: "Enterprise",
+              price: "Ksh.10,100"
+          };
+      } else { // Up to 100 GB
+          updatePlanButton.setAttribute('price', 12000);
+
+          return {
+              plan: "Enterprise Plus",
+              price: "Ksh.12,000"
+          };
+      }
+  }
+
+  // Update the label whenever the slider value changes
+  slider.addEventListener('input', function () {
+      const storageValue = calculateStorageValue(slider.value);
+      const paymentDetails = calculatePayment(slider.value);
+
+      storageLabel.textContent = storageValue;
+      planLabel.textContent = `Plan: ${paymentDetails.plan}`;
+      priceLabel.textContent = `Price: ${paymentDetails.price}`;
+
+      // Update the button's attributes
+      updatePlanButton.setAttribute('plan', paymentDetails.plan);
+      //updatePlanButton.setAttribute('price', paymentDetails.price);
+
+      // Display the button if hidden
+      if (updatePlanButton.classList.contains('d-none')) {
+          updatePlanButton.classList.remove('d-none');
+      }
+  });
+  //alert("updatePlanButton");
+
+  updatePlanButton.addEventListener('click', function () {
+    const plan = this.getAttribute('plan');
+    const storageValue = this.getAttribute('storageValue');
+    const price = this.getAttribute('price');
+    //alert(price + ' ' + get_Location.currency_rates);
+    var action = "setCompanyPlan";
+    refresh_dashboard = true; 
+    showSnackbar(`You have chosen ${plan}.`);
+    $('#updatePlanModalLabel').html(`${plan}.`);
+
+    // Display the modal
+    const qrCodeModal = new bootstrap.Modal(document.getElementById('updatePlanModal'));
+    qrCodeModal.show();    
+
+    var PAYPAL_SCRIPT = 'https://www.paypal.com/sdk/js?client-id=AcE-YOABr3SXOgfukZLaMXvjAEmoQblaNOx2kILJe2nedSM1jZqtjWyExdgEyqp-BcnHuybDQrJc-wpf&locale=en_' + get_Location.country_code + '';
+                  
+    // Create a script element for the PayPal SDK
+    var script = document.createElement('script');
+    script.setAttribute('src', PAYPAL_SCRIPT);
+    // Define a callback function to execute when the PayPal SDK script is loaded
+    script.onload = function () {
+        // Render PayPal buttons after the script is loaded
+        paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color:  'black',
+            shape:  'rect',
+            label:  'pay'
+          },
+          // Sets up the transaction when a payment button is clicked
+          createOrder: function(data, actions) {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: '' + (price/get_Location.currency_rates).toFixed(2) + '',
+                },
+                locale: 'en_' + get_Location.country_code + '',
+              }],
+            });
+          },
+          // Finalize the transaction after payer approval
+          onApprove: function(data, actions) {
+            return actions.order.capture().then(function(orderData) {
+              // Successful capture! For dev/demo purposes:
+              var orderData_id = orderData.id;
+              var inteent = orderData.intent;
+              var status = orderData.status;
+              var email_address = orderData.purchase_units[0].payee.email_address;
+              var merchant_id = orderData.purchase_units[0].payee.merchant_id;
+              var full_name = orderData.purchase_units[0].shipping.name.full_name;
+              var transaction = orderData.purchase_units[0].payments.captures[0];
+              var transaction_id = transaction.id;
+              var transaction_status = transaction.status;
+              var transaction_amount = transaction.amount;
+              var payer = orderData.payer;
+              $('.updatePlanModalError').html('<span>transaction_id : <span class="text-cmp">' + transaction_id + '</span></span><br><span>transaction_status : <span class="text-cmp">' + transaction_status + '</span></span>');
+              onlineGimbo(localStorage.getItem('userUsername'),localStorage.getItem('userEmail'), localStorage.getItem('userPasswordHash'), action, storageValue);
+            });
+          }
+        }).render('.updatePlanModalBody');
+    };
+     
+    // Append the script element to the head of the document
+    document.head.appendChild(script);
+
+
+  });
+  
+  const tabs = document.querySelectorAll('.tab-pane');
+  let currentIndex = 0;
+
+  const switchTab = (index) => {
+      if (index >= 0 && index < tabs.length) {
+          tabs[currentIndex].classList.remove('show', 'active');
+          tabs[index].classList.add('show', 'active');
+          currentIndex = index;
+          document.querySelectorAll('.nav-link')[currentIndex].click();
+      }
+  };
+
+  const container = document.getElementById('valuationTabsContent');
+  let startX = 0;
+
+  container.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+  });
+
+  container.addEventListener('touchmove', (e) => {
+      const moveX = e.touches[0].clientX - startX;
+      if (moveX > 50) {
+          switchTab(currentIndex - 1); // Swipe right
+      } else if (moveX < -50) {
+          switchTab(currentIndex + 1); // Swipe left
+      }
+  });
+  //alert("getCompanies");
+
+  document.getElementById("newReportModal_close").addEventListener("click", function () {
+    //alert("Close the modal properly");
+    const newReportModal = document.getElementById("newReportModal");
+    const modalInstance = bootstrap.Modal.getInstance(newReportModal);
+    if (modalInstance) {
+      modalInstance.hide();
+    }
+  
+    // Remove modal backdrop and reset body state
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+    document.body.classList.remove("modal-open");
+    document.body.style.overflow = "";
+
+  });    
+  
+  $("#checklistModalLabel_close").click(function () {
+    //alert("Close the modal properly");
+    const checklistModalLabel = new bootstrap.Modal(document.getElementById('checklistModalLabel'));
+    checklistModalLabel.hide();
+  
+    // Remove modal backdrop and reset body state
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+    document.body.classList.remove("modal-open");
+    document.body.style.overflow = "";
+
+  });
+
+  const savedColor = localStorage.getItem('themePdfColor') || '#171716'; 
+  if (savedColor) {
+      document.querySelectorAll('.text-theme').forEach(el => {
+          el.style.color = savedColor;
+      });
+      document.getElementById('colorPdfPicker').value = savedColor; // Update the color picker UI
+  }
+  
+  // Load saved settings
+  document.getElementById("flexSwitchInAppCamera").checked = localStorage.getItem("inAppCamera") === "true";
+  document.getElementById("30SecondVideoSwitch").checked = localStorage.getItem("videoSection") === "true";
+
+  //const video = document.getElementById('videoCapturePoints');
+  
+  //alert("teamPerformanceDonutChart");
+  teamPerformanceDonutChart('params');
+
+  // Retrieve form data from local storage and populate form
+  if (localStorage.getItem("valuationFormData") != null) {
+    document.querySelector(".resumeReport").classList.remove("d-none");
+    const savedData = localStorage.getItem("valuationFormData");
+    //alert("savedData");
+    if (savedData) {
+      const formData = JSON.parse(savedData);
+      const elements = valuationForm.elements;
+      //alert("elements");
+
+      for (let i = 0; i < elements.length; i++) {
+        if (elements[i].name && formData[elements[i].name]) {
+          elements[i].value = formData[elements[i].name];
+        }
+      }
+    }
+    //alert("savedData");
+
+  }
+
+  const reportButtons = document.querySelectorAll(".newReport, .resumeReport, .inspect-vehicles-requests");
+  const storageAlert = document.querySelector(".storage-alert");
+  reportButtons.forEach(button => {
+    button.addEventListener("click", function () {
+      const totalMaxValuations = Number(localStorage.getItem('totalMaxValuations')) || 0;
+      const totalValuations = Number(localStorage.getItem('totalValuations')) || 0;
+      
+      if (totalMaxValuations <= totalValuations && totalValuations !== 0) {
+      
+      //if (localStorage.getItem('totalValuations') <= localStorage.getItem('totalMaxValuations') && localStorage.getItem('totalValuations') !==0) {
+
+        storageAlert.classList.remove("d-none");
+        //
+        showSnackbar(`You are using <strong class="using-storage">${localStorage.getItem('totalValuations')}</strong> of the <strong class="available-storage">${localStorage.getItem('totalMaxValuations')}</strong> of valuations available to you.</span>`);
+
+        // Hide the message after 3 seconds
+        setTimeout(() => {
+            storageAlert.classList.add("d-none");
+        }, 5000);
+        
+      } else {
+        // Open the modal properly
+        const newReportModal = new bootstrap.Modal(document.getElementById('newReportModal'));
+        newReportModal.show();
+        localStorage.setItem('requests_themePdfColor', ''); // Save to localStorage
+        localStorage.setItem('requests_themePdfFontSize', ''); // Save to localStorage
+        localStorage.setItem('requests_inAppCamera', ''); // Save to localStorage
+        localStorage.setItem('requests_videoSection', ''); // Save to localStorage
+        localStorage.setItem('requests_aiObjectsDetection', ''); // Save to localStorage
+        localStorage.setItem('requests_aiDamageDetection', ''); // Save to localStorage
+        localStorage.setItem('requests_aiValuePrediction', ''); // Save to localStorage
+        localStorage.setItem('requests_priorityStandard', ''); // Save to localStorage
+        localStorage.setItem('requests_priorityExpress', ''); // Save to localStorage
+        localStorage.setItem('requests_videoChecklistArray', ''); // Save to localStorage
+        //localStorage.setItem('videoChecklistArray', ''); // Save to localStorage
+      }
+    });
+  }); 
+
+  onValuatorDeviceReady();
 }
 
 function getParsedLocalStorage(key) {
@@ -8362,7 +11024,7 @@ function onValuatorDeviceReady() {
           }
       },
       error: function(xhr, status, error) {
-          showSnackbar(`AJAX Error: ${status} - ${error}`);
+          showSnackbar(`AJAX Error: ${JSON.stringify(xhr)}`);
       }
   });
   
